@@ -25,15 +25,54 @@ struct Home: View {
     @State private var currentlyDragging : Task?
     
     var body: some View {
-        HStack(spacing: 2){
-            TodoView()
-            
-            WorkingView()
-    
-            CompletedView()
-               
-            
+        VStack{
+            ScrollView{
+                HStack{
+                    TasksView(todo)
+                    TasksView(working)
+                    TasksView(completed)
+                }
+
+            }
+                .frame(maxHeight: 200)
+                .background(.green)
+            HStack{
+                HStack {
+                    VStack {
+                        ForEach(9..<24) { hour in
+                            VStack {
+                                Text("\(String(format: "%02d", hour)):00")
+                                Rectangle()
+                                    .frame(height: 0.3)
+                                                                .foregroundColor(.gray)
+                            }
+                        }
+                    }
+                    .frame(maxWidth: 50)
+                }
+                
+                
+                TabView{
+                    TodoView()
+                        .tabItem {
+                            Text("Todo")
+                        }
+                    WorkingView()
+                        .tabItem {
+                            Text("Working")
+                        }
+                    CompletedView()
+                        .tabItem {
+                            Text("Completed")
+                        }
+                }
+                .tabViewStyle(.page)
+                .cornerRadius(30)
+            }
+            .background(.ultraThinMaterial)
+
         }
+
     }
     //Tasks View
     @ViewBuilder
@@ -44,7 +83,7 @@ struct Home: View {
                     //Task Row
                     TaskRow(task, $0.size)
                 }
-                .frame(height: 45)
+                .frame(height: 40)
             }
         })
         .frame(maxWidth: .infinity)
@@ -160,8 +199,6 @@ struct Home: View {
             ScrollView(.vertical) {
                 TasksView(todo)
             }
-            .navigationTitle("Todo")
-            .navigationBarTitleDisplayMode(.inline)
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
             .contentShape(.rect)
@@ -184,7 +221,6 @@ struct Home: View {
         ScrollView(.vertical) {
             TasksView(working)
         }
-        .navigationTitle("Working")
         .navigationBarTitleDisplayMode(.inline)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
@@ -207,7 +243,6 @@ struct Home: View {
         ScrollView(.vertical) {
             TasksView(completed)
         }
-        .navigationTitle("Completed")
         .navigationBarTitleDisplayMode(.inline)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
