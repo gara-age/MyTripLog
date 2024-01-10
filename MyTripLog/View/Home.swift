@@ -9,255 +9,182 @@ import SwiftUI
 
 struct Home: View {
     
-    //Sample Tasks
-    
-    @State private var todo : [Task] = [
-        .init(title: "Edit Video!", status: .todo)
-    ]
-    @State private var working : [Task] = [
-        .init(title: "record Video", status: .working)
-    ]
-    @State private var completed : [Task] = [
-        .init(title: "Implement Drag & Drop", status: .completed),
-        .init(title: "Update MockView Video", status: .completed),
-    ]
     //View properties
-    @State private var currentlyDragging : Task?
+    @State private var text : String = ""
+    @State var tags: [Tag] = []
+    @State private var title: String = "오사카 3박4일 여행"
     
     var body: some View {
-        VStack{
-            ScrollView{
-                HStack{
-                    TasksView(todo)
-                    TasksView(working)
-                    TasksView(completed)
+        NavigationStack{
+//            VStack{
+                
+                VStack{
+                    ScrollView(.vertical){
+                        TagView(tags: $tags)
+                    }
+                    .background(.green)
+                    .clipped()
+                    HStack{
+                        TextField("apple", text: $text)
+                            .font(.title3)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal)
+                            .background(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(Color("Tag").opacity(0.2), lineWidth: 1))
+                        Button{
+                            
+                            // Adding Tag
+                            tags.append(addTag(text: text, fontSize: 16))
+                            text = ""
+                            
+                        } label: {
+                            Text("Add")
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Color("BG"))
+                                .padding(.vertical, 12)
+                                .padding(.horizontal, 45)
+                                .background(Color("Tag"))
+                                .cornerRadius(10)
+                            
+                        }
+                    }
                 }
-
-            }
-                .frame(maxHeight: 200)
-                .background(.green)
-            HStack{
-                HStack {
-                    VStack {
-                        ForEach(9..<24) { hour in
+                
+                
+                ScrollView(.vertical){
+                    HStack{
+                        ScrollView {
                             VStack {
-                                Text("\(String(format: "%02d", hour)):00")
-                                Rectangle()
-                                    .frame(height: 0.3)
-                                                                .foregroundColor(.gray)
+                                Spacer(minLength: 20) //DayView의 text.height
+                                ForEach(9..<24) { hour in
+                                    VStack {
+                                        Text("\(String(format: "%02d", hour)):00")
+                                        
+                                        Rectangle()
+                                            .frame(height: 0.3)
+                                            .foregroundColor(.gray)
+                                    }
+                                }
+                            }
+                            .frame(maxWidth: 50)
+                        }
+                        ScrollView(.horizontal,showsIndicators: false){
+                            HStack{
+                                
+                                HStack{
+                                    Day1View()
+                                        .frame(minWidth: 100)
+                                    Day2View()
+                                        .frame(minWidth: 100)
+                                    Day3View()
+                                        .frame(minWidth: 100)
+                                    Day4View()
+                                        .frame(minWidth: 100)
+                                    
+                                    Button{
+                                        
+                                    } label : {
+                                        Spacer()
+                                        Image(systemName: "plus.circle")
+                                            .resizable()
+                                            .frame(width: 40, height: 40)
+                                        Spacer()
+                                    }
+                                    
+                                }
+                                .background(.ultraThinMaterial)
                             }
                         }
                     }
-                    .frame(maxWidth: 50)
                 }
-                
-                
-                TabView{
-                    TodoView()
-                        .tabItem {
-                            Text("Todo")
-                        }
-                    WorkingView()
-                        .tabItem {
-                            Text("Working")
-                        }
-                    CompletedView()
-                        .tabItem {
-                            Text("Completed")
-                        }
-                }
-                .tabViewStyle(.page)
-                .cornerRadius(30)
-            }
-            .background(.ultraThinMaterial)
-
-        }
-
-    }
-    //Tasks View
-    @ViewBuilder
-    func TasksView(_ tasks: [Task]) -> some View  {
-        VStack(alignment: .leading, spacing: 10, content: {
-            ForEach(tasks) { task  in
-                GeometryReader {
-                    //Task Row
-                    TaskRow(task, $0.size)
-                }
-                .frame(height: 40)
-            }
-        })
-        .frame(maxWidth: .infinity)
-        .padding()
-    }
-    
-    @ViewBuilder
-    func TaskRow(_ task: Task, _ size: CGSize) -> some View {
-        Text(task.title)
-            .font(.callout)
-            .padding(.horizontal, 15) //내꺼롤 적용할땐 없애도 될듯
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .frame(height: size.height)
-            .background(.white, in: .rect(cornerRadius: 10))
-            .contentShape(.dragPreview ,.rect(cornerRadius: 10))
-            .draggable(task.id.uuidString){
-                Text(task.title)
-                    .font(.callout)
-                    .padding(.horizontal, 15)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .frame(width: size.width , height: size.height, alignment: .leading )
-                    .background(.white)
-                    .contentShape(.dragPreview ,.rect(cornerRadius: 10))
-                    .onAppear(perform: {
-                        currentlyDragging = task
-                    })
-            }
-            .dropDestination(for: String.self) { items, location in
-                currentlyDragging = nil
-                return false
-            } isTargeted: { status in
-                if let currentlyDragging, status, currentlyDragging.id != task.id{
-                    withAnimation(.snappy) {
-                        appendTask(task.status)
-                        //Implement cross List Interaction
-                        
-                        switch task.status {
-                        case .todo:
-                            replaceItem(tasks: &todo, droppingTask: task, status: .todo)
-                        case .working:
-                            replaceItem(tasks: &working, droppingTask: task, status: .working)
-                        case .completed:
-                            replaceItem(tasks: &completed, droppingTask: task, status: .completed)
-                        }
+//            }
+            
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(NSLocalizedString("취소", comment:"")) {
                     }
+                    .tint(.red)
+                }
+                
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(NSLocalizedString("추가", comment:"")) {
+                        
+                    }
+                    .tint(.blue)
                 }
             }
-
-    }
-    
-    //Appending and Removing task from one list to another list
-    func appendTask(_ status: Status) {
-        if let currentlyDragging {
-            switch status {
-            case .todo:
-                //Safe check and inserting into List
-                if !todo.contains(where: {$0.id == currentlyDragging.id}) {
-                    //updating it's status
-                    var updatedTask = currentlyDragging
-                    updatedTask.status = .todo
-                    //Adding to the List
-                    todo.append(updatedTask)
-                    //Removing it from all other List
-                    working.removeAll(where: {$0.id == currentlyDragging.id})
-                    completed.removeAll(where: {$0.id == currentlyDragging.id})
-
-                }
-            case .working:
-                if !working.contains(where: {$0.id == currentlyDragging.id}) {
-                    //updating it's status
-                    var updatedTask = currentlyDragging
-                    updatedTask.status = .working
-                    //Adding to the List
-                    working.append(updatedTask)
-                    //Removing it from all other List
-                    todo.removeAll(where: {$0.id == currentlyDragging.id})
-                    completed.removeAll(where: {$0.id == currentlyDragging.id})
-
-                }
-            case .completed:
-                if !completed.contains(where: {$0.id == currentlyDragging.id}) {
-                    //updating it's status
-                    var updatedTask = currentlyDragging
-                    updatedTask.status = .completed
-                    //Adding to the List
-                    completed.append(updatedTask)
-                    //Removing it from all other List
-                    todo.removeAll(where: {$0.id == currentlyDragging.id})
-                    working.removeAll(where: {$0.id == currentlyDragging.id})
-
-                }
-            }
+            
         }
+        
     }
     
-    //Replacing Items within Lists
-    func replaceItem(tasks: inout [Task],droppingTask : Task, status: Status){
-        if let currentlyDragging {
-            if let sourceIndex = tasks.firstIndex(where: {$0.id == currentlyDragging.id}),
-               let destinationIndex = tasks.firstIndex(where: {$0.id == droppingTask.id}){
-                //Swapping items on the list
-                var sourceItem = tasks.remove(at: sourceIndex)
-                sourceItem.status = status
-                tasks.insert(sourceItem, at: destinationIndex)
-            }
-        }
-    }
-    
-        //Todo View
     @ViewBuilder
-    func TodoView() -> some View{
+    func KeywordView() -> some View{
         NavigationStack{
             ScrollView(.vertical) {
-                TasksView(todo)
+                //                TasksView(day1)
             }
             .frame(maxWidth: .infinity)
             .background(.ultraThinMaterial)
             .contentShape(.rect)
-            .dropDestination(for: String.self) { items, location in
-                //Appending to the last of the current List, if the item is not present on that list
-                withAnimation(.snappy){
-                    appendTask(.todo)
-                }
-                return true
-            } isTargeted: { _ in
-                
-            }
             
         }
+    }
+    
+    //DayView의 height는 TimeView의 height만큼
+    
+    //Todo View
+    @ViewBuilder
+    func Day1View() -> some View{
+        NavigationStack{
+            Text("1일차")
+            Spacer()
+            
+            
+        }
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial)
+        .contentShape(.rect)
     }
     //Working View
     @ViewBuilder
-    func WorkingView() -> some View{
-    NavigationStack{
-        ScrollView(.vertical) {
-            TasksView(working)
+    func Day2View() -> some View{
+        NavigationStack{
+            Text("2일차")
+            Spacer()
+            
+            
         }
-        .navigationBarTitleDisplayMode(.inline)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
-        .dropDestination(for: String.self) { items, location in
-            //Appending to the last of the current List, if the item is not present on that list
-            withAnimation(.snappy){
-                appendTask(.working)
-            }
-            return true
-        } isTargeted: { _ in
-            
-        }
+        
     }
-}
     //Completed View
     @ViewBuilder
-    func CompletedView() -> some View{
-    NavigationStack{
-        ScrollView(.vertical) {
-            TasksView(completed)
+    func Day3View() -> some View{
+        NavigationStack{
+            Text("3일차")
+            Spacer()
         }
-        .navigationBarTitleDisplayMode(.inline)
         .frame(maxWidth: .infinity)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
-        .dropDestination(for: String.self) { items, location in
-            //Appending to the last of the current List, if the item is not present on that list
-            withAnimation(.snappy){
-                appendTask(.completed)
-            }
-            return true
-        } isTargeted: { _ in
-            
-        }
     }
-}
+    //Completed View
+    @ViewBuilder
+    func Day4View() -> some View{
+        NavigationStack{
+            Text("4일차")
+            Spacer()
+        }
+        .frame(maxWidth: .infinity)
+        .background(.ultraThinMaterial)
+        .contentShape(.rect)
+    }
 }
 
 #Preview {

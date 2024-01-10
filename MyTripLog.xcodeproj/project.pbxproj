@@ -7,25 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D52B4D2F84003F99A1 /* Tag.swift */; };
+		374A64D82B4D2F99003F99A1 /* TagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D72B4D2F99003F99A1 /* TagView.swift */; };
 		3767BEF12B47C0BD00AED916 /* MyTripLogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BEF02B47C0BD00AED916 /* MyTripLogApp.swift */; };
 		3767BEF32B47C0BD00AED916 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BEF22B47C0BD00AED916 /* ContentView.swift */; };
 		3767BEF52B47C0BD00AED916 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BEF42B47C0BD00AED916 /* Item.swift */; };
 		3767BEF72B47C0BE00AED916 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3767BEF62B47C0BE00AED916 /* Assets.xcassets */; };
 		3767BEFA2B47C0BE00AED916 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3767BEF92B47C0BE00AED916 /* Preview Assets.xcassets */; };
-		3767BF032B47EC3100AED916 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF022B47EC3100AED916 /* Task.swift */; };
 		3767BF052B47ECB700AED916 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF042B47ECB700AED916 /* Home.swift */; };
 		3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF062B48DCA600AED916 /* SetdetailVIew.swift */; };
 		3767BF092B48EBDB00AED916 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF082B48EBDB00AED916 /* MainView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		374A64D52B4D2F84003F99A1 /* Tag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Tag.swift; sourceTree = "<group>"; };
+		374A64D72B4D2F99003F99A1 /* TagView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagView.swift; sourceTree = "<group>"; };
 		3767BEED2B47C0BD00AED916 /* MyTripLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyTripLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3767BEF02B47C0BD00AED916 /* MyTripLogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTripLogApp.swift; sourceTree = "<group>"; };
 		3767BEF22B47C0BD00AED916 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		3767BEF42B47C0BD00AED916 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		3767BEF62B47C0BE00AED916 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3767BEF92B47C0BE00AED916 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		3767BF022B47EC3100AED916 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		3767BF042B47ECB700AED916 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		3767BF062B48DCA600AED916 /* SetdetailVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetdetailVIew.swift; sourceTree = "<group>"; };
 		3767BF082B48EBDB00AED916 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
@@ -64,6 +66,7 @@
 				3767BF012B47E9ED00AED916 /* View */,
 				3767BF002B47E9E200AED916 /* Model */,
 				3767BEF02B47C0BD00AED916 /* MyTripLogApp.swift */,
+				374A64D52B4D2F84003F99A1 /* Tag.swift */,
 				3767BEF22B47C0BD00AED916 /* ContentView.swift */,
 				3767BEF42B47C0BD00AED916 /* Item.swift */,
 				3767BEF62B47C0BE00AED916 /* Assets.xcassets */,
@@ -83,7 +86,6 @@
 		3767BF002B47E9E200AED916 /* Model */ = {
 			isa = PBXGroup;
 			children = (
-				3767BF022B47EC3100AED916 /* Task.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -94,6 +96,7 @@
 				3767BF042B47ECB700AED916 /* Home.swift */,
 				3767BF062B48DCA600AED916 /* SetdetailVIew.swift */,
 				3767BF082B48EBDB00AED916 /* MainView.swift */,
+				374A64D72B4D2F99003F99A1 /* TagView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -168,13 +171,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3767BF032B47EC3100AED916 /* Task.swift in Sources */,
 				3767BF092B48EBDB00AED916 /* MainView.swift in Sources */,
 				3767BEF32B47C0BD00AED916 /* ContentView.swift in Sources */,
 				3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */,
+				374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */,
 				3767BF052B47ECB700AED916 /* Home.swift in Sources */,
 				3767BEF52B47C0BD00AED916 /* Item.swift in Sources */,
 				3767BEF12B47C0BD00AED916 /* MyTripLogApp.swift in Sources */,
+				374A64D82B4D2F99003F99A1 /* TagView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

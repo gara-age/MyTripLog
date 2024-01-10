@@ -24,12 +24,12 @@ struct SetdetailVIew: View {
                     HStack{
                         VStack{
                             Section("일정 시작 시간"){
-                                Text("오전 10시") //타임피거
+                                Text("오전 10시") //타임피커
                             }
                         }
                         VStack{
                             Section("일정 종료 시간"){
-                                Text("오후 2시") //타임피거
+                                Text("오후 2시") //타임피커
                             }
                         }
                     }

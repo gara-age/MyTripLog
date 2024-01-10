@@ -14,7 +14,7 @@ struct Task : Identifiable, Hashable {
 }
 
 enum Status {
-    case todo
-    case working
-    case completed
+    case day1
+    case day2
+    case day3
 }
