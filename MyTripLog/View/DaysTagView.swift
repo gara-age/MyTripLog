@@ -1,5 +1,5 @@
 //
-//  TagView.swift
+//  DaysTagView.swift
 //  TaggingApp
 //
 //  Created by 최민서 on 1/8/24.
@@ -8,7 +8,7 @@
 import SwiftUI
 
 // Custom View
-struct TagView: View {
+struct DaysTagView: View {
     @Binding var tags : [Tag]
     @State private var draggedTag: Tag?
       @State private var dragOffset: CGSize = .zero
@@ -20,31 +20,20 @@ struct TagView: View {
     
     var body: some View {
 //ScrollView
-        VStack(alignment: .leading,spacing: 15){
+        VStack{
 
             
             ScrollView(.vertical, showsIndicators: false){
                 
-                VStack(alignment: .leading, spacing: 10){
-                    //Displaying Tags
-                    ForEach(getRows(), id: \.self){ rows in
-                     
-                        HStack(spacing: 6){
-                            ForEach(rows){ row in
-                                
-                                //Row View
-                                RowView(tag: row)
-                                
-                                
-                                
-                            }
-                        }
-                    }
-                    
+                VStack{
+
+                    ForEach(tags, id: \.self) { tag in
+                                       // Row View
+                                       RowView(tag: tag)
+                                   }
                 }
-                .frame(width: UIScreen.main.bounds.width - 80, alignment: .leading)
-                .padding(.vertical)
-                .padding(.bottom, 20)
+                .frame(width: 150)
+
                 
             }
             .frame(maxWidth: .infinity)
@@ -57,8 +46,6 @@ struct TagView: View {
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
-        //applying same font size
-        //else size will vary
             .font(.system(size: fontSize))
         //adding capsule
             .padding(.horizontal, 14)
@@ -67,6 +54,7 @@ struct TagView: View {
             
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color("Tag"))
+                .frame(width: 150)
             )
             .foregroundColor(Color("BG"))
             .lineLimit(1)
@@ -140,25 +128,4 @@ struct TagView: View {
 
 #Preview {
     ContentView()
-}
-
-//Global function
-func addTag(text: String, fontSize: CGFloat)->Tag{
-    //getting text size
-    let font = UIFont.systemFont(ofSize: fontSize)
-    
-    let attributes = [NSAttributedString.Key.font: font]
-    
-    let size = (text as NSString).size(withAttributes: attributes)
-
-    return Tag(text: text, size: size.width)
-}
-
-func getSize(tags: [Tag])->Int{
-    var count: Int = 0
-    
-    tags.forEach { tag in
-        count += Int(tag.size)
-    }
-    return count
 }

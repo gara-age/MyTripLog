@@ -13,7 +13,11 @@ struct Home: View {
     @State private var text : String = ""
     @State var tags: [Tag] = []
     @State private var title: String = "오사카 3박4일 여행"
-    
+    @State private var fontSize : CGFloat = 17
+    @State private var day1Tags: [Tag] = []
+    @State private var day2Tags: [Tag] = []
+    @State private var day3Tags: [Tag] = []
+    @State private var day4Tags: [Tag] = []
     
     var body: some View {
         NavigationStack{
@@ -46,13 +50,14 @@ struct Home: View {
                                 .background(Color("Tag"))
                                 .cornerRadius(10)
                         }
+                        .disabled(text.isEmpty)
                     }
                 }
                             
                 ScrollView(.vertical,showsIndicators: false){
                     HStack{
                             VStack {
-                                Spacer(minLength: 20) //DayView의 text.height
+                                Spacer(minLength: fontSize) //DayView의 text.height
                                 ForEach(9..<24) { hour in
                                     VStack {
                                         Text("\(String(format: "%02d", hour)):00")
@@ -69,13 +74,13 @@ struct Home: View {
                                 
                                 HStack{
                                     Day1View()
-                                        .frame(minWidth: 100)
+                                        .frame(minWidth: 150)
                                     Day2View()
-                                        .frame(minWidth: 100)
+                                        .frame(minWidth: 150)
                                     Day3View()
-                                        .frame(minWidth: 100)
+                                        .frame(minWidth: 150)
                                     Day4View()
-                                        .frame(minWidth: 100)
+                                        .frame(minWidth: 150)
                                     
                                     Button{
                                         
@@ -124,12 +129,14 @@ struct Home: View {
         
         NavigationStack{
             Text("1일차")
-            
-            Spacer()
+                .font(.system(size: fontSize))
+            DaysTagView(tags: $day1Tags)
+                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day1Tags))
+                    Spacer()
             
             
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
     }
@@ -138,11 +145,15 @@ struct Home: View {
     func Day2View() -> some View{
         NavigationStack{
             Text("2일차")
+            DaysTagView(tags: $day2Tags)
+                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day2Tags))
+                .font(.system(size: fontSize))
+
             Spacer()
             
             
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
         
@@ -152,9 +163,12 @@ struct Home: View {
     func Day3View() -> some View{
         NavigationStack{
             Text("3일차")
+                .font(.system(size: fontSize))
+            DaysTagView(tags: $day3Tags)
+                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day3Tags))
             Spacer()
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
     }
@@ -163,11 +177,42 @@ struct Home: View {
     func Day4View() -> some View{
         NavigationStack{
             Text("4일차")
+                .font(.system(size: fontSize))
+            DaysTagView(tags: $day4Tags)
+                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day4Tags))
+
             Spacer()
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
+    }
+}
+struct DragDropDelegate: DropDelegate {
+    @Binding var tags: [Tag]
+    @Binding var targetDay: [Tag]
+
+    func performDrop(info: DropInfo) -> Bool {
+        // Getting the dropped item
+        guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
+
+        // Loading text from the dropped item
+        itemProvider.loadObject(ofClass: String.self) { (text, error) in
+            if let text = text as? String {
+                // Creating a new tag from the dropped text
+                let droppedTag = addTag(text: text, fontSize: 16)
+                
+                // Appending the new tag to the target day
+                targetDay.append(droppedTag)
+            }
+        }
+
+        return true
+    }
+
+    func validateDrop(info: DropInfo) -> Bool {
+        // Allowing drops only if they contain text
+        return info.hasItemsConforming(to: ["public.text"])
     }
 }
 

@@ -14,7 +14,10 @@ struct Task : Identifiable, Hashable {
 }
 
 enum Status {
+    case allDay
     case day1
     case day2
     case day3
+    case day4
+
 }
