@@ -10,7 +10,8 @@ import SwiftUI
 // Custom View
 struct TagView: View {
     @Binding var tags : [Tag]
-    
+    @State private var draggedTag: Tag?
+      @State private var dragOffset: CGSize = .zero
     var title: String = "Add Some Tags"
     var fontSize: CGFloat = 16
     
@@ -33,6 +34,8 @@ struct TagView: View {
                                 
                                 //Row View
                                 RowView(tag: row)
+                                
+                                
                             }
                         }
                     }
@@ -68,12 +71,12 @@ struct TagView: View {
             .lineLimit(1)
         // Delete
             .contentShape(RoundedRectangle(cornerRadius: 5))
-            .contextMenu{
-                Button("Delete"){
-                    //deleting
-                    tags.remove(at: getIndex(tag: tag))
-                }
-            }
+//            .contextMenu{
+//                Button("Delete"){
+//                    //deleting
+//                    tags.remove(at: getIndex(tag: tag))
+//                }
+//            }
             .matchedGeometryEffect(id: tag.id, in: animation)
     }
     

@@ -14,16 +14,17 @@ struct Home: View {
     @State var tags: [Tag] = []
     @State private var title: String = "오사카 3박4일 여행"
     
+    
     var body: some View {
         NavigationStack{
-//            VStack{
-                
                 VStack{
                     ScrollView(.vertical){
                         TagView(tags: $tags)
+                        
                     }
                     .background(.green)
                     .clipped()
+                    
                     HStack{
                         TextField("apple", text: $text)
                             .font(.title3)
@@ -33,11 +34,9 @@ struct Home: View {
                                 RoundedRectangle(cornerRadius: 8)
                                     .strokeBorder(Color("Tag").opacity(0.2), lineWidth: 1))
                         Button{
-                            
                             // Adding Tag
                             tags.append(addTag(text: text, fontSize: 16))
                             text = ""
-                            
                         } label: {
                             Text("Add")
                                 .fontWeight(.semibold)
@@ -46,15 +45,12 @@ struct Home: View {
                                 .padding(.horizontal, 45)
                                 .background(Color("Tag"))
                                 .cornerRadius(10)
-                            
                         }
                     }
                 }
-                
-                
-                ScrollView(.vertical){
+                            
+                ScrollView(.vertical,showsIndicators: false){
                     HStack{
-                        ScrollView {
                             VStack {
                                 Spacer(minLength: 20) //DayView의 text.height
                                 ForEach(9..<24) { hour in
@@ -68,9 +64,8 @@ struct Home: View {
                                 }
                             }
                             .frame(maxWidth: 50)
-                        }
+                        
                         ScrollView(.horizontal,showsIndicators: false){
-                            HStack{
                                 
                                 HStack{
                                     Day1View()
@@ -94,11 +89,10 @@ struct Home: View {
                                     
                                 }
                                 .background(.ultraThinMaterial)
-                            }
+                            
                         }
                     }
                 }
-//            }
             
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -121,26 +115,16 @@ struct Home: View {
         
     }
     
-    @ViewBuilder
-    func KeywordView() -> some View{
-        NavigationStack{
-            ScrollView(.vertical) {
-                //                TasksView(day1)
-            }
-            .frame(maxWidth: .infinity)
-            .background(.ultraThinMaterial)
-            .contentShape(.rect)
-            
-        }
-    }
     
     //DayView의 height는 TimeView의 height만큼
     
     //Todo View
     @ViewBuilder
     func Day1View() -> some View{
+        
         NavigationStack{
             Text("1일차")
+            
             Spacer()
             
             
