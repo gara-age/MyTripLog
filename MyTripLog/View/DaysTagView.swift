@@ -25,7 +25,7 @@ struct DaysTagView: View {
             
             ScrollView(.vertical, showsIndicators: false){
                 
-                VStack{
+                VStack(spacing: 1){
 
                     ForEach(tags, id: \.self) { tag in
                                        // Row View
@@ -80,50 +80,7 @@ struct DaysTagView: View {
         return index
     }
     
-    //Basic Logic
-    //Splitting the array when it exceeds the scrren size
-    func getRows()->[[Tag]]{
-        
-        var rows: [[Tag]] = []
-        var currentRow: [Tag] = []
-        
-        var totalWidth: CGFloat = 0
-    //For safety extra 10
-        let screenWidth: CGFloat = UIScreen.main.bounds.width - 90
-        
-        tags.forEach { tag in
-            
-            // updating total width
-            
-            //adding the capsule size into total width with spacing
-            //14 + 14 + 6 + 6
-            //extra 6 for safe
-            totalWidth += (tag.size + 30) // Capsule일때는 40, roundedRectangle일떄는 30
-            
-            //checking if totalwidth is greater than size
-            if totalWidth > screenWidth{
-                //adding row in rows
-                //clearing the data
-                //checking for long string
-                totalWidth = (!currentRow.isEmpty || rows.isEmpty ? (tag.size + 40) : 0 )
-                
-                rows.append(currentRow)
-                currentRow.removeAll()
-                currentRow.append(tag)
-            } else {
-                currentRow.append(tag)
-            }
-        }
-        
-        //safe check
-        //if having any value storing in rows
-        if !currentRow.isEmpty{
-            rows.append(currentRow)
-            currentRow.removeAll()
-        }
-        
-        return rows
-    }
+
 }
 
 #Preview {

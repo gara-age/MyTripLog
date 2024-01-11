@@ -26,12 +26,12 @@ struct Home: View {
                         TagView(tags: $tags)
                         
                     }
-                    .background(.green)
+                    .background(.ultraThinMaterial)
                     .clipped()
                     
                     HStack{
                         TextField("apple", text: $text)
-                            .font(.title3)
+//                            .font(.title3)
                             .padding(.vertical, 10)
                             .padding(.horizontal)
                             .background(
@@ -52,8 +52,10 @@ struct Home: View {
                         }
                         .disabled(text.isEmpty)
                     }
+//                    .background(.ultraThinMaterial)
                 }
-                            
+                .background(.ultraThinMaterial)
+
                 ScrollView(.vertical,showsIndicators: false){
                     HStack{
                             VStack {
@@ -96,7 +98,9 @@ struct Home: View {
                                 .background(.ultraThinMaterial)
                             
                         }
+                        
                     }
+                    
                 }
             
             .navigationTitle(title)
@@ -126,29 +130,30 @@ struct Home: View {
     //Todo View
     @ViewBuilder
     func Day1View() -> some View{
-        
         NavigationStack{
             Text("1일차")
                 .font(.system(size: fontSize))
             DaysTagView(tags: $day1Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day1Tags))
-                    Spacer()
+                .disabled(true)
+            Spacer()
             
             
         }
         .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
+        
     }
     //Working View
     @ViewBuilder
     func Day2View() -> some View{
         NavigationStack{
             Text("2일차")
+                .font(.system(size: fontSize))
             DaysTagView(tags: $day2Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day2Tags))
-                .font(.system(size: fontSize))
-
+                .disabled(true)
             Spacer()
             
             
@@ -166,6 +171,7 @@ struct Home: View {
                 .font(.system(size: fontSize))
             DaysTagView(tags: $day3Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day3Tags))
+                .disabled(true)
             Spacer()
         }
         .frame(maxWidth: 150)
@@ -180,7 +186,7 @@ struct Home: View {
                 .font(.system(size: fontSize))
             DaysTagView(tags: $day4Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day4Tags))
-
+                .disabled(true)
             Spacer()
         }
         .frame(maxWidth: 150)

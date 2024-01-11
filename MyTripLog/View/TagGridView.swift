@@ -57,24 +57,18 @@ struct TagView: View {
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
-        //applying same font size
-        //else size will vary
             .font(.system(size: fontSize))
-        //adding capsule
             .padding(.horizontal, 14)
             .padding(.vertical,8)
             .background(
-            
             RoundedRectangle(cornerRadius: 5)
                 .fill(Color("Tag"))
             )
             .foregroundColor(Color("BG"))
             .lineLimit(1)
-        // Delete
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
                 Button("Delete"){
-                    //deleting
                     tags.remove(at: getIndex(tag: tag))
                 }
             }
