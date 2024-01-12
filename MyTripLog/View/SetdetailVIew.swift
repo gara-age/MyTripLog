@@ -12,6 +12,7 @@ struct SetdetailVIew: View {
 
     @State private var nameText : String = ""
     @State private var selectedColor: Color = .purple
+    @State private var add: Bool = false
 
     var body: some View {
         NavigationStack{
@@ -48,7 +49,7 @@ struct SetdetailVIew: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(NSLocalizedString("추가", comment:"")) {
-
+                        add.toggle()
                     }
                     .tint(.blue)
                 }
@@ -57,7 +58,9 @@ struct SetdetailVIew: View {
         }
         .presentationDetents([.height(340)])
         .interactiveDismissDisabled()
-        
+        .sheet(isPresented: $add, content: {
+            Home()
+        })
     }
 }
 
