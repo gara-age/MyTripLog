@@ -135,7 +135,6 @@ struct Home: View {
                 .font(.system(size: fontSize))
             DaysTagView(tags: $day1Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day1Tags))
-                .disabled(true)
             Spacer()
             
             
@@ -153,7 +152,6 @@ struct Home: View {
                 .font(.system(size: fontSize))
             DaysTagView(tags: $day2Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day2Tags))
-                .disabled(true)
             Spacer()
             
             
@@ -171,7 +169,6 @@ struct Home: View {
                 .font(.system(size: fontSize))
             DaysTagView(tags: $day3Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day3Tags))
-                .disabled(true)
             Spacer()
         }
         .frame(maxWidth: 150)
@@ -186,7 +183,6 @@ struct Home: View {
                 .font(.system(size: fontSize))
             DaysTagView(tags: $day4Tags)
                 .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day4Tags))
-                .disabled(true)
             Spacer()
         }
         .frame(maxWidth: 150)

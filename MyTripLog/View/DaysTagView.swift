@@ -19,66 +19,56 @@ struct DaysTagView: View {
     @Namespace var animation
     
     var body: some View {
-//ScrollView
-        VStack{
-
-            
-            ScrollView(.vertical, showsIndicators: false){
-                
-                VStack(spacing: 1){
-
-                    ForEach(tags, id: \.self) { tag in
-                                       // Row View
-                                       RowView(tag: tag)
-                                   }
+            VStack {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 1) {
+                        ForEach(tags, id: \.self) { tag in
+                            // Row View
+                            RowView(tag: tag)
+                                .onDrag {
+                                    NSItemProvider(object: tag.text as NSString)
+                                }
+                                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $tags))
+                        }
+                    }
+                    .frame(width: 150)
                 }
-                .frame(width: 150)
+                .scrollDisabled(true)
 
-                
+                .frame(maxWidth: .infinity)
             }
-            .frame(maxWidth: .infinity)
- 
+            .animation(.easeInOut, value: tags)
         }
-
-        .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
-    }
-    
-    @ViewBuilder
-    func RowView(tag: Tag)->some View{
-        Text(tag.text)
-            .font(.system(size: fontSize))
-        //adding capsule
-            .padding(.horizontal, 14)
-            .padding(.vertical,8)
-            .background(
-            
-            RoundedRectangle(cornerRadius: 5)
-                .fill(Color("Tag"))
-                .frame(width: 150)
-            )
-            .foregroundColor(Color("BG"))
-            .lineLimit(1)
-        // Delete
-            .contentShape(RoundedRectangle(cornerRadius: 5))
-            .contextMenu{
-                Button("Delete"){
-                    //deleting
-                    tags.remove(at: getIndex(tag: tag))
-                }
-            }
-            .onDrag {
-                           NSItemProvider(object: tag.text as NSString)
-                       }
-            .matchedGeometryEffect(id: tag.id, in: animation)
-    }
-    
-    func getIndex(tag: Tag) ->Int{
-        let index = tags.firstIndex{ currentTag in
-            return tag.id == currentTag.id
-        } ?? 0
         
-        return index
-    }
+        @ViewBuilder
+        func RowView(tag: Tag) -> some View {
+            Text(tag.text)
+                .font(.system(size: fontSize))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    RoundedRectangle(cornerRadius: 5)
+                        .fill(Color("Tag"))
+                        .frame(width: 150)
+                )
+                .foregroundColor(Color("BG"))
+                .lineLimit(1)
+                .contentShape(RoundedRectangle(cornerRadius: 5))
+                .contextMenu {
+                    Button("Delete") {
+                        tags.remove(at: getIndex(tag: tag))
+                    }
+                }
+                .matchedGeometryEffect(id: tag.id, in: animation)
+        }
+        
+        func getIndex(tag: Tag) -> Int {
+            let index = tags.firstIndex { currentTag in
+                return tag.id == currentTag.id
+            } ?? 0
+            
+            return index
+        }
     
 
 }
