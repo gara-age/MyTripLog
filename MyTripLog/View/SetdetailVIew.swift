@@ -13,6 +13,8 @@ struct SetdetailVIew: View {
     @State private var nameText : String = ""
     @State private var selectedColor: Color = .purple
     @State private var add: Bool = false
+    @State var currentTime = Date()
+    var closedRange = Calendar.current.date(byAdding: .year, value: -1, to: Date())!
 
     var body: some View {
         NavigationStack{
@@ -20,19 +22,29 @@ struct SetdetailVIew: View {
                 Section("새로운 일정명"){
                     TextField("일정의 이름을 입력해주세요." , text: $nameText) // 사용자가 일정을 드래그앤 드랍으로 놓은경우 선택한 일정의 이름이 나와야함
                 }
-                
                 Section{
                     HStack{
                         VStack{
-                            Section("일정 시작 시간"){
-                                Text("오전 10시") //타임피커
+                            Section(header:(Text("일정 시작날짜"))) {
+                                DatePicker("Pick a past date:", selection: $currentTime, in: closedRange...Date(), displayedComponents: .date) // Only pick a past date
+                            }
+                            Section(header:(Text("일정 종료날짜"))) {
+                                DatePicker("Pick a past date:", selection: $currentTime, in: closedRange...Date(), displayedComponents: .date) // Only pick a past date
                             }
                         }
+                    }
+                }
+                Section{
+                    HStack{
                         VStack{
-                            Section("일정 종료 시간"){
-                                Text("오후 2시") //타임피커
+                            Section(header:(Text("하루일정의 시작시간"))) {
+                                DatePicker("Pick a time:", selection: $currentTime, displayedComponents: .hourAndMinute)
+                            }
+                            Section(header:(Text("하루일정의 종료시간"))) {
+                                DatePicker("Pick a time:", selection: $currentTime, displayedComponents: .hourAndMinute)
                             }
                         }
+
                     }
                 }
                 Section{

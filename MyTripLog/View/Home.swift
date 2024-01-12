@@ -32,7 +32,6 @@ struct Home: View {
                     
                     HStack{
                         TextField("apple", text: $text)
-//                            .font(.title3)
                             .padding(.vertical, 10)
                             .padding(.horizontal)
                             .background(
@@ -60,13 +59,13 @@ struct Home: View {
                 ScrollView(.vertical,showsIndicators: false){
                     HStack{
                             VStack {
-                                Spacer(minLength: fontSize) //DayView의 text.height
+                                Spacer(minLength: fontSize + 21) //DayView의 text.height
                                 ForEach(9..<24) { hour in
-                                    VStack {
+                                    VStack(spacing:10) {
                                         Text("\(String(format: "%02d", hour)):00")
                                         
-                                        Rectangle()
-                                            .frame(height: 0.3)
+                                        Divider()
+                                            .frame(height: 0.1)
                                             .foregroundColor(.gray)
                                     }
                                 }

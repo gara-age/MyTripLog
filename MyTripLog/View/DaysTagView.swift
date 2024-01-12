@@ -32,9 +32,7 @@ struct DaysTagView: View {
                             RowView(tag: tag, index: index)
                                 .frame(width: 150, alignment: .center)
 
-                            //Drag
                                 .draggable(tag.text) {
-                                    //Custom preview view
                                     RoundedRectangle(cornerRadius: 10)
                                         .fill(.ultraThinMaterial) //꺼도될듯
                                         .frame(width: 1, height: 1)
@@ -42,13 +40,11 @@ struct DaysTagView: View {
                                             draggedTag = tag
                                         }
                                 }
-                            //Drop
                                 .dropDestination(for: String.self) { items, location in
                                     draggedTag = nil
                                     return false
                                 } isTargeted: { status in
                                     if let draggedTag, status, draggedTag != tag {
-                                        //Moving Color from source to destination
                                        if let sourceIndex = tags.firstIndex(of: draggedTag),
                                           let destinationIndex = tags.firstIndex(of: tag) {
                                            withAnimation(.bouncy){
