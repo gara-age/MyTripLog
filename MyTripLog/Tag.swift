@@ -12,5 +12,8 @@ struct Tag: Identifiable, Hashable {
     var id = UUID().uuidString
     var text: String
     var size: CGFloat = 0
-    
+
+    var transferableItem: NSItemProvider {
+        NSItemProvider(object: text as NSString)
+    }
 }

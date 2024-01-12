@@ -27,6 +27,7 @@ struct Home: View {
                         
                     }
                     .background(.ultraThinMaterial)
+                    .frame(maxWidth: .infinity)
                     .clipped()
                     
                     HStack{
