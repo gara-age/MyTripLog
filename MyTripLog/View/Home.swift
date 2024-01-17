@@ -18,13 +18,14 @@ struct Home: View {
     @State private var day2Tags: [Tag] = []
     @State private var day3Tags: [Tag] = []
     @State private var day4Tags: [Tag] = []
+    @State  var ifDaysTagView : Bool = false
     
     var body: some View {
         NavigationStack{
                 VStack{
                     ScrollView(.vertical){
                         TagView(tags: $tags)
-                        
+
                     }
                     .background(.ultraThinMaterial)
                     .frame(maxWidth: .infinity)
@@ -76,12 +77,20 @@ struct Home: View {
                                 
                                 HStack{
                                     Day1View()
+//                                        .onDrop(of: ["public.text"], delegate: TagViewDragDropDelegate(tags: $tags, targetDay: $day1Tags))
+
                                         .frame(minWidth: 150)
                                     Day2View()
+//                                        .onDrop(of: ["public.text"], delegate: TagViewDragDropDelegate(tags: $tags, targetDay: $day2Tags))
+
                                         .frame(minWidth: 150)
                                     Day3View()
+//                                        .onDrop(of: ["public.text"], delegate: TagViewDragDropDelegate(tags: $tags, targetDay: $day3Tags))
+
                                         .frame(minWidth: 150)
                                     Day4View()
+//                                        .onDrop(of: ["public.text"], delegate: TagViewDragDropDelegate(tags: $tags, targetDay: $day4Tags))
+
                                         .frame(minWidth: 150)
                                     
                                     Button{
@@ -95,6 +104,8 @@ struct Home: View {
                                     }
                                     
                                 }
+                                .onTapGesture {
+                                                                }
                                 .background(.ultraThinMaterial)
                             
                         }
@@ -133,9 +144,12 @@ struct Home: View {
         NavigationStack{
             Text("1일차")
                 .font(.system(size: fontSize))
-            DaysTagView(tags: $day1Tags)
-                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day1Tags))
-            Spacer()
+            GeometryReader { geometry in
+                
+                DaysTagView(tags: $day1Tags)
+
+                    .frame(height: geometry.size.height)
+            }
             
             
         }
@@ -150,9 +164,12 @@ struct Home: View {
         NavigationStack{
             Text("2일차")
                 .font(.system(size: fontSize))
-            DaysTagView(tags: $day2Tags)
-                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day2Tags))
-            Spacer()
+            GeometryReader { geometry in
+                
+                DaysTagView(tags: $day2Tags)
+
+                    .frame(height: geometry.size.height)
+            }
             
             
         }
@@ -167,9 +184,12 @@ struct Home: View {
         NavigationStack{
             Text("3일차")
                 .font(.system(size: fontSize))
-            DaysTagView(tags: $day3Tags)
-                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day3Tags))
-            Spacer()
+            GeometryReader { geometry in
+                
+                DaysTagView(tags: $day3Tags)
+
+                    .frame(height: geometry.size.height)
+            }
         }
         .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
@@ -181,42 +201,42 @@ struct Home: View {
         NavigationStack{
             Text("4일차")
                 .font(.system(size: fontSize))
-            DaysTagView(tags: $day4Tags)
-                .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, targetDay: $day4Tags))
-            Spacer()
+            GeometryReader { geometry in
+                
+                DaysTagView(tags: $day4Tags)
+
+                    .frame(height: geometry.size.height)
+            }
         }
         .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
     }
 }
-struct DragDropDelegate: DropDelegate {
-    @Binding var tags: [Tag]
-    @Binding var targetDay: [Tag]
+//struct TagViewDragDropDelegate: DropDelegate {
+//    @Binding var tags: [Tag]
+//    @Binding var targetDay: [Tag]
+//
+//    func performDrop(info: DropInfo) -> Bool {
+//        guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
+//
+//        itemProvider.loadObject(ofClass: String.self) { (text, error) in
+//            if let text = text as? String {
+//                let droppedTag = addTag(text: text, fontSize: 16)
+//                targetDay.append(droppedTag)
+//                print("Drop By TagView")
+//            }
+//        }
+//
+//        return true
+//    }
+//
+//    func validateDrop(info: DropInfo) -> Bool {
+//        return info.hasItemsConforming(to: ["public.text"])
+//    }
+//}
 
-    func performDrop(info: DropInfo) -> Bool {
-        // Getting the dropped item
-        guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
 
-        // Loading text from the dropped item
-        itemProvider.loadObject(ofClass: String.self) { (text, error) in
-            if let text = text as? String {
-                // Creating a new tag from the dropped text
-                let droppedTag = addTag(text: text, fontSize: 16)
-                
-                // Appending the new tag to the target day
-                targetDay.append(droppedTag)
-            }
-        }
-
-        return true
-    }
-
-    func validateDrop(info: DropInfo) -> Bool {
-        // Allowing drops only if they contain text
-        return info.hasItemsConforming(to: ["public.text"])
-    }
-}
 
 #Preview {
     ContentView()

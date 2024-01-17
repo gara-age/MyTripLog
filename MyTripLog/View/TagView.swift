@@ -37,6 +37,7 @@ struct TagView: View {
                                 
                                 
                                 
+                                
                             }
                         }
                     }
@@ -74,6 +75,7 @@ struct TagView: View {
             }
             .onDrag {
                            NSItemProvider(object: tag.text as NSString)
+                
                        }
             .matchedGeometryEffect(id: tag.id, in: animation)
     }
@@ -130,6 +132,7 @@ struct TagView: View {
         
         return rows
     }
+    
 }
 
 #Preview {

@@ -18,60 +18,66 @@ struct DaysTagView: View {
     @Namespace var animation
 
     var body: some View {
-        VStack {
-            ScrollView(.vertical, showsIndicators: false) {
-                
-                let columns = Array(repeating: GridItem(spacing:1), count: 1)
-
-                LazyVGrid(columns: columns, spacing: 1, content: {
+        GeometryReader { geometry in
+            VStack {
+                ScrollView(.vertical, showsIndicators: false) {
                     
-                    ForEach(Array(tags.enumerated()), id: \.element.id) { index, tag in
-                        GeometryReader {
-                            let size = $0.size
-                            
-                            RowView(tag: tag, index: index)
-                                .frame(width: 150, alignment: .center)
-
-                                .draggable(tag.text) {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(.ultraThinMaterial) //꺼도될듯
-                                        .frame(width: 1, height: 1)
-                                        .onAppear {
-                                            draggedTag = tag
-                                        }
-                                }
-                                .dropDestination(for: String.self) { items, location in
-                                    draggedTag = nil
-                                    return false
-                                } isTargeted: { status in
-                                    if let draggedTag, status, draggedTag != tag {
-                                       if let sourceIndex = tags.firstIndex(of: draggedTag),
-                                          let destinationIndex = tags.firstIndex(of: tag) {
-                                           withAnimation(.bouncy){
-                                               let sourceItem = tags.remove(at: sourceIndex)
-                                               tags.insert(sourceItem, at: destinationIndex)
-                                           }
-                                       }
+                    let columns = Array(repeating: GridItem(spacing:1), count: 1)
+                    
+                    LazyVGrid(columns: columns, spacing: 1, content: {
+                        
+                        ForEach(Array(tags.enumerated()), id: \.element.id) { index, tag in
+                            GeometryReader {
+                                let size = $0.size
+                                
+                                RowView(tag: tag, index: index)
+                                    .frame(width: 150, alignment: .center)
+//
+                                    .draggable(tag.text) {
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(.ultraThinMaterial) //꺼도될듯
+                                            .frame(width: 1, height: 1)
+                                            .onAppear {
+                                                draggedTag = tag
+                                            }
                                     }
-                                }
-
-                        }
-                        .frame(height: fontSize + 20)
+                                    .dropDestination(for: String.self) { items, location in
+                                        draggedTag = nil
+                                        return false
+                                    } isTargeted: { status in
+                                        if let draggedTag, status, draggedTag != tag {
+                                            if let sourceIndex = tags.firstIndex(of: draggedTag),
+                                               let destinationIndex = tags.firstIndex(of: tag) {
+                                                withAnimation(.bouncy){
+                                                    let sourceItem = tags.remove(at: sourceIndex)
+                                                    tags.insert(sourceItem, at: destinationIndex)
+                                                }
+                                            }
+                                        }
+                                    }
+//                                    .onDrop(of: ["public.text"], delegate: DaysTagViewDragDropDelegate(tags: $tags))
+                            }
+                            .frame(height: fontSize + 20)
 
                             .onDrag {
                                 NSItemProvider(object: tag.text as NSString)
                             }
-                            .onDrop(of: ["public.text"], delegate: DragDropDelegate(tags: $tags, draggedTag: tags[index], draggedIndex: index))
-                    }
-                })
-                .frame(width: 150, alignment: .center)
-            }
-            .scrollDisabled(true)
-            .frame(maxWidth: .infinity)
-        }
-        .animation(.easeInOut, value: tags)
-    }
+                        }
 
+                    })
+                    .frame(width: 150, alignment: .center)
+
+                    
+                }
+                .onDrop(of: ["public.text"], delegate: DaysTagViewDragDropDelegate(tags: $tags))
+
+                .scrollDisabled(true)
+                .frame(maxWidth: .infinity)
+                
+            }
+            .animation(.easeInOut, value: tags)
+        }
+    }
     @ViewBuilder
     func RowView(tag: Tag, index: Int) -> some View {
         Text(tag.text)
@@ -92,24 +98,24 @@ struct DaysTagView: View {
                 }
             }
             .matchedGeometryEffect(id: tag.id, in: animation)
+        
     }
-
-    struct DragDropDelegate: DropDelegate {
+    struct DaysTagViewDragDropDelegate: DropDelegate {
         @Binding var tags: [Tag]
-        var draggedTag: Tag
-        var draggedIndex: Int
 
         func performDrop(info: DropInfo) -> Bool {
             guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
 
             itemProvider.loadObject(ofClass: String.self) { (text, error) in
                 if let text = text as? String {
-                    let droppedTag = Tag(text: text, size: 16)
-
-                    // Insert the dragged tag at the new location
-                    DispatchQueue.main.async {
-                        tags.insert(droppedTag, at: draggedIndex)
-                        
+                    // Check if the tag already exists in the targetDay without considering isFromTagView
+                    if !tags.contains(where: { $0.text == text }) {
+                        // Add the tag to the targetDay
+                        let droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
+                        tags.append(droppedTag)
+                        print("Drop By DaysTagView")
+                    } else {
+                        print("Stop Dropping By DaysTagView")
                     }
                 }
             }
@@ -119,6 +125,12 @@ struct DaysTagView: View {
 
         func validateDrop(info: DropInfo) -> Bool {
             return info.hasItemsConforming(to: ["public.text"])
+        }
+
+        // Helper function to create a copy of the tag with isFromTagView set to false
+        private func addTag(text: String, fontSize: CGFloat, isFromTagView: Bool) -> Tag {
+            var newTag = MyTripLog.addTag(text: text, fontSize: fontSize)
+            return newTag
         }
     }
 }
