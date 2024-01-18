@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D52B4D2F84003F99A1 /* Tag.swift */; };
 		374A64D82B4D2F99003F99A1 /* TagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D72B4D2F99003F99A1 /* TagView.swift */; };
-		374A64DA2B4EA194003F99A1 /* DayView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D92B4EA194003F99A1 /* DayView.swift */; };
 		374A64E02B4EC2B9003F99A1 /* TaskHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64DF2B4EC2B9003F99A1 /* TaskHomeView.swift */; };
 		374A64E22B4EC2FD003F99A1 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64E12B4EC2FD003F99A1 /* Task.swift */; };
 		374A64E42B4EDB33003F99A1 /* DaysTagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64E32B4EDB33003F99A1 /* DaysTagView.swift */; };
@@ -26,7 +25,6 @@
 /* Begin PBXFileReference section */
 		374A64D52B4D2F84003F99A1 /* Tag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Tag.swift; path = ../Tag.swift; sourceTree = "<group>"; };
 		374A64D72B4D2F99003F99A1 /* TagView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagView.swift; sourceTree = "<group>"; };
-		374A64D92B4EA194003F99A1 /* DayView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DayView.swift; sourceTree = "<group>"; };
 		374A64DF2B4EC2B9003F99A1 /* TaskHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskHomeView.swift; sourceTree = "<group>"; };
 		374A64E12B4EC2FD003F99A1 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		374A64E32B4EDB33003F99A1 /* DaysTagView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysTagView.swift; sourceTree = "<group>"; };
@@ -106,7 +104,6 @@
 				3767BF062B48DCA600AED916 /* SetdetailVIew.swift */,
 				3767BF082B48EBDB00AED916 /* MainView.swift */,
 				374A64D72B4D2F99003F99A1 /* TagView.swift */,
-				374A64D92B4EA194003F99A1 /* DayView.swift */,
 				374A64DF2B4EC2B9003F99A1 /* TaskHomeView.swift */,
 				374A64E32B4EDB33003F99A1 /* DaysTagView.swift */,
 			);
@@ -189,7 +186,6 @@
 				3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */,
 				374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */,
 				374A64E22B4EC2FD003F99A1 /* Task.swift in Sources */,
-				374A64DA2B4EA194003F99A1 /* DayView.swift in Sources */,
 				3767BF052B47ECB700AED916 /* Home.swift in Sources */,
 				374A64E02B4EC2B9003F99A1 /* TaskHomeView.swift in Sources */,
 				3767BEF52B47C0BD00AED916 /* Item.swift in Sources */,
