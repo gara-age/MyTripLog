@@ -19,12 +19,13 @@ struct Home: View {
     @State private var day3Tags: [Tag] = []
     @State private var day4Tags: [Tag] = []
     @State  var ifDaysTagView : Bool = false
+    @State private var tagView : Bool = false
     
     var body: some View {
         NavigationStack{
                 VStack{
                     ScrollView(.vertical){
-                        TagView(tags: $tags)
+                        TagView(tags: $tags, tagView: $tagView)
 
                     }
                     .background(.ultraThinMaterial)
@@ -146,7 +147,7 @@ struct Home: View {
                 .font(.system(size: fontSize))
             GeometryReader { geometry in
                 
-                DaysTagView(tags: $day1Tags)
+                DaysTagView(tags: $day1Tags, tagView: $tagView)
 
                     .frame(height: geometry.size.height)
             }
@@ -166,7 +167,7 @@ struct Home: View {
                 .font(.system(size: fontSize))
             GeometryReader { geometry in
                 
-                DaysTagView(tags: $day2Tags)
+                DaysTagView(tags: $day2Tags, tagView: $tagView)
 
                     .frame(height: geometry.size.height)
             }
@@ -186,7 +187,7 @@ struct Home: View {
                 .font(.system(size: fontSize))
             GeometryReader { geometry in
                 
-                DaysTagView(tags: $day3Tags)
+                DaysTagView(tags: $day3Tags, tagView: $tagView)
 
                     .frame(height: geometry.size.height)
             }
@@ -203,7 +204,7 @@ struct Home: View {
                 .font(.system(size: fontSize))
             GeometryReader { geometry in
                 
-                DaysTagView(tags: $day4Tags)
+                DaysTagView(tags: $day4Tags, tagView: $tagView)
 
                     .frame(height: geometry.size.height)
             }

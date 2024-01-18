@@ -14,6 +14,7 @@ struct DaysTagView: View {
     @State private var dragOffset: CGSize = .zero
     var title: String = "Add Some Tags"
     var fontSize: CGFloat = 16
+    @Binding var tagView : Bool
 
     @Namespace var animation
 
@@ -32,13 +33,15 @@ struct DaysTagView: View {
                                 
                                 RowView(tag: tag, index: index)
                                     .frame(width: 150, alignment: .center)
-//
                                     .draggable(tag.text) {
                                         RoundedRectangle(cornerRadius: 10)
                                             .fill(.ultraThinMaterial) //꺼도될듯
                                             .frame(width: 1, height: 1)
                                             .onAppear {
                                                 draggedTag = tag
+                                                tagView = false
+                                                print(tagView)
+
                                             }
                                     }
                                     .dropDestination(for: String.self) { items, location in
@@ -55,24 +58,27 @@ struct DaysTagView: View {
                                             }
                                         }
                                     }
-//                                    .onDrop(of: ["public.text"], delegate: DaysTagViewDragDropDelegate(tags: $tags))
                             }
                             .frame(height: fontSize + 20)
 
                             .onDrag {
-                                NSItemProvider(object: tag.text as NSString)
+                                 NSItemProvider(object: tag.text as NSString)
                             }
                         }
 
                     })
                     .frame(width: 150, alignment: .center)
 
+
                     
                 }
-                .onDrop(of: ["public.text"], delegate: DaysTagViewDragDropDelegate(tags: $tags))
+        
 
                 .scrollDisabled(true)
                 .frame(maxWidth: .infinity)
+                .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $tags) : DaysTagViewDragDropDelegate(tags: $tags))
+
+
                 
             }
             .animation(.easeInOut, value: tags)
@@ -97,6 +103,7 @@ struct DaysTagView: View {
                     tags.remove(at: index)
                 }
             }
+   
             .matchedGeometryEffect(id: tag.id, in: animation)
         
     }
@@ -107,16 +114,35 @@ struct DaysTagView: View {
             guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
 
             itemProvider.loadObject(ofClass: String.self) { (text, error) in
+
+            }
+
+            return false
+        }
+
+        func validateDrop(info: DropInfo) -> Bool {
+            return info.hasItemsConforming(to: ["public.text"])
+        }
+
+        // Helper function to create a copy of the tag with isFromTagView set to false
+        private func addTag(text: String, fontSize: CGFloat, isFromTagView: Bool) -> Tag {
+            var newTag = MyTripLog.addTag(text: text, fontSize: fontSize)
+            return newTag
+        }
+    }
+    
+    struct TagViewDragDropDelegate: DropDelegate {
+        @Binding var tags: [Tag]
+
+        func performDrop(info: DropInfo) -> Bool {
+            guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
+
+            itemProvider.loadObject(ofClass: String.self) { (text, error) in
                 if let text = text as? String {
                     // Check if the tag already exists in the targetDay without considering isFromTagView
-                    if !tags.contains(where: { $0.text == text }) {
-                        // Add the tag to the targetDay
-                        let droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
-                        tags.append(droppedTag)
-                        print("Drop By DaysTagView")
-                    } else {
-                        print("Stop Dropping By DaysTagView")
-                    }
+                    let droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
+                    tags.append(droppedTag)
+                    print("Tagview true")
                 }
             }
 
@@ -133,6 +159,7 @@ struct DaysTagView: View {
             return newTag
         }
     }
+
 }
 
 

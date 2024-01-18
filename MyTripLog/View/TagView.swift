@@ -17,6 +17,7 @@ struct TagView: View {
     
     //Adding Geometry Effect to Tag
     @Namespace var animation
+    @Binding var tagView : Bool
     
     var body: some View {
 //ScrollView
@@ -74,8 +75,9 @@ struct TagView: View {
                 }
             }
             .onDrag {
-                           NSItemProvider(object: tag.text as NSString)
-                
+                tagView = true
+                return NSItemProvider(object: tag.text as NSString)
+
                        }
             .matchedGeometryEffect(id: tag.id, in: animation)
     }
