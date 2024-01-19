@@ -18,6 +18,7 @@ struct DaysTagView: View {
 
     @Namespace var animation
 
+
     var body: some View {
         GeometryReader { geometry in
             VStack {

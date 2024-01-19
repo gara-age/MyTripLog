@@ -82,7 +82,7 @@ struct Home: View {
                         }
                     }
                     .padding(.top, 10)
-
+                    
                     .frame(maxWidth: 50)
                     
                     ScrollView(.horizontal,showsIndicators: false){
@@ -91,8 +91,9 @@ struct Home: View {
                             ForEach(0..<(currentDayIndex + 1), id: \.self) { dayIndex in
                                 getDayView(for: dayIndex)
                                     .frame(minWidth: 150)
+                                
                             }
-
+                            
                             if isPlusButtonVisible {
                                 Button {
                                     withAnimation {
@@ -111,7 +112,7 @@ struct Home: View {
                             }
                             
                         }
-
+                        
                         .background(.clear)
                         
                     }
@@ -170,40 +171,39 @@ struct Home: View {
     func getDayView(for index: Int) -> some View {
         NavigationStack {
             VStack{
-            if index == 0 {
-                Text("\(index + 1)일차")
-                    .font(.system(size: fontSize))
-            } else {
-                HStack {
-                    Spacer()
+                if index == 0 {
                     Text("\(index + 1)일차")
-                        .frame(maxWidth: .infinity, alignment: .center)
-                        .overlay(
-                            Menu(content: {
-                                Button {
-                                    withAnimation {
-                                        currentDayIndex -= 1
-                                        if currentDayIndex == 8 {
-                                            isPlusButtonVisible = true
-                                        }
+                        .font(.system(size: fontSize))
+                } else {
+                    HStack {
+                        Spacer()
+                        Text("\(index + 1)일차")
+                            .frame(maxWidth: .infinity, alignment: .center)
+                            .overlay(
+                                Group {
+                                    if index == currentDayIndex {
+                                        Menu(content: {
+                                            Button {
+                                                withAnimation {
+                                                    deleteDay(at: index)
+                                                }
+                                            } label: {
+                                                Text("지우기")
+                                            }
+                                        }, label: {
+                                            Image(systemName: "ellipsis")
+                                                .rotationEffect(.degrees(90))
+                                                .frame(width: 30, height: 30)
+                                        })
+                                        .contentShape(Rectangle().size(width: 100, height: 100))
+                                        .padding(.horizontal, 5)
+                                        .frame(maxWidth: .infinity, alignment: .topTrailing)
                                     }
-                                } label: {
-                                    Text("지우기")
                                 }
-                                
-                            }, label: {
-                                Image(systemName: "ellipsis")
-                                    .rotationEffect(.degrees(90))
-                                    .frame(width: 30, height: 30)
-                            })
-                            .contentShape(Rectangle().size(width: 100, height: 100))
-                            .padding(.horizontal, 5)
-                            .frame(maxWidth: .infinity, alignment: .topTrailing)
-                        )
+                            )                }
+                    .font(.system(size: fontSize))
                 }
-                .font(.system(size: fontSize))
             }
-        }
             .padding(.top, 10)
             GeometryReader { geometry in
                 DaysTagView(tags: getTagBinding(for: index), tagView: $tagView)
@@ -215,171 +215,33 @@ struct Home: View {
         .contentShape(.rect)
     }
     
-    @ViewBuilder
-    func Day1View() -> some View{
-        NavigationStack{
-            Text("1일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day1Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-            
-            
+    private func deleteDay(at index: Int) {
+        switch index {
+        case 1:
+            day2Tags.removeAll()
+        case 2:
+            day3Tags.removeAll()
+        case 3:
+            day4Tags.removeAll()
+        case 4:
+            day5Tags.removeAll()
+        case 5:
+            day6Tags.removeAll()
+        case 6:
+            day7Tags.removeAll()
+        case 7:
+            day8Tags.removeAll()
+        case 8:
+            day9Tags.removeAll()
+        case 9:
+            day10Tags.removeAll()
+        default:
+            break
         }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-        
-    }
-    @ViewBuilder
-    func Day2View() -> some View{
-        NavigationStack{
-            Text("2일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day2Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-            
-            
+        currentDayIndex -= 1
+        if currentDayIndex == 8 {
+            isPlusButtonVisible = true
         }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-        
-    }
-    @ViewBuilder
-    func Day3View() -> some View{
-        NavigationStack{
-            Text("3일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day3Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-    }
-    @ViewBuilder
-    func Day4View() -> some View{
-        NavigationStack{
-            Text("4일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day4Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-    }
-    @ViewBuilder
-    func Day5View() -> some View{
-        NavigationStack{
-            Text("5일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day5Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-    }
-    @ViewBuilder
-    func Day6View() -> some View{
-        NavigationStack{
-            Text("6일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day6Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-    }
-    @ViewBuilder
-    func Day7View() -> some View{
-        NavigationStack{
-            Text("7일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day7Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-    }
-    @ViewBuilder
-    func Day8View() -> some View{
-        NavigationStack{
-            Text("8일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day8Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-    }
-    @ViewBuilder
-    func Day9View() -> some View{
-        NavigationStack{
-            Text("9일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day9Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
-    }
-    @ViewBuilder
-    func Day10View() -> some View{
-        NavigationStack{
-            Text("10일차")
-                .font(.system(size: fontSize))
-            GeometryReader { geometry in
-                
-                DaysTagView(tags: $day10Tags, tagView: $tagView)
-                
-                    .frame(height: geometry.size.height)
-            }
-        }
-        .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
-        .contentShape(.rect)
     }
 }
 
