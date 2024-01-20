@@ -70,8 +70,15 @@ struct TagView: View {
             .lineLimit(1)
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
-                Button("Delete"){
+                Button("내용 수정") {
+                 print("내용 수정")
+                }
+                Button("색상 변경") {
+                 print("색상 변경")
+                }
+                Button("삭제"){
                     tags.remove(at: getIndex(tag: tag))
+                        //.alert로 "해당 내역을 모든 일정에서 삭제하시겠습니까?"
                 }
             }
             .onDrag {

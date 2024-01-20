@@ -63,15 +63,14 @@ struct Home: View {
                     }
                     .disabled(text.isEmpty)
                 }
-                //                    .background(.ultraThinMaterial)
             }
             .background(.ultraThinMaterial)
             
             ScrollView(.vertical,showsIndicators: false){
                 HStack{
                     VStack {
-                        Spacer(minLength: fontSize + 21) //DayView의 text.height
-                        ForEach(0..<24) { hour in
+                        Spacer(minLength: fontSize + 21)
+                        ForEach(9..<24) { hour in
                             VStack(spacing:10) {
                                 Text("\(String(format: "%02d", hour)):00")
                                 

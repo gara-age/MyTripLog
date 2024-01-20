@@ -16,7 +16,6 @@ struct DaysTagView: View {
     var fontSize: CGFloat = 16
     @Binding var tagView: Bool
     @State private var combinedTags: [Tag]
-    @State private var timeInt: Int = 16 // timeInt +1만큼 반복하도록
     @Namespace var animation
 
     init(tags: Binding<[Tag]>, tagView: Binding<Bool>) {
@@ -59,7 +58,9 @@ struct DaysTagView: View {
                 .frame(maxWidth: .infinity)
                 .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags) : DaysTagViewDragDropDelegate(tags: $combinedTags))
             }
+
         }
+   
     }
     
     @ViewBuilder
@@ -67,7 +68,6 @@ struct DaysTagView: View {
         HStack {
             Text(tag.text)
                 .font(.system(size: fontSize))
-                .padding(.horizontal, 14)
                 .padding(.vertical, 8)
                 .background(
                     RoundedRectangle(cornerRadius: 5)
@@ -79,7 +79,14 @@ struct DaysTagView: View {
                 .contentShape(RoundedRectangle(cornerRadius: 5))
                 .contextMenu {
                               if !tag.text.isEmpty {
-                                  Button("Delete") {
+                                  Button("내용 수정") {
+                                   print("내용 수정")
+                                      //내용 수정시 TagView에 신규Tag로 추가하는 방식으로 할지 기존 Tag의 텍스트 변경으로 할지 overlay+토글 버튼으로 물어봐도 좋을듯
+                                  }
+                                  Button("색상 변경") {
+                                   print("색상 변경")
+                                  }
+                                  Button("삭제") {
                                       if let tagIndex = combinedTags.firstIndex(of: tag) {
                                           combinedTags.remove(at: tagIndex)
                                       }
@@ -137,7 +144,6 @@ struct DaysTagView: View {
 
                     // Calculate the index of the dropped empty row based on the location
                     let index = Int(floor(location.y / (16 + 20))) // Assuming the height of each row is fontSize + 20
-//인식 영역의 색상을 변경시켜보기
                     // Ensure the index is within the bounds of the combinedTags array
                     if index >= 0 && index <= combinedTags.count {
                         // Remove the tag at the dropped index in combinedTags
