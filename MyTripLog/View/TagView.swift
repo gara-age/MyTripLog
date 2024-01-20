@@ -76,6 +76,7 @@ struct TagView: View {
             }
             .onDrag {
                 tagView = true
+                print(tagView)
                 return NSItemProvider(object: tag.text as NSString)
 
                        }

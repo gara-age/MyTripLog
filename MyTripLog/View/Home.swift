@@ -71,7 +71,7 @@ struct Home: View {
                 HStack{
                     VStack {
                         Spacer(minLength: fontSize + 21) //DayView의 text.height
-                        ForEach(9..<21) { hour in
+                        ForEach(0..<24) { hour in
                             VStack(spacing:10) {
                                 Text("\(String(format: "%02d", hour)):00")
                                 
