@@ -14,7 +14,6 @@ struct TagView: View {
       @State private var dragOffset: CGSize = .zero
     var title: String = "Add Some Tags"
     var fontSize: CGFloat = 16
-    @Binding private var combinedTags: [Tag]
 
     //Adding Geometry Effect to Tag
     @Namespace var animation
@@ -80,9 +79,7 @@ struct TagView: View {
                  print("색상 변경")
                 }
                 Button("삭제"){
-                    if let tagIndex = combinedTags.firstIndex(of: tag) {
-                        combinedTags.remove(at: tagIndex)
-                    }
+
                     tags.remove(at: getIndex(tag: tag))
                         //.alert로 "해당 내역을 모든 일정에서 삭제하시겠습니까?"
                 }
