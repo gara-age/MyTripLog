@@ -17,12 +17,14 @@ struct DaysTagView: View {
     @Binding var tagView: Bool
     @State private var combinedTags: [Tag]
     @Namespace var animation
-
+    @State private var isEditing: Bool = false
+     @State private var editedText: String = ""
+    
     init(tags: Binding<[Tag]>, tagView: Binding<Bool>) {
         self._tags = tags
         self._tagView = tagView
-        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: ""), count: 24).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "")
+        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: Color.clear), count: 24).enumerated().map { index, _ in
+            Tag(id: UUID().uuidString, text: "", color: Color.clear)
         } + tags.wrappedValue)
     }
 
@@ -47,13 +49,14 @@ struct DaysTagView: View {
                                         }
                                     }
                                 }
-
                                 .frame(height: fontSize + 20)
                         }
                     }
                     .frame(width: 150, alignment: .center)
                 }
-
+                .onChange(of: tagView){
+                    print(tagView)
+                }
                 .scrollDisabled(true)
                 .frame(maxWidth: .infinity)
                 .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags) : DaysTagViewDragDropDelegate(tags: $combinedTags))
@@ -68,24 +71,19 @@ struct DaysTagView: View {
         HStack {
             Text(tag.text)
                 .font(.system(size: fontSize))
-                .padding(.vertical, 8)
+                .if(tag.text.isEmpty && !tagView){  draggableText in
+                    draggableText.padding(.horizontal, 150)
+                }
                 .background(
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(tag.text.isEmpty ? Color.clear : Color.tag)
-                        .frame(width: 150)
+                        .fill(tag.text.isEmpty ? Color.clear :  tag.color)
+                        .frame(width: 150, height: 36)
                 )
                 .foregroundColor(Color("BG"))
                 .lineLimit(nil)
                 .contentShape(RoundedRectangle(cornerRadius: 5))
                 .contextMenu {
                               if !tag.text.isEmpty {
-                                  Button("내용 수정") {
-                                   print("내용 수정")
-                                      //내용 수정시 TagView에 신규Tag로 추가하는 방식으로 할지 기존 Tag의 텍스트 변경으로 할지 overlay+토글 버튼으로 물어봐도 좋을듯
-                                  }
-                                  Button("색상 변경") {
-                                   print("색상 변경")
-                                  }
                                   Button("삭제") {
                                       if let tagIndex = combinedTags.firstIndex(of: tag) {
                                           combinedTags.remove(at: tagIndex)
@@ -107,7 +105,7 @@ struct DaysTagView: View {
                                 }
                             }
         }
-        
+
     }
 
 

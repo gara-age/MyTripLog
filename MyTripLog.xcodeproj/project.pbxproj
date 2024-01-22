@@ -20,6 +20,7 @@
 		3767BF052B47ECB700AED916 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF042B47ECB700AED916 /* Home.swift */; };
 		3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF062B48DCA600AED916 /* SetdetailVIew.swift */; };
 		3767BF092B48EBDB00AED916 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF082B48EBDB00AED916 /* MainView.swift */; };
+		379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379189772B5C7771001DB52F /* EditRowTextView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -37,6 +38,7 @@
 		3767BF042B47ECB700AED916 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		3767BF062B48DCA600AED916 /* SetdetailVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetdetailVIew.swift; sourceTree = "<group>"; };
 		3767BF082B48EBDB00AED916 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		379189772B5C7771001DB52F /* EditRowTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRowTextView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,6 +108,7 @@
 				374A64D72B4D2F99003F99A1 /* TagView.swift */,
 				374A64DF2B4EC2B9003F99A1 /* TaskHomeView.swift */,
 				374A64E32B4EDB33003F99A1 /* DaysTagView.swift */,
+				379189772B5C7771001DB52F /* EditRowTextView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -186,6 +189,7 @@
 				3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */,
 				374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */,
 				374A64E22B4EC2FD003F99A1 /* Task.swift in Sources */,
+				379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */,
 				3767BF052B47ECB700AED916 /* Home.swift in Sources */,
 				374A64E02B4EC2B9003F99A1 /* TaskHomeView.swift in Sources */,
 				3767BEF52B47C0BD00AED916 /* Item.swift in Sources */,

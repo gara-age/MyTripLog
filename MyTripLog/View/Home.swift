@@ -29,12 +29,13 @@ struct Home: View {
     @State private var isPlusButtonVisible = true
     @State  var ifDaysTagView : Bool = false
     @State private var tagView : Bool = false
-    
+    @State private var editMode: Bool = false
+
     var body: some View {
         NavigationStack{
             VStack{
                 ScrollView(.vertical){
-                    TagView(tags: $tags, tagView: $tagView)
+                    TagView(tags: $tags, tagView: $tagView, editMode: $editMode)
                     
                 }
                 .background(.ultraThinMaterial)
@@ -42,7 +43,7 @@ struct Home: View {
                 .clipped()
                 
                 HStack{
-                    TextField("apple", text: $text)
+                    TextField("apple", text: $text) // 동일한 Tag생성 막을지 말지
                         .padding(.vertical, 10)
                         .padding(.horizontal)
                         .background(
@@ -65,7 +66,8 @@ struct Home: View {
                 }
             }
             .background(.ultraThinMaterial)
-            
+            .blur(radius: editMode ? 5 : 0)
+
             ScrollView(.vertical,showsIndicators: false){
                 HStack{
                     VStack {
@@ -119,7 +121,8 @@ struct Home: View {
                 }
                 
             }
-            
+            .blur(radius: editMode ? 5 : 0)
+
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -138,7 +141,23 @@ struct Home: View {
             }
             
         }
-        
+        .disabled(editMode)
+
+        .overlay{
+            ZStack{
+                if editMode {
+                    EditRowTextView(onSubmit:{
+                        editMode = false
+                        
+                        
+                    }, onClose: {
+                        editMode = false
+                    })
+                    .transition(.opacity)
+                }
+            }
+            .animation(.snappy, value: editMode)
+        }
     }
     
     private func getTagBinding(for index: Int) -> Binding<[Tag]> {

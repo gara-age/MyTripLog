@@ -14,10 +14,13 @@ struct TagView: View {
       @State private var dragOffset: CGSize = .zero
     var title: String = "Add Some Tags"
     var fontSize: CGFloat = 16
-    
+    @Binding private var combinedTags: [Tag]
+
     //Adding Geometry Effect to Tag
     @Namespace var animation
     @Binding var tagView : Bool
+    @Binding var editMode: Bool
+     @State private var editedText: String = ""
     
     var body: some View {
 //ScrollView
@@ -35,7 +38,7 @@ struct TagView: View {
                                 
                                 //Row View
                                 RowView(tag: row)
-                                
+                              
                                 
                                 
                                 
@@ -64,19 +67,22 @@ struct TagView: View {
             .padding(.vertical,8)
             .background(
             RoundedRectangle(cornerRadius: 5)
-                .fill(Color("Tag"))
+                .fill(tag.color)
             )
             .foregroundColor(Color("BG"))
             .lineLimit(1)
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
                 Button("내용 수정") {
-                 print("내용 수정")
+                    editMode = true
                 }
                 Button("색상 변경") {
                  print("색상 변경")
                 }
                 Button("삭제"){
+                    if let tagIndex = combinedTags.firstIndex(of: tag) {
+                        combinedTags.remove(at: tagIndex)
+                    }
                     tags.remove(at: getIndex(tag: tag))
                         //.alert로 "해당 내역을 모든 일정에서 삭제하시겠습니까?"
                 }
@@ -158,7 +164,9 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
     
     let size = (text as NSString).size(withAttributes: attributes)
 
-    return Tag(text: text, size: size.width)
+    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
+
+    return Tag(text: text, size: size.width, color: color)
 }
 
 func getSize(tags: [Tag])->Int{
