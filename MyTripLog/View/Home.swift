@@ -48,20 +48,28 @@ struct Home: View {
                         .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .strokeBorder(Color("Tag").opacity(0.2), lineWidth: 1))
-                    Button{
+                    Button {
                         // Adding Tag
-                        tags.append(addTag(text: text, fontSize: 16))
-                        text = ""
+                        let newTag = addTag(text: text, fontSize: 16)
+                        
+                        // Check if a tag with the same text already exists and if the text is not just whitespace
+                        if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                           !tags.contains(where: { $0.text == newTag.text }) {
+                            tags.append(newTag)
+                            text = ""
+                        }
                     } label: {
                         Text("Add")
                             .fontWeight(.semibold)
                             .foregroundStyle(Color("BG"))
                             .padding(.vertical, 12)
                             .padding(.horizontal, 45)
-                            .background(Color("Tag"))
+                            .background(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tags.contains(where: { $0.text == text }) ? Color.gray : Color("Tag"))
                             .cornerRadius(10)
                     }
-                    .disabled(text.isEmpty)
+                    .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tags.contains(where: { $0.text == text }))
+
+
                 }
             }
             .background(.ultraThinMaterial)
