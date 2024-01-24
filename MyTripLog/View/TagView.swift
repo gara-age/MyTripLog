@@ -20,7 +20,9 @@ struct TagView: View {
     @Binding var tagView : Bool
     @Binding var editMode: Bool
      @State private var editedText: String = ""
-    
+    @State private var deleteRequest : Bool = false
+    @State private var tagToDelete: Tag?
+
     var body: some View {
 //ScrollView
         VStack(alignment: .leading,spacing: 15){
@@ -37,9 +39,6 @@ struct TagView: View {
                                 
                                 //Row View
                                 RowView(tag: row)
-                              
-                                
-                                
                                 
                             }
                         }
@@ -79,14 +78,10 @@ struct TagView: View {
                  print("색상 변경")
                 }
                 Button("삭제"){
-                    if let tagIndex = tags.firstIndex(of: tag) {
-                           removeTag(withText: tag.text, from: &tags)
-                           
-                           // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
-                           NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tag)
-                       }
-//                    tags.remove(at: getIndex(tag: tag))
-                        //.alert로 "해당 내역을 모든 일정에서 삭제하시겠습니까?"
+                    tagToDelete = tag
+
+                    deleteRequest.toggle()
+
                 }
             }
             .onDrag {
@@ -96,6 +91,24 @@ struct TagView: View {
 
                        }
             .matchedGeometryEffect(id: tag.id, in: animation)
+            .alert("일정 삭제시 동일한 이름의 일정이 모두 삭제됩니다. 정말 삭제하시겠습니까?", isPresented: $deleteRequest) {
+                Button(role: .destructive) {
+                    if let tagToDelete = tagToDelete, let tagIndex = tags.firstIndex(of: tagToDelete) {
+                        removeTag(withText: tagToDelete.text, from: &tags)
+                        // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
+                        NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tagToDelete)
+                    }
+                } label: {
+                    Text("삭제")
+                }
+
+                Button(role: .cancel) {
+                    deleteRequest = false
+                } label: {
+                    Text("취소")
+                }
+            }
+
     }
     private func deleteTag(tag: Tag) {
          tags.removeAll { $0.text == tag.text }
