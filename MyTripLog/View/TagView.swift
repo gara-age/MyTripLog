@@ -79,8 +79,13 @@ struct TagView: View {
                  print("색상 변경")
                 }
                 Button("삭제"){
-
-                    tags.remove(at: getIndex(tag: tag))
+                    if let tagIndex = tags.firstIndex(of: tag) {
+                           removeTag(withText: tag.text, from: &tags)
+                           
+                           // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
+                           NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tag)
+                       }
+//                    tags.remove(at: getIndex(tag: tag))
                         //.alert로 "해당 내역을 모든 일정에서 삭제하시겠습니까?"
                 }
             }
@@ -92,7 +97,11 @@ struct TagView: View {
                        }
             .matchedGeometryEffect(id: tag.id, in: animation)
     }
-    
+    private func deleteTag(tag: Tag) {
+         tags.removeAll { $0.text == tag.text }
+         // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
+         NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tag)
+     }
     func getIndex(tag: Tag) ->Int{
         let index = tags.firstIndex{ currentTag in
             return tag.id == currentTag.id
@@ -173,4 +182,7 @@ func getSize(tags: [Tag])->Int{
         count += Int(tag.size)
     }
     return count
+}
+func removeTag(withText text: String, from tags: inout [Tag]) {
+    tags.removeAll { $0.text == text }
 }

@@ -91,6 +91,11 @@ struct DaysTagView: View {
                                   }
                               }
                           }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagDeleted"))) { notification in
+                    if let deletedTag = notification.object as? Tag {
+                        removeTag(withText: deletedTag.text, from: &combinedTags)
+                    }
+                }
                 .matchedGeometryEffect(id: tag.id, in: animation)
 
                 .if(!tag.text.isEmpty) { draggableText in

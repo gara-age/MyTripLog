@@ -36,7 +36,22 @@ struct Home: View {
             VStack{
                 ScrollView(.vertical){
                     TagView(tags: $tags, tagView: $tagView, editMode: $editMode)
-                    
+                        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagDeleted"))) { notification in
+                                           if let deletedTag = notification.object as? Tag {
+                                               // TagView에서 삭제된 Tag를 DaysTagView에서도 삭제
+                                               day1Tags.removeAll { $0.text == deletedTag.text }
+                                               day2Tags.removeAll { $0.text == deletedTag.text }
+                                               day3Tags.removeAll { $0.text == deletedTag.text }
+                                               day4Tags.removeAll { $0.text == deletedTag.text }
+                                               day5Tags.removeAll { $0.text == deletedTag.text }
+                                               day6Tags.removeAll { $0.text == deletedTag.text }
+                                               day7Tags.removeAll { $0.text == deletedTag.text }
+                                               day8Tags.removeAll { $0.text == deletedTag.text }
+                                               day9Tags.removeAll { $0.text == deletedTag.text }
+                                               day10Tags.removeAll { $0.text == deletedTag.text }
+
+                                           }
+                                       }
                 }
                 .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity)
