@@ -20,8 +20,11 @@ struct TagView: View {
     @Binding var tagView : Bool
     @Binding var editMode: Bool
      @State private var editedText: String = ""
+    @Binding var originalText: String
+
     @State private var deleteRequest : Bool = false
     @State private var tagToDelete: Tag?
+    var updateTags: ((Tag, String) -> Void)?
 
     var body: some View {
 //ScrollView
@@ -72,7 +75,9 @@ struct TagView: View {
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
                 Button("내용 수정") {
-                    editMode = true
+                    originalText = tag.text
+                    updateTags?(tag, editedText)
+                    
                 }
                 Button("색상 변경") {
                  print("색상 변경")
@@ -107,6 +112,9 @@ struct TagView: View {
                 } label: {
                     Text("취소")
                 }
+            }
+            .onTapGesture {
+                print("TagView - \(tag.id)")
             }
 
     }
@@ -183,9 +191,9 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
     
     let size = (text as NSString).size(withAttributes: attributes)
 
-    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
+//    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
 
-    return Tag(text: text, size: size.width, color: color)
+    return Tag(text: text, size: size.width)
 }
 
 func getSize(tags: [Tag])->Int{

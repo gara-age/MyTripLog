@@ -13,6 +13,7 @@ struct Home: View {
     //View properties
     @State private var text : String = ""
     @State var tags: [Tag] = []
+    @State var combinedTags: [Tag] = []
     @State private var title: String = "오사카 3박4일 여행"
     @State private var fontSize : CGFloat = 17
     @State private var day1Tags: [Tag] = []
@@ -30,12 +31,15 @@ struct Home: View {
     @State  var ifDaysTagView : Bool = false
     @State private var tagView : Bool = false
     @State private var editMode: Bool = false
+    @State private var editedTag: Tag?
+    @State private var editedText: String = ""
+    @State private var originalText: String = ""
 
     var body: some View {
         NavigationStack{
             VStack{
                 ScrollView(.vertical){
-                    TagView(tags: $tags, tagView: $tagView, editMode: $editMode)
+                    TagView(tags: $tags, tagView: $tagView, editMode: $editMode, originalText: $originalText, updateTags: updateTags)
                 }
                 .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity)
@@ -153,11 +157,24 @@ struct Home: View {
         .overlay{
             ZStack{
                 if editMode {
-                    EditRowTextView(onSubmit:{
+                    EditRowTextView(editedText: $editedText, tags: $tags, onSubmit: {
+                        // Update the tags in TagView
+                        if let editedTag = editedTag, let index = tags.firstIndex(of: editedTag) {
+                            tags[index].text = editedText
+                        }
+                       
+                        NotificationCenter.default.post(name: Notification.Name("TagUpdated"), object: ["tag": editedTag, "newText": editedText, "originalText": originalText])
+                        // Update the tags in DaysTagView
+                        // (You may need to pass similar update logic to DaysTagView)
+                        
+                        // Reset the editedTag and editedText
+                        editedTag = nil
+                        editedText = ""
+                        
+                        // Close the EditRowTextView
                         editMode = false
-                        
-                        
                     }, onClose: {
+                        // Close the EditRowTextView
                         editMode = false
                     })
                     .transition(.opacity)
@@ -166,7 +183,15 @@ struct Home: View {
             .animation(.snappy, value: editMode)
         }
     }
-    
+    func updateTags(tag: Tag, newText: String) {
+        // Update the editedTag and editedText
+        editedTag = tag
+        editedText = newText
+        
+        // Show the EditRowTextView
+        editMode = true
+    }
+
     private func getTagBinding(for index: Int) -> Binding<[Tag]> {
         switch index {
         case 0:

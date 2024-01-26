@@ -23,8 +23,8 @@ struct DaysTagView: View {
     init(tags: Binding<[Tag]>, tagView: Binding<Bool>) {
         self._tags = tags
         self._tagView = tagView
-        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: Color.clear), count: 24).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "", color: Color.clear)
+        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: ""), count: 24).enumerated().map { index, _ in
+            Tag(id: UUID().uuidString, text: "")
         } + tags.wrappedValue)
     }
 
@@ -91,6 +91,19 @@ struct DaysTagView: View {
                                   }
                               }
                           }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagUpdated"))) { notification in
+                                  if let userInfo = notification.object as? [String: Any],
+                                     let updatedTag = userInfo["tag"] as? Tag,
+                                     let newText = userInfo["newText"] as? String,
+                                     let originalText = userInfo["originalText"] as? String {
+                                      
+                                      // Find and update the tag in combinedTags based on text
+                                      if let index = combinedTags.firstIndex(where: { $0.text == originalText }) {
+                                          // Update the tag in combinedTags
+                                          combinedTags[index].text = newText
+                                      }
+                                  }
+                              }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagDeleted"))) { notification in
                     if let deletedTag = notification.object as? Tag {
                         removeTag(withText: deletedTag.text, from: &combinedTags)

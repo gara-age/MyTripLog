@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct EditRowTextView: View {
-    @State private var editedText : String = ""
+    @Binding var editedText : String
+    @Binding var tags: [Tag]
 
     var onSubmit : () -> ()
     var onClose : () -> ()
@@ -16,7 +17,7 @@ struct EditRowTextView: View {
     
     var body: some View {
         VStack{
-            TextField("apple", text: $editedText) // 동일한 Tag생성 막을지 말지
+            TextField("apple", text: $editedText)
                 .padding(.vertical, 10)
                 .padding(.horizontal)
                 .background(
@@ -37,6 +38,8 @@ struct EditRowTextView: View {
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.roundedRectangle(radius: 5))
                 .tint(.blue)
+                .disabled(editedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tags.contains(where: { $0.text == editedText }))
+
             }
             .padding(.top, 10)
         }
