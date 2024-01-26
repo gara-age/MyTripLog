@@ -157,7 +157,7 @@ struct Home: View {
         .overlay{
             ZStack{
                 if editMode {
-                    EditRowTextView(editedText: $editedText, tags: $tags, onSubmit: {
+                    EditRowTextView(editedText: $editedText, tags: $tags, originalText: $originalText, onSubmit: {
                         // Update the tags in TagView
                         if let editedTag = editedTag, let index = tags.firstIndex(of: editedTag) {
                             tags[index].text = editedText

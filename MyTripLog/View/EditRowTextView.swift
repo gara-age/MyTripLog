@@ -10,6 +10,7 @@ import SwiftUI
 struct EditRowTextView: View {
     @Binding var editedText : String
     @Binding var tags: [Tag]
+    @Binding var originalText: String
 
     var onSubmit : () -> ()
     var onClose : () -> ()
@@ -17,7 +18,7 @@ struct EditRowTextView: View {
     
     var body: some View {
         VStack{
-            TextField("apple", text: $editedText)
+            TextField(originalText, text: $editedText)
                 .padding(.vertical, 10)
                 .padding(.horizontal)
                 .background(
