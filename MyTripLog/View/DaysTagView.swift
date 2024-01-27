@@ -23,8 +23,8 @@ struct DaysTagView: View {
     init(tags: Binding<[Tag]>, tagView: Binding<Bool>) {
         self._tags = tags
         self._tagView = tagView
-        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: ""), count: 24).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "")
+        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear), count: 24).enumerated().map { index, _ in
+            Tag(id: UUID().uuidString, text: "", color: .clear)
         } + tags.wrappedValue)
     }
 
@@ -54,9 +54,7 @@ struct DaysTagView: View {
                     }
                     .frame(width: 150, alignment: .center)
                 }
-                .onChange(of: tagView){
-                    print(tagView)
-                }
+   
                 .scrollDisabled(true)
                 .frame(maxWidth: .infinity)
                 .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags) : DaysTagViewDragDropDelegate(tags: $combinedTags))
@@ -91,6 +89,23 @@ struct DaysTagView: View {
                                   }
                               }
                           }
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
+                                    if let userInfo = notification.object as? [String: Any],
+                                       let color = userInfo["color"] as? Color,
+                                       let originalText = userInfo["originalText"] as? String {
+
+                                        // Find and update all tags in combinedTags based on text
+                                        combinedTags = combinedTags.map { existingTag in
+                                            if existingTag.text == originalText {
+                                                var updatedTag = existingTag
+                                                updatedTag.color = color
+                                                return updatedTag
+                                            } else {
+                                                return existingTag
+                                            }
+                                        }
+                                    }
+                                }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagUpdated"))) { notification in
                                   if let userInfo = notification.object as? [String: Any],
                                      let updatedTag = userInfo["tag"] as? Tag,
@@ -133,8 +148,6 @@ struct DaysTagView: View {
         func performDrop(info: DropInfo) -> Bool {
             guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
 
-       print("return false")
-
             return false
         }
 
@@ -153,7 +166,7 @@ struct DaysTagView: View {
             // Get the dropped text
             itemProvider.loadObject(ofClass: String.self) { (text, error) in
                 if let text = text as? String {
-                    let droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
+                    var droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
 
                     // Find the location in the ScrollView
                     let location = info.location
@@ -164,10 +177,14 @@ struct DaysTagView: View {
                     if index >= 0 && index <= combinedTags.count {
                         // Remove the tag at the dropped index in combinedTags
                         combinedTags.remove(at: index)
+                        let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
+
+                        // Update the color of the dropped tag based on the original color
+                        let originalColor = tags.first { $0.text == text }?.color ?? color
+                        droppedTag.color = originalColor
 
                         // Insert the dropped tag at the dropped index in tags
                         tags.insert(droppedTag, at: index)
-                        print("drop by TagView")
                     }
                 }
             }

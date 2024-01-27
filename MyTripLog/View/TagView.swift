@@ -80,7 +80,9 @@ struct TagView: View {
                     
                 }
                 Button("색상 변경") {
-                 print("색상 변경")
+                    originalText = tag.text
+
+                    UIColorWellHelper.helper.execute?()
                 }
                 Button("삭제"){
                     tagToDelete = tag
@@ -91,7 +93,6 @@ struct TagView: View {
             }
             .onDrag {
                 tagView = true
-                print(tagView)
                 return NSItemProvider(object: tag.text as NSString)
 
                        }
@@ -113,9 +114,17 @@ struct TagView: View {
                     Text("취소")
                 }
             }
-            .onTapGesture {
-                print("TagView - \(tag.id)")
-            }
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
+                      if let userInfo = notification.object as? [String: Any],
+                         let color = userInfo["color"] as? Color,
+                         let originalText = userInfo["originalText"] as? String {
+                          
+                          // Find and update the tag in tags based on text
+                          if let index = tags.firstIndex(where: { $0.text == originalText }) {
+                              tags[index].color = color
+                          }
+                      }
+                  }
 
     }
     private func deleteTag(tag: Tag) {
@@ -191,9 +200,9 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
     
     let size = (text as NSString).size(withAttributes: attributes)
 
-//    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
+    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
 
-    return Tag(text: text, size: size.width)
+    return Tag(text: text, size: size.width, color: color)
 }
 
 func getSize(tags: [Tag])->Int{

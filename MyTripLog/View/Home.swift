@@ -34,6 +34,8 @@ struct Home: View {
     @State private var editedTag: Tag?
     @State private var editedText: String = ""
     @State private var originalText: String = ""
+    @State private var originalColor : Color = .red
+    @State private var colorEditMode: Bool = false
 
     var body: some View {
         NavigationStack{
@@ -153,7 +155,19 @@ struct Home: View {
             
         }
         .disabled(editMode)
+        .overlay(
+                    ColorPicker("", selection: $originalColor, supportsOpacity: false)
+                        .labelsHidden()
+                        .opacity(0)
+                        .onChange(of: originalColor) { newColor in
+                            // Post a notification with the selected color and originalText
+                            NotificationCenter.default.post(
+                                name: Notification.Name("TagColorChanged"),
+                                object: ["color": newColor, "originalText": originalText]
+                            )
 
+                        }
+                )
         .overlay{
             ZStack{
                 if editMode {
@@ -295,6 +309,26 @@ struct Home: View {
     }
 }
 
+extension UIColorWell {
+
+    override open func didMoveToSuperview() {
+        super.didMoveToSuperview()
+
+        if let uiButton = self.subviews.first?.subviews.last as? UIButton {
+            UIColorWellHelper.helper.execute = {
+                uiButton.sendActions(for: .touchUpInside)
+            }
+        }
+    }
+}
+
+class UIColorWellHelper: NSObject {
+    static let helper = UIColorWellHelper()
+    var execute: (() -> ())?
+    @objc func handler(_ sender: Any) {
+        execute?()
+    }
+}
 
 
 #Preview {
