@@ -36,10 +36,12 @@ struct Home: View {
     @State private var originalText: String = ""
     @State private var originalColor : Color = .red
     @State private var colorEditMode: Bool = false
-
+    
     var body: some View {
         NavigationStack{
             VStack{
+                //MARK: -TagView
+                
                 ScrollView(.vertical){
                     TagView(tags: $tags, tagView: $tagView, editMode: $editMode, originalText: $originalText, updateTags: updateTags)
                 }
@@ -102,6 +104,7 @@ struct Home: View {
                     ScrollView(.horizontal,showsIndicators: false){
                         
                         HStack{
+                            //MARK: - Time and DayView
                             ForEach(0..<(currentDayIndex + 1), id: \.self) { dayIndex in
                                 getDayView(for: dayIndex)
                                     .frame(minWidth: 150)
@@ -232,6 +235,7 @@ struct Home: View {
             return $day1Tags
         }
     }
+    //MARK: - getDayView
     func getDayView(for index: Int) -> some View {
         NavigationStack {
             VStack{

@@ -63,7 +63,8 @@ struct DaysTagView: View {
         }
    
     }
-    
+    //MARK: - RowView
+
     @ViewBuilder
     func RowView(tag: Tag, index: Int) -> some View {
         HStack {
@@ -71,6 +72,11 @@ struct DaysTagView: View {
                 .font(.system(size: fontSize))
                 .if(tag.text.isEmpty && !tagView){  draggableText in
                     draggableText.padding(.horizontal, 150)
+                }
+                .if(!tag.text.isEmpty){  draggableText in
+                    draggableText
+                        .frame(width: 150, height: 36)
+
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 5)
@@ -89,6 +95,7 @@ struct DaysTagView: View {
                                   }
                               }
                           }
+            
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
                                     if let userInfo = notification.object as? [String: Any],
                                        let color = userInfo["color"] as? Color,
@@ -141,6 +148,7 @@ struct DaysTagView: View {
 
     }
 
+    //MARK: - DragDropDelegate
 
     struct DaysTagViewDragDropDelegate: DropDelegate {
         @Binding var tags: [Tag]

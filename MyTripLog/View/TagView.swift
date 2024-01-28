@@ -59,7 +59,8 @@ struct TagView: View {
 
         .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
     }
-    
+    //MARK: - RowView
+
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
