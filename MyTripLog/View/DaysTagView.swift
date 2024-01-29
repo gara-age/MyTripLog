@@ -39,7 +39,7 @@ struct DaysTagView: View {
             Tag(id: UUID().uuidString, text: "", color: .clear, height: 18)
         } + tags.wrappedValue)
     }
-
+//.onHover로 드랍 예상 위치 색 변하도록
     var body: some View {
         GeometryReader { geometry in
             VStack {
@@ -96,7 +96,7 @@ struct DaysTagView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(tag.text.isEmpty ? Color.black :  tag.color)
+                        .fill(tag.text.isEmpty ? Color.clear :  tag.color)
                         .frame(width: 150)
                         .frame(height: tag.text.isEmpty ? 18 : tag.height)
                 )
