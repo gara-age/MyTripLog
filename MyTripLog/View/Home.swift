@@ -36,14 +36,23 @@ struct Home: View {
     @State private var originalText: String = ""
     @State private var originalColor : Color = .red
     @State private var colorEditMode: Bool = false
-    
+    @State private var setHeight : Bool = false
+    @State private var tagText : String = ""
+    @State private var tagColor : Color = .clear
+    @State private var selectedTagTime: Double = 1.0
+    @State private var tagTime : CGFloat = 1.0
+    @State private var tagHeight : CGFloat = 36
+    @State private var tagID: String = ""
+    @State private var changeAll : Bool = false
+    @State private var getTagColor : Color = .clear
+
     var body: some View {
         NavigationStack{
             VStack{
                 //MARK: -TagView
                 
                 ScrollView(.vertical){
-                    TagView(tags: $tags, tagView: $tagView, editMode: $editMode, originalText: $originalText, updateTags: updateTags)
+                    TagView(tags: $tags, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, updateTags: updateTags)
                 }
                 .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity)
@@ -81,7 +90,7 @@ struct Home: View {
                 }
             }
             .background(.ultraThinMaterial)
-            .blur(radius: editMode ? 5 : 0)
+            .blur(radius: editMode || setHeight ? 5 : 0)
 
             ScrollView(.vertical,showsIndicators: false){
                 HStack{
@@ -137,7 +146,7 @@ struct Home: View {
                 }
                 
             }
-            .blur(radius: editMode ? 5 : 0)
+            .blur(radius: editMode || setHeight ? 5 : 0)
 
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
@@ -157,7 +166,7 @@ struct Home: View {
             }
             
         }
-        .disabled(editMode)
+        .disabled(editMode || setHeight)
         .overlay(
                     ColorPicker("", selection: $originalColor, supportsOpacity: false)
                         .labelsHidden()
@@ -199,7 +208,34 @@ struct Home: View {
             }
             .animation(.snappy, value: editMode)
         }
+        .overlay{
+            ZStack{
+                if setHeight {
+                    TagReSizingVIew(tagText: $tagText,tagColor: $tagColor, tagTime: $tagTime,tagHeight: $tagHeight,tagID: $tagID,changeAll: $changeAll, onSubmit: {
+                        updateSelectedTagTime(tagTime: tagTime)
+
+                    }, onClose: {
+                        setHeight = false
+                    })
+                
+                    .transition(.opacity)
+                }
+            }
+            .animation(.snappy, value: setHeight)
+        }
+
     }
+    func updateSelectedTagTime(tagTime: Double) {
+           selectedTagTime = tagTime
+        NotificationCenter.default.post(name: Notification.Name("TagSizeUpdated"), object: ["tagText": tagText, "tagHeight": selectedTagTime, "tagID": tagID, "changeAll": changeAll])
+        setHeight = false
+        tagText = ""
+        tagID = ""
+        changeAll = false
+       }
+
+       
+    
     func updateTags(tag: Tag, newText: String) {
         // Update the editedTag and editedText
         editedTag = tag
@@ -274,7 +310,7 @@ struct Home: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor)
                     .frame(height: geometry.size.height)
             }
         }

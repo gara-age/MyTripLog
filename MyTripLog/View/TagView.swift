@@ -21,6 +21,7 @@ struct TagView: View {
     @Binding var editMode: Bool
      @State private var editedText: String = ""
     @Binding var originalText: String
+    @Binding var getTagColor : Color
 
     @State private var deleteRequest : Bool = false
     @State private var tagToDelete: Tag?
@@ -94,6 +95,7 @@ struct TagView: View {
             }
             .onDrag {
                 tagView = true
+                getTagColor = tag.color
                 return NSItemProvider(object: tag.text as NSString)
 
                        }
@@ -203,7 +205,9 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
 
     let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
 
-    return Tag(text: text, size: size.width, color: color)
+    let height : CGFloat = 36
+    
+    return Tag(text: text, size: size.width, color: color, height: height)
 }
 
 func getSize(tags: [Tag])->Int{

@@ -13,6 +13,7 @@ struct Tag: Identifiable, Hashable , Equatable {
     var text: String
     var size: CGFloat = 0
     var color: Color 
+    var height: CGFloat
     
     var transferableItem: NSItemProvider {
         NSItemProvider(object: text as NSString)

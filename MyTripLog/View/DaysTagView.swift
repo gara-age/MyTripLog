@@ -19,12 +19,24 @@ struct DaysTagView: View {
     @Namespace var animation
     @State private var isEditing: Bool = false
      @State private var editedText: String = ""
-    
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>) {
+    @Binding var tagText : String
+    @Binding var setHeight : Bool
+    @Binding var tagColor : Color
+    @Binding var tagHeight : CGFloat
+    @Binding var tagID : String
+    @Binding var getTagColor : Color
+
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>) {
         self._tags = tags
         self._tagView = tagView
-        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear), count: 24).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "", color: .clear)
+        self._setHeight = setHeight
+        self._tagText = tagText
+        self._tagColor = tagColor
+        self._tagHeight = tagHeight
+        self._tagID = tagID
+        self._getTagColor = getTagColor
+        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), count: 100).enumerated().map { index, _ in
+            Tag(id: UUID().uuidString, text: "", color: .clear, height: 18)
         } + tags.wrappedValue)
     }
 
@@ -37,6 +49,10 @@ struct DaysTagView: View {
                     LazyVGrid(columns: columns, spacing: 1) {
                         ForEach(combinedTags.indices, id: \.self) { index in
                             RowView(tag: combinedTags[index], index: index)
+                                .if(combinedTags[index].text.isEmpty){ RowVIew in
+                                    RowVIew.padding(.vertical,1.75)
+                                }
+
                                 .dropDestination(for: String.self) { items, location in
                                     draggedTag = nil
                                     return false
@@ -49,7 +65,7 @@ struct DaysTagView: View {
                                         }
                                     }
                                 }
-                                .frame(height: fontSize + 20)
+//                                .frame(height: fontSize + 20) //1시간으로 고정하려면 켜야함
                         }
                     }
                     .frame(width: 150, alignment: .center)
@@ -57,7 +73,7 @@ struct DaysTagView: View {
    
                 .scrollDisabled(true)
                 .frame(maxWidth: .infinity)
-                .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags) : DaysTagViewDragDropDelegate(tags: $combinedTags))
+                .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor) : DaysTagViewDragDropDelegate(tags: $combinedTags))
             }
 
         }
@@ -75,27 +91,58 @@ struct DaysTagView: View {
                 }
                 .if(!tag.text.isEmpty){  draggableText in
                     draggableText
-                        .frame(width: 150, height: 36)
+                        .frame(width: 150, height: tag.height)
 
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(tag.text.isEmpty ? Color.clear :  tag.color)
-                        .frame(width: 150, height: 36)
+                        .fill(tag.text.isEmpty ? Color.black :  tag.color)
+                        .frame(width: 150)
+                        .frame(height: tag.text.isEmpty ? 18 : tag.height)
                 )
                 .foregroundColor(Color("BG"))
                 .lineLimit(nil)
                 .contentShape(RoundedRectangle(cornerRadius: 5))
                 .contextMenu {
                               if !tag.text.isEmpty {
+                                  Button("시간 변경") {
+                                      tagID = tag.id
+                                      tagHeight = tag.height
+                                      tagColor = tag.color
+                                      tagText = tag.text
+                                      setHeight = true
+                                  }
                                   Button("삭제") {
                                       if let tagIndex = combinedTags.firstIndex(of: tag) {
                                           combinedTags.remove(at: tagIndex)
+                                          //tagIndex의 tag
+                                          combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), at: tagIndex)
+                                          combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), at: tagIndex + 1)
+
                                       }
                                   }
                               }
                           }
-            
+                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagSizeUpdated"))) { notification in
+                    if let userInfo = notification.object as? [String: Any],
+                       let tagText = userInfo["tagText"] as? String,
+                       let tagHeight = userInfo["tagHeight"] as? Double,
+                       let tagID = userInfo["tagID"] as? String ,
+                    let changeAll = userInfo["changeAll"] as? Bool{
+
+                        if changeAll {
+                            combinedTags.indices.forEach { index in
+                                           if combinedTags[index].text == tagText {
+                                               combinedTags[index].height = CGFloat(tagHeight * 36)
+                                           }
+                                       }
+                        } else {
+                            if let selectedTagIndex = combinedTags.firstIndex(where: { $0.text == tagText && $0.id == tagID }) {
+                                combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
+                            }
+                        }
+                    }
+                }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
                                     if let userInfo = notification.object as? [String: Any],
                                        let color = userInfo["color"] as? Color,
@@ -107,7 +154,8 @@ struct DaysTagView: View {
                                                 var updatedTag = existingTag
                                                 updatedTag.color = color
                                                 return updatedTag
-                                            } else {
+                                            }
+                                            else {
                                                 return existingTag
                                             }
                                         }
@@ -128,9 +176,30 @@ struct DaysTagView: View {
                               }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagDeleted"))) { notification in
                     if let deletedTag = notification.object as? Tag {
+                        let copyDeletedTag = deletedTag
+                        // Find tags in combinedTags with the same text as the deleted tag
+                        let tagsWithSameText = combinedTags.filter { $0.text == copyDeletedTag.text }
+
+                        // Use the height of each tag with the same text (if available)
+                        for tagWithSameText in tagsWithSameText {
+                            if let originalHeight = tagWithSameText.height as CGFloat? , originalHeight > 18 {
+                                // Your existing code that uses originalHeight
+                                let insertCount = Int(originalHeight / 18) - 1
+                                if let tagIndex = combinedTags.firstIndex(where: { $0.text == tagWithSameText.text && $0.id == tagWithSameText.id }) {
+                                    for _ in 0..<insertCount + 1 {
+                                        combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), at: tagIndex)
+                                        print("tag inserted \(insertCount) times")
+                                    }
+                                }
+                            }
+                        }
+
+
                         removeTag(withText: deletedTag.text, from: &combinedTags)
                     }
                 }
+
+
                 .matchedGeometryEffect(id: tag.id, in: animation)
 
                 .if(!tag.text.isEmpty) { draggableText in
@@ -167,31 +236,32 @@ struct DaysTagView: View {
     struct TagViewDragDropDelegate: DropDelegate {
         @Binding var tags: [Tag]
         @Binding var combinedTags: [Tag]
+        @Binding var getTagColor: Color
 
         func performDrop(info: DropInfo) -> Bool {
             guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
 
-            // Get the dropped text
             itemProvider.loadObject(ofClass: String.self) { (text, error) in
                 if let text = text as? String {
                     var droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
 
-                    // Find the location in the ScrollView
                     let location = info.location
 
-                    // Calculate the index of the dropped empty row based on the location
-                    let index = Int(floor(location.y / (16 + 20))) // Assuming the height of each row is fontSize + 20
-                    // Ensure the index is within the bounds of the combinedTags array
-                    if index >= 0 && index <= combinedTags.count {
-                        // Remove the tag at the dropped index in combinedTags
+                    let index = Int(floor(location.y / (18)))
+
+                    if index >= 0 && index < combinedTags.count {
                         combinedTags.remove(at: index)
+
+                        // Check if the tag at index + 1 is empty and remove it
+                        if index + 1 < combinedTags.count, combinedTags[index + 1].text.isEmpty {
+                            combinedTags.remove(at: index + 1)
+                        }
+
                         let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
 
-                        // Update the color of the dropped tag based on the original color
-                        let originalColor = tags.first { $0.text == text }?.color ?? color
+                        let originalColor = tags.first { $0.text == text }?.color ?? getTagColor
                         droppedTag.color = originalColor
 
-                        // Insert the dropped tag at the dropped index in tags
                         tags.insert(droppedTag, at: index)
                     }
                 }
@@ -204,10 +274,6 @@ struct DaysTagView: View {
             return info.hasItemsConforming(to: ["public.text"])
         }
     }
-
-    private func deleteEmptyTag(at index: Int) {
-        combinedTags.remove(at: index)
-        }
 
 }
 extension View {
