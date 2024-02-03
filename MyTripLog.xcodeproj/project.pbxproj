@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D52B4D2F84003F99A1 /* Tag.swift */; };
 		374A64D82B4D2F99003F99A1 /* TagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D72B4D2F99003F99A1 /* TagView.swift */; };
-		374A64E02B4EC2B9003F99A1 /* TaskHomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64DF2B4EC2B9003F99A1 /* TaskHomeView.swift */; };
 		374A64E22B4EC2FD003F99A1 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64E12B4EC2FD003F99A1 /* Task.swift */; };
 		374A64E42B4EDB33003F99A1 /* DaysTagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64E32B4EDB33003F99A1 /* DaysTagView.swift */; };
 		3767BEF12B47C0BD00AED916 /* MyTripLogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BEF02B47C0BD00AED916 /* MyTripLogApp.swift */; };
@@ -27,7 +26,6 @@
 /* Begin PBXFileReference section */
 		374A64D52B4D2F84003F99A1 /* Tag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Tag.swift; path = ../Tag.swift; sourceTree = "<group>"; };
 		374A64D72B4D2F99003F99A1 /* TagView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagView.swift; sourceTree = "<group>"; };
-		374A64DF2B4EC2B9003F99A1 /* TaskHomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskHomeView.swift; sourceTree = "<group>"; };
 		374A64E12B4EC2FD003F99A1 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		374A64E32B4EDB33003F99A1 /* DaysTagView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysTagView.swift; sourceTree = "<group>"; };
 		3767BEED2B47C0BD00AED916 /* MyTripLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyTripLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -108,7 +106,6 @@
 				3767BF062B48DCA600AED916 /* SetdetailVIew.swift */,
 				3767BF082B48EBDB00AED916 /* MainView.swift */,
 				374A64D72B4D2F99003F99A1 /* TagView.swift */,
-				374A64DF2B4EC2B9003F99A1 /* TaskHomeView.swift */,
 				374A64E32B4EDB33003F99A1 /* DaysTagView.swift */,
 				379189772B5C7771001DB52F /* EditRowTextView.swift */,
 				37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */,
@@ -194,7 +191,6 @@
 				374A64E22B4EC2FD003F99A1 /* Task.swift in Sources */,
 				379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */,
 				3767BF052B47ECB700AED916 /* Home.swift in Sources */,
-				374A64E02B4EC2B9003F99A1 /* TaskHomeView.swift in Sources */,
 				37F952F12B65F018004EEAA8 /* TagReSizingVIew.swift in Sources */,
 				3767BEF52B47C0BD00AED916 /* Item.swift in Sources */,
 				3767BEF12B47C0BD00AED916 /* MyTripLogApp.swift in Sources */,
@@ -340,6 +336,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -369,6 +366,7 @@
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

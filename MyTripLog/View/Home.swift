@@ -45,6 +45,9 @@ struct Home: View {
     @State private var tagID: String = ""
     @State private var changeAll : Bool = false
     @State private var getTagColor : Color = .clear
+    @State private var startTime = 9
+    @State private var endTime = 24
+    @State private var tagSizeUpdatedNotificationReceived = false
 
     var body: some View {
         NavigationStack{
@@ -96,7 +99,7 @@ struct Home: View {
                 HStack{
                     VStack {
                         Spacer(minLength: fontSize + 21)
-                        ForEach(9..<24) { hour in
+                        ForEach(startTime..<endTime) { hour in
                             VStack(spacing:10) {
                                 Text("\(String(format: "%02d", hour)):00")
                                 
@@ -211,11 +214,14 @@ struct Home: View {
         .overlay{
             ZStack{
                 if setHeight {
-                    TagReSizingVIew(tagText: $tagText,tagColor: $tagColor, tagTime: $tagTime,tagHeight: $tagHeight,tagID: $tagID,changeAll: $changeAll, onSubmit: {
+                    TagReSizingVIew(tagText: $tagText,tagColor: $tagColor, tagTime: $tagTime,tagHeight: $tagHeight,tagID: $tagID,changeAll: $changeAll,tagSizeUpdatedNotificationReceived: $tagSizeUpdatedNotificationReceived, onSubmit: {
                         updateSelectedTagTime(tagTime: tagTime)
 
-                    }, onClose: {
                         setHeight = false
+//                        changeAll = false
+                        }, onClose: {
+                        setHeight = false
+                        changeAll = false
                     })
                 
                     .transition(.opacity)
@@ -224,10 +230,11 @@ struct Home: View {
             .animation(.snappy, value: setHeight)
         }
 
-    }
+    } //Bool을 하나 만들어서 처리
     func updateSelectedTagTime(tagTime: Double) {
            selectedTagTime = tagTime
         NotificationCenter.default.post(name: Notification.Name("TagSizeUpdated"), object: ["tagText": tagText, "tagHeight": selectedTagTime, "tagID": tagID, "changeAll": changeAll])
+        //Notification 대신에 Bool이나 Binding으로 바로 전달해보기
         setHeight = false
         tagText = ""
         tagID = ""
@@ -310,7 +317,7 @@ struct Home: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagSizeUpdatedNotificationReceived: $tagSizeUpdatedNotificationReceived)
                     .frame(height: geometry.size.height)
             }
         }

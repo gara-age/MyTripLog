@@ -19,16 +19,21 @@ struct TagReSizingVIew: View {
     @Binding var tagID : String
     @State private var setTagTime = 1.0
     @Binding var changeAll : Bool
+    @State private var isTagFull : Bool = false
+    @Binding var tagSizeUpdatedNotificationReceived : Bool
+
+
     var onSubmit : () -> ()
     var onClose : () -> ()
     
-    init(tagText: Binding<String>, tagColor: Binding<Color>, tagTime: Binding<CGFloat>, tagHeight: Binding<CGFloat>,tagID: Binding<String>,changeAll: Binding<Bool>, onSubmit: @escaping () -> (), onClose: @escaping () -> ()) {
+    init(tagText: Binding<String>, tagColor: Binding<Color>, tagTime: Binding<CGFloat>, tagHeight: Binding<CGFloat>,tagID: Binding<String>,changeAll: Binding<Bool>,tagSizeUpdatedNotificationReceived: Binding<Bool>, onSubmit: @escaping () -> (), onClose: @escaping () -> ()) {
         self._tagText = tagText
         self._tagColor = tagColor
         self._tagTime = tagTime
         self._tagHeight = tagHeight
         self._tagID = tagID
         self._changeAll = changeAll
+        self._tagSizeUpdatedNotificationReceived = tagSizeUpdatedNotificationReceived
         self.onSubmit = onSubmit
         self.onClose = onClose
         self._setTagTime = State(initialValue: tagHeight.wrappedValue / 36)
@@ -91,12 +96,14 @@ struct TagReSizingVIew: View {
                     incrementTagTime()
                     
                 }
+                .disabled(isTagFull)
                 .tint(.plus)
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.roundedRectangle(radius: 5))
             }
             Spacer()
-            
+            Text("일정이 모두 차버려 더 이상 시간을 추가할 수 없습니다.")
+                .opacity(isTagFull ? 1 : 0)
             Toggle("동일한 일정들의 시간 모두 변경", isOn: $changeAll)
                 .toggleStyle(SwitchToggleStyle(tint: .black))
             Spacer()
@@ -106,7 +113,6 @@ struct TagReSizingVIew: View {
                 
                 Button("취소") {
                     onClose()
-                    
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.roundedRectangle(radius: 5))
@@ -114,13 +120,18 @@ struct TagReSizingVIew: View {
                 
                 Button("수정") {
                     onSubmit()
-                    
+                    //일정 꽉 찰 경우 + 눌렀을때 비활성화 처리
+                  
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.roundedRectangle(radius: 5))
                 .tint(.blue)
+                
             }
             Spacer()
+        }
+        .onAppear{
+            tagSizeUpdatedNotificationReceived = false
         }
         .padding()
         .background(.ultraThinMaterial)

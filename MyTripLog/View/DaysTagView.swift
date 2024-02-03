@@ -25,8 +25,13 @@ struct DaysTagView: View {
     @Binding var tagHeight : CGFloat
     @Binding var tagID : String
     @Binding var getTagColor : Color
-
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>) {
+    @Binding var startTime : Int
+    @Binding var endTime : Int
+    @State private var viewHeight : CGFloat = 0
+    @Binding var tagSizeUpdatedNotificationReceived : Bool
+    
+    
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagSizeUpdatedNotificationReceived: Binding<Bool>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -35,7 +40,10 @@ struct DaysTagView: View {
         self._tagHeight = tagHeight
         self._tagID = tagID
         self._getTagColor = getTagColor
-        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), count: 100).enumerated().map { index, _ in
+        self._startTime = startTime
+        self._endTime = endTime
+        self._tagSizeUpdatedNotificationReceived = tagSizeUpdatedNotificationReceived
+        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), count: 48).enumerated().map { index, _ in
             Tag(id: UUID().uuidString, text: "", color: .clear, height: 18)
         } + tags.wrappedValue)
     }
@@ -75,7 +83,10 @@ struct DaysTagView: View {
                 .frame(maxWidth: .infinity)
                 .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor) : DaysTagViewDragDropDelegate(tags: $combinedTags))
             }
-
+            .onAppear{
+                let time = (startTime - endTime) * 36
+                viewHeight = CGFloat(time)
+            }
         }
    
     }
@@ -87,7 +98,7 @@ struct DaysTagView: View {
             Text(tag.text)
                 .font(.system(size: fontSize))
                 .if(tag.text.isEmpty && !tagView){  draggableText in
-                    draggableText.padding(.horizontal, 150)
+                    draggableText.padding(.horizontal, 70)
                 }
                 .if(!tag.text.isEmpty){  draggableText in
                     draggableText
@@ -111,6 +122,9 @@ struct DaysTagView: View {
                                       tagColor = tag.color
                                       tagText = tag.text
                                       setHeight = true
+                                      //if 태그들의 height == viewHeight {시간변경에서 +는 불가 처리 및 잔여시간 없음 안내, 일괄로 처리도 불가한 일정 외에 변경 됩니다 or 불가한 일정이 있어 처리가 어렵습니다}
+                                      //일정이 꽉찬 DaysTagView에 tagText와 일치하는 Tag가 없을 경우 일괄 처리 가능
+                                      
                                   }
                                   Button("삭제") {
                                       if let tagIndex = combinedTags.firstIndex(of: tag) {
@@ -122,26 +136,45 @@ struct DaysTagView: View {
                                       }
                                   }
                               }
+//                    else { //일단 보류
+//                        Button("일정 추가"){
+//                            print("일정추가")
+//                        }
+//                    }
                           }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagSizeUpdated"))) { notification in
                     if let userInfo = notification.object as? [String: Any],
                        let tagText = userInfo["tagText"] as? String,
                        let tagHeight = userInfo["tagHeight"] as? Double,
                        let tagID = userInfo["tagID"] as? String ,
+                       
                     let changeAll = userInfo["changeAll"] as? Bool{
 
                         if changeAll {
-                            combinedTags.indices.forEach { index in
-                                           if combinedTags[index].text == tagText {
-                                               combinedTags[index].height = CGFloat(tagHeight * 36)
-                                           }
-                                       }
+                                combinedTags.indices.forEach { index in
+
+                                    if combinedTags[index].text == tagText {
+
+                                        combinedTags[index].height = CGFloat(tagHeight * 36)
+                                        print("changeAll")
+
+                                    }
+                                }
+
                         } else {
-                            if let selectedTagIndex = combinedTags.firstIndex(where: { $0.text == tagText && $0.id == tagID }) {
-                                combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
+                                if let selectedTagIndex = combinedTags.firstIndex(where: { $0.text == tagText && $0.id == tagID }) {
+                                    guard !tagSizeUpdatedNotificationReceived else { return }
+
+                                    combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
+                                    print("changeOne")
+
+                                    tagSizeUpdatedNotificationReceived = true
+
                             }
                         }
+
                     }
+
                 }
                 .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
                                     if let userInfo = notification.object as? [String: Any],
@@ -199,9 +232,7 @@ struct DaysTagView: View {
                     }
                 }
 
-
                 .matchedGeometryEffect(id: tag.id, in: animation)
-
                 .if(!tag.text.isEmpty) { draggableText in
                                 draggableText.draggable(tag.text) {
                                     RoundedRectangle(cornerRadius: 10)
@@ -216,6 +247,8 @@ struct DaysTagView: View {
         }
 
     }
+    //MARK: - Function
+    
 
     //MARK: - DragDropDelegate
 
