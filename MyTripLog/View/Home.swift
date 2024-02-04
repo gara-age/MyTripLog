@@ -214,11 +214,10 @@ struct Home: View {
         .overlay{
             ZStack{
                 if setHeight {
-                    TagReSizingVIew(tagText: $tagText,tagColor: $tagColor, tagTime: $tagTime,tagHeight: $tagHeight,tagID: $tagID,changeAll: $changeAll,tagSizeUpdatedNotificationReceived: $tagSizeUpdatedNotificationReceived, onSubmit: {
+                    TagReSizingVIew(tagText: $tagText,tagColor: $tagColor, tagTime: $tagTime,tagHeight: $tagHeight,tagID: $tagID,changeAll: $changeAll, onSubmit: {
+                        
                         updateSelectedTagTime(tagTime: tagTime)
-
                         setHeight = false
-//                        changeAll = false
                         }, onClose: {
                         setHeight = false
                         changeAll = false
@@ -229,12 +228,12 @@ struct Home: View {
             }
             .animation(.snappy, value: setHeight)
         }
-
-    } //Bool을 하나 만들어서 처리
+    }
     func updateSelectedTagTime(tagTime: Double) {
            selectedTagTime = tagTime
+
         NotificationCenter.default.post(name: Notification.Name("TagSizeUpdated"), object: ["tagText": tagText, "tagHeight": selectedTagTime, "tagID": tagID, "changeAll": changeAll])
-        //Notification 대신에 Bool이나 Binding으로 바로 전달해보기
+
         setHeight = false
         tagText = ""
         tagID = ""
@@ -317,7 +316,7 @@ struct Home: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagSizeUpdatedNotificationReceived: $tagSizeUpdatedNotificationReceived)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime)
                     .frame(height: geometry.size.height)
             }
         }

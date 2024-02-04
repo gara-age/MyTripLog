@@ -27,11 +27,9 @@ struct DaysTagView: View {
     @Binding var getTagColor : Color
     @Binding var startTime : Int
     @Binding var endTime : Int
-    @State private var viewHeight : CGFloat = 0
-    @Binding var tagSizeUpdatedNotificationReceived : Bool
+    @Binding var tagTime : CGFloat
     
-    
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagSizeUpdatedNotificationReceived: Binding<Bool>) {
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -42,7 +40,7 @@ struct DaysTagView: View {
         self._getTagColor = getTagColor
         self._startTime = startTime
         self._endTime = endTime
-        self._tagSizeUpdatedNotificationReceived = tagSizeUpdatedNotificationReceived
+        self._tagTime = tagTime
         self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), count: 48).enumerated().map { index, _ in
             Tag(id: UUID().uuidString, text: "", color: .clear, height: 18)
         } + tags.wrappedValue)
@@ -83,12 +81,9 @@ struct DaysTagView: View {
                 .frame(maxWidth: .infinity)
                 .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor) : DaysTagViewDragDropDelegate(tags: $combinedTags))
             }
-            .onAppear{
-                let time = (startTime - endTime) * 36
-                viewHeight = CGFloat(time)
-            }
+ 
         }
-   
+
     }
     //MARK: - RowView
 
@@ -119,6 +114,8 @@ struct DaysTagView: View {
                                   Button("시간 변경") {
                                       tagID = tag.id
                                       tagHeight = tag.height
+                                      tagTime = tagHeight / 36
+
                                       tagColor = tag.color
                                       tagText = tag.text
                                       setHeight = true
@@ -136,102 +133,172 @@ struct DaysTagView: View {
                                       }
                                   }
                               }
-//                    else { //일단 보류
-//                        Button("일정 추가"){
-//                            print("일정추가")
-//                        }
-//                    }
+
                           }
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagSizeUpdated"))) { notification in
-                    if let userInfo = notification.object as? [String: Any],
-                       let tagText = userInfo["tagText"] as? String,
-                       let tagHeight = userInfo["tagHeight"] as? Double,
-                       let tagID = userInfo["tagID"] as? String ,
-                       
-                    let changeAll = userInfo["changeAll"] as? Bool{
+                .if(!tag.text.isEmpty && tag.text == tagText){ RowView in
+                    RowView
+                        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagSizeUpdated"))) { notification in
+                            if let userInfo = notification.object as? [String: Any],
+                               let tagText = userInfo["tagText"] as? String,
+                               let tagHeight = userInfo["tagHeight"] as? Double,
+                               let tagID = userInfo["tagID"] as? String ,
+                               let changeAll = userInfo["changeAll"] as? Bool {
+                                
+                                print("received")
+                                if changeAll {
+                                    combinedTags.indices.forEach { index in
+                                        if combinedTags[index].text == tagText {
+                                            combinedTags[index].height = CGFloat(tagHeight * 36)
+                                            print("changeAll")
+                                        }
+                                    }
+                                } else {
+                                    if let selectedTagIndex = combinedTags.firstIndex(where: { $0.text == tagText && $0.id == tagID }) {
+                                        
+                                        let originalHeight = combinedTags[selectedTagIndex].height
+                                        
+                                        
+                                        if combinedTags[selectedTagIndex + 1].text.isEmpty{
+                                            if tagHeight > 1 {
+                                                //목표치가 36보다 크다
+                                                if originalHeight == 36 {
+                                                    //1.5시간 이상이 되려고하는데 originalHeight가 36일때
+                                                    let tagOriginalHeight = originalHeight
+                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                                                    if removalCount < 0 {
+                                                        removalCount = removalCount * -1
+                                                        for i in 1...removalCount {
+                                                                if selectedTagIndex + i < combinedTags.count {
+                                                                    print("\(i) is i")
+                                                                    combinedTags.remove(at: selectedTagIndex + 1)
+                                                                    print("removalCount is low then 0. \(removalCount)")
+                                                                }
+                                                        }
+                                                        
+                                                    }
+                                                }
+                                                else if originalHeight > 36 {
+                                                    //1.5시간 이상이 되려고하는데 originalHeight가 54 이상일때
+                                                    let tagOriginalHeight = originalHeight
+                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                                                    if removalCount < 0 {
+                                                        removalCount = removalCount * -1
+                                                        for i in 1...removalCount {
+                                                            if selectedTagIndex + i < combinedTags.count {
+                                                                combinedTags.remove(at: selectedTagIndex + 1)
+                                                                print("removalCount is low then 0")
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else if originalHeight < 36 {
+                                                    let tagOriginalHeight = originalHeight
+                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                                                    if removalCount < 0 {
+                                                        removalCount = removalCount * -1
+                                                        for i in 1...removalCount {
+                                                            if selectedTagIndex + i < combinedTags.count {
+                                                                combinedTags.remove(at: selectedTagIndex + 1)
+                                                                print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). remove \(removalCount)")
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            } else if tagHeight == 1{
+                                                let tagOriginalHeight = originalHeight
+                                                if originalHeight > 36 {
+                                                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                                                    for i in 1...insertCount {
+                                                        if selectedTagIndex + i < combinedTags.count {
+                                                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
+                                                            print("insert")
 
-                        if changeAll {
-                                combinedTags.indices.forEach { index in
-
-                                    if combinedTags[index].text == tagText {
-
-                                        combinedTags[index].height = CGFloat(tagHeight * 36)
-                                        print("changeAll")
+                                                        }
+                                                    }
+                                                } else if originalHeight < 36 {
+                                                    combinedTags.remove(at: selectedTagIndex + 1)
+                                                }
+                                            } else if tagHeight < 1 {
+                                                if originalHeight == 36 {
+                                                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + 1)
+                                                }
+                                                else if originalHeight > 36 {
+                                                    let tagOriginalHeight = originalHeight
+                                                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                                                    for i in 1...insertCount {
+                                                        if selectedTagIndex + i < combinedTags.count {
+                                                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
+                                                            print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). insert \(insertCount)")
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            
+                                        }
+                                        print("changeOne")
+                                        
+                                        combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
 
                                     }
                                 }
-
-                        } else {
-                                if let selectedTagIndex = combinedTags.firstIndex(where: { $0.text == tagText && $0.id == tagID }) {
-                                    guard !tagSizeUpdatedNotificationReceived else { return }
-
-                                    combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
-                                    print("changeOne")
-
-                                    tagSizeUpdatedNotificationReceived = true
-
                             }
                         }
-
+                    .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
+                        if let userInfo = notification.object as? [String: Any],
+                           let color = userInfo["color"] as? Color,
+                           let originalText = userInfo["originalText"] as? String {
+                            
+                            // Find and update all tags in combinedTags based on text
+                            combinedTags = combinedTags.map { existingTag in
+                                if existingTag.text == originalText {
+                                    var updatedTag = existingTag
+                                    updatedTag.color = color
+                                    return updatedTag
+                                }
+                                else {
+                                    return existingTag
+                                }
+                            }
+                        }
                     }
-
-                }
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
-                                    if let userInfo = notification.object as? [String: Any],
-                                       let color = userInfo["color"] as? Color,
-                                       let originalText = userInfo["originalText"] as? String {
-
-                                        // Find and update all tags in combinedTags based on text
-                                        combinedTags = combinedTags.map { existingTag in
-                                            if existingTag.text == originalText {
-                                                var updatedTag = existingTag
-                                                updatedTag.color = color
-                                                return updatedTag
-                                            }
-                                            else {
-                                                return existingTag
-                                            }
+                    .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagUpdated"))) { notification in
+                        if let userInfo = notification.object as? [String: Any],
+                           let updatedTag = userInfo["tag"] as? Tag,
+                           let newText = userInfo["newText"] as? String,
+                           let originalText = userInfo["originalText"] as? String {
+                            
+                            // Find and update the tag in combinedTags based on text
+                            if let index = combinedTags.firstIndex(where: { $0.text == originalText }) {
+                                // Update the tag in combinedTags
+                                combinedTags[index].text = newText
+                            }
+                        }
+                    }
+                    .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagDeleted"))) { notification in
+                        if let deletedTag = notification.object as? Tag {
+                            let copyDeletedTag = deletedTag
+                            // Find tags in combinedTags with the same text as the deleted tag
+                            let tagsWithSameText = combinedTags.filter { $0.text == copyDeletedTag.text }
+                            
+                            // Use the height of each tag with the same text (if available)
+                            for tagWithSameText in tagsWithSameText {
+                                if let originalHeight = tagWithSameText.height as CGFloat? , originalHeight > 18 {
+                                    // Your existing code that uses originalHeight
+                                    let insertCount = Int(originalHeight / 18) - 1
+                                    if let tagIndex = combinedTags.firstIndex(where: { $0.text == tagWithSameText.text && $0.id == tagWithSameText.id }) {
+                                        for _ in 0..<insertCount + 1 {
+                                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), at: tagIndex)
+                                            print("tag inserted \(insertCount) times")
                                         }
                                     }
                                 }
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagUpdated"))) { notification in
-                                  if let userInfo = notification.object as? [String: Any],
-                                     let updatedTag = userInfo["tag"] as? Tag,
-                                     let newText = userInfo["newText"] as? String,
-                                     let originalText = userInfo["originalText"] as? String {
-                                      
-                                      // Find and update the tag in combinedTags based on text
-                                      if let index = combinedTags.firstIndex(where: { $0.text == originalText }) {
-                                          // Update the tag in combinedTags
-                                          combinedTags[index].text = newText
-                                      }
-                                  }
-                              }
-                .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagDeleted"))) { notification in
-                    if let deletedTag = notification.object as? Tag {
-                        let copyDeletedTag = deletedTag
-                        // Find tags in combinedTags with the same text as the deleted tag
-                        let tagsWithSameText = combinedTags.filter { $0.text == copyDeletedTag.text }
-
-                        // Use the height of each tag with the same text (if available)
-                        for tagWithSameText in tagsWithSameText {
-                            if let originalHeight = tagWithSameText.height as CGFloat? , originalHeight > 18 {
-                                // Your existing code that uses originalHeight
-                                let insertCount = Int(originalHeight / 18) - 1
-                                if let tagIndex = combinedTags.firstIndex(where: { $0.text == tagWithSameText.text && $0.id == tagWithSameText.id }) {
-                                    for _ in 0..<insertCount + 1 {
-                                        combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), at: tagIndex)
-                                        print("tag inserted \(insertCount) times")
-                                    }
-                                }
                             }
+                            
+                            
+                            removeTag(withText: deletedTag.text, from: &combinedTags)
                         }
-
-
-                        removeTag(withText: deletedTag.text, from: &combinedTags)
                     }
                 }
-
                 .matchedGeometryEffect(id: tag.id, in: animation)
                 .if(!tag.text.isEmpty) { draggableText in
                                 draggableText.draggable(tag.text) {

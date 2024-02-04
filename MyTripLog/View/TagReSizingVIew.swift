@@ -20,20 +20,18 @@ struct TagReSizingVIew: View {
     @State private var setTagTime = 1.0
     @Binding var changeAll : Bool
     @State private var isTagFull : Bool = false
-    @Binding var tagSizeUpdatedNotificationReceived : Bool
 
 
     var onSubmit : () -> ()
     var onClose : () -> ()
     
-    init(tagText: Binding<String>, tagColor: Binding<Color>, tagTime: Binding<CGFloat>, tagHeight: Binding<CGFloat>,tagID: Binding<String>,changeAll: Binding<Bool>,tagSizeUpdatedNotificationReceived: Binding<Bool>, onSubmit: @escaping () -> (), onClose: @escaping () -> ()) {
+    init(tagText: Binding<String>, tagColor: Binding<Color>, tagTime: Binding<CGFloat>, tagHeight: Binding<CGFloat>,tagID: Binding<String>,changeAll: Binding<Bool>, onSubmit: @escaping () -> (), onClose: @escaping () -> ()) {
         self._tagText = tagText
         self._tagColor = tagColor
         self._tagTime = tagTime
         self._tagHeight = tagHeight
         self._tagID = tagID
         self._changeAll = changeAll
-        self._tagSizeUpdatedNotificationReceived = tagSizeUpdatedNotificationReceived
         self.onSubmit = onSubmit
         self.onClose = onClose
         self._setTagTime = State(initialValue: tagHeight.wrappedValue / 36)
@@ -129,9 +127,6 @@ struct TagReSizingVIew: View {
                 
             }
             Spacer()
-        }
-        .onAppear{
-            tagSizeUpdatedNotificationReceived = false
         }
         .padding()
         .background(.ultraThinMaterial)
