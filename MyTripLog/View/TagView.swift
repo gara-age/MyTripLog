@@ -10,10 +10,10 @@ import SwiftUI
 // Custom View
 struct TagView: View {
     @Binding var tags : [Tag]
-    @State private var draggedTag: Tag?
-      @State private var dragOffset: CGSize = .zero
     var title: String = "Add Some Tags"
     var fontSize: CGFloat = 16
+    @Binding var draggedTag: Tag?
+    @Binding var tagText : String
 
     //Adding Geometry Effect to Tag
     @Namespace var animation
@@ -26,7 +26,6 @@ struct TagView: View {
     @State private var deleteRequest : Bool = false
     @State private var tagToDelete: Tag?
     var updateTags: ((Tag, String) -> Void)?
-
     var body: some View {
 //ScrollView
         VStack(alignment: .leading,spacing: 15){
@@ -77,16 +76,20 @@ struct TagView: View {
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
                 Button("내용 수정") {
+                    tagText = tag.text
+
                     originalText = tag.text
                     updateTags?(tag, editedText)
                     
                 }
                 Button("색상 변경") {
                     originalText = tag.text
+                    tagText = tag.text
 
                     UIColorWellHelper.helper.execute?()
                 }
                 Button("삭제"){
+                    tagText = tag.text
                     tagToDelete = tag
 
                     deleteRequest.toggle()
@@ -96,9 +99,32 @@ struct TagView: View {
             .onDrag {
                 tagView = true
                 getTagColor = tag.color
+
                 return NSItemProvider(object: tag.text as NSString)
 
                        }
+//            .draggable(tag.text) {
+//                Text(tag.text)
+//                    .font(.system(size: fontSize))
+//                    .padding(.horizontal, 14)
+//                    .padding(.vertical,8)
+//                    .background(
+//                    RoundedRectangle(cornerRadius: 5)
+//                        .fill(tag.color)
+//                    )
+//                    .foregroundColor(Color("BG"))
+//                    .contentShape(RoundedRectangle(cornerRadius: 5))
+//
+//                   .onAppear{
+//                       tagView = true
+//
+//                       getTagColor = tag.color
+//
+//                       draggedTag = tag
+//
+//                   }
+//
+//           }
             .matchedGeometryEffect(id: tag.id, in: animation)
             .alert("일정 삭제시 동일한 이름의 일정이 모두 삭제됩니다. 정말 삭제하시겠습니까?", isPresented: $deleteRequest) {
                 Button(role: .destructive) {
@@ -203,7 +229,7 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
     
     let size = (text as NSString).size(withAttributes: attributes)
 
-    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
+    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.5, brightness: 0.9)
 
     let height : CGFloat = 36
     

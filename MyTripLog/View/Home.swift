@@ -48,6 +48,7 @@ struct Home: View {
     @State private var startTime = 9
     @State private var endTime = 24
     @State private var tagSizeUpdatedNotificationReceived = false
+    @State private var draggedTag: Tag?
 
     var body: some View {
         NavigationStack{
@@ -55,7 +56,7 @@ struct Home: View {
                 //MARK: -TagView
                 
                 ScrollView(.vertical){
-                    TagView(tags: $tags, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, updateTags: updateTags)
+                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, updateTags: updateTags)
                 }
                 .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity)
@@ -169,6 +170,10 @@ struct Home: View {
             }
             
         }
+        .onChange(of: tagView) {
+            print(tagView)
+        }
+
         .disabled(editMode || setHeight)
         .overlay(
                     ColorPicker("", selection: $originalColor, supportsOpacity: false)
@@ -316,7 +321,7 @@ struct Home: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime,draggedTag: $draggedTag)
                     .frame(height: geometry.size.height)
             }
         }

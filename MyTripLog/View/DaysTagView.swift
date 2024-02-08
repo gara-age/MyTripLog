@@ -10,8 +10,7 @@ import SwiftUI
 // Custom View
 struct DaysTagView: View {
     @Binding var tags: [Tag]
-    @State private var draggedTag: Tag?
-    @State private var dragOffset: CGSize = .zero
+    @Binding var draggedTag: Tag?
     var title: String = "Add Some Tags"
     var fontSize: CGFloat = 16
     @Binding var tagView: Bool
@@ -28,8 +27,7 @@ struct DaysTagView: View {
     @Binding var startTime : Int
     @Binding var endTime : Int
     @Binding var tagTime : CGFloat
-    
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>) {
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -41,8 +39,9 @@ struct DaysTagView: View {
         self._startTime = startTime
         self._endTime = endTime
         self._tagTime = tagTime
+        self._draggedTag = draggedTag
         self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear, height: 18), count: 48).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "", color: .clear, height: 18)
+            Tag(id: UUID().uuidString, text: "" , color: .clear, height: 18)
         } + tags.wrappedValue)
     }
 //.onHover로 드랍 예상 위치 색 변하도록
@@ -58,16 +57,53 @@ struct DaysTagView: View {
                                 .if(combinedTags[index].text.isEmpty){ RowVIew in
                                     RowVIew.padding(.vertical,1.75)
                                 }
+                            //DragGesture + if(tagView){.onChange }를 한다면?
+//                                .if(tagView){ RowView in
+//                                    RowView
+//                                        .dropDestination(for: String.self) { items, location in
+//                                            print("draggable drop")
+//                                            draggedTag = draggedTag
+//
+//                                            return false
+//                                        } isTargeted: { status in
+//                                            let draggedTag = draggedTag
+//                                            if let draggedTag, status, draggedTag != combinedTags[index] {
+//                                                if let sourceIndex = tags.firstIndex(of: draggedTag),
+//                                                   let destinationIndex = combinedTags.firstIndex(of: combinedTags[index]) {
+//                                                    print("ccc")
+//                                                        let sourceItem = combinedTags.remove(at: sourceIndex)
+//                                                    print("ddd")
+//
+//                                                        combinedTags.insert(sourceItem, at: destinationIndex)
+//
+//
+//                                                }
+//                                                else {
+//                                                    print("else")
+//                                                    combinedTags[index].color = .red
+//
+//                                                }
+//                                                combinedTags[index].color = .yellow
+//
+//                                            }
+//                                            combinedTags[index].color = .orange
+//
+//                                        }
+//                                }
+                                .if(!tagView){ RowView in
+                                    RowView
+                                        .dropDestination(for: String.self) { items, location in
+                                        draggedTag = nil
+                                        return false
+                                    } isTargeted: { status in
 
-                                .dropDestination(for: String.self) { items, location in
-                                    draggedTag = nil
-                                    return false
-                                } isTargeted: { status in
-                                    if let draggedTag, status, draggedTag != combinedTags[index] {
-                                        if let sourceIndex = combinedTags.firstIndex(of: draggedTag),
-                                           let destinationIndex = combinedTags.firstIndex(of: combinedTags[index]) {
-                                                let sourceItem = combinedTags.remove(at: sourceIndex)
-                                                combinedTags.insert(sourceItem, at: destinationIndex)
+                                        if let draggedTag, status, draggedTag != combinedTags[index] {
+                                            if let sourceIndex = combinedTags.firstIndex(of: draggedTag),
+                                               let destinationIndex = combinedTags.firstIndex(of: combinedTags[index]) {
+                                                    let sourceItem = combinedTags.remove(at: sourceIndex)
+                                                    combinedTags.insert(sourceItem, at: destinationIndex)
+                                                
+                                            }
                                         }
                                     }
                                 }
@@ -79,7 +115,7 @@ struct DaysTagView: View {
    
                 .scrollDisabled(true)
                 .frame(maxWidth: .infinity)
-                .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor) : DaysTagViewDragDropDelegate(tags: $combinedTags))
+                .onDrop(of: ["public.text"], delegate: tagView ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor, tagView: $tagView) : DaysTagViewDragDropDelegate(tags: $combinedTags))
             }
  
         }
@@ -98,7 +134,6 @@ struct DaysTagView: View {
                 .if(!tag.text.isEmpty){  draggableText in
                     draggableText
                         .frame(width: 150, height: tag.height)
-
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 5)
@@ -110,7 +145,7 @@ struct DaysTagView: View {
                 .lineLimit(nil)
                 .contentShape(RoundedRectangle(cornerRadius: 5))
                 .contextMenu {
-                              if !tag.text.isEmpty {
+                    if !tag.text.isEmpty {
                                   Button("시간 변경") {
                                       tagID = tag.id
                                       tagHeight = tag.height
@@ -144,12 +179,22 @@ struct DaysTagView: View {
                                let tagID = userInfo["tagID"] as? String ,
                                let changeAll = userInfo["changeAll"] as? Bool {
                                 
-                                print("received")
                                 if changeAll {
                                     combinedTags.indices.forEach { index in
-                                        if combinedTags[index].text == tagText {
-                                            combinedTags[index].height = CGFloat(tagHeight * 36)
-                                            print("changeAll")
+                                        for index in (0..<combinedTags.count).reversed() {
+                                            let tag = combinedTags[index]
+                                            // 여기서 tag를 사용하여 작업을 수행합니다.
+                                            // 작업이 완료된 후에 combinedTags 배열을 변경할 수 있습니다.
+                                            if combinedTags[index].text == tagText {
+                                                //변경 완료 후 사이즈가 변경되지않은 Tag가 있다면 다시 한번 처리하도록 해야함
+                                                let originalHeight = combinedTags[index].height
+    //                                            combinedTags[index].height = CGFloat(tagHeight * 36)
+                                                updateTagHeight(selectedTagIndex: index, originalHeight: originalHeight, tagHeight: tagHeight)
+
+
+                                                print("changeAll")
+                                            }
+
                                         }
                                     }
                                 } else {
@@ -157,87 +202,100 @@ struct DaysTagView: View {
                                         
                                         let originalHeight = combinedTags[selectedTagIndex].height
                                         
-                                        
-                                        if combinedTags[selectedTagIndex + 1].text.isEmpty{
-                                            if tagHeight > 1 {
-                                                //목표치가 36보다 크다
-                                                if originalHeight == 36 {
-                                                    //1.5시간 이상이 되려고하는데 originalHeight가 36일때
-                                                    let tagOriginalHeight = originalHeight
-                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                                                    if removalCount < 0 {
-                                                        removalCount = removalCount * -1
-                                                        for i in 1...removalCount {
-                                                                if selectedTagIndex + i < combinedTags.count {
-                                                                    print("\(i) is i")
-                                                                    combinedTags.remove(at: selectedTagIndex + 1)
-                                                                    print("removalCount is low then 0. \(removalCount)")
-                                                                }
-                                                        }
-                                                        
-                                                    }
-                                                }
-                                                else if originalHeight > 36 {
-                                                    //1.5시간 이상이 되려고하는데 originalHeight가 54 이상일때
-                                                    let tagOriginalHeight = originalHeight
-                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                                                    if removalCount < 0 {
-                                                        removalCount = removalCount * -1
-                                                        for i in 1...removalCount {
-                                                            if selectedTagIndex + i < combinedTags.count {
-                                                                combinedTags.remove(at: selectedTagIndex + 1)
-                                                                print("removalCount is low then 0")
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                else if originalHeight < 36 {
-                                                    let tagOriginalHeight = originalHeight
-                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                                                    if removalCount < 0 {
-                                                        removalCount = removalCount * -1
-                                                        for i in 1...removalCount {
-                                                            if selectedTagIndex + i < combinedTags.count {
-                                                                combinedTags.remove(at: selectedTagIndex + 1)
-                                                                print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). remove \(removalCount)")
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            } else if tagHeight == 1{
-                                                let tagOriginalHeight = originalHeight
-                                                if originalHeight > 36 {
-                                                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                                                    for i in 1...insertCount {
-                                                        if selectedTagIndex + i < combinedTags.count {
-                                                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
-                                                            print("insert")
+                                        updateTagHeight(selectedTagIndex: selectedTagIndex, originalHeight: originalHeight, tagHeight: tagHeight)
 
-                                                        }
-                                                    }
-                                                } else if originalHeight < 36 {
-                                                    combinedTags.remove(at: selectedTagIndex + 1)
-                                                }
-                                            } else if tagHeight < 1 {
-                                                if originalHeight == 36 {
-                                                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + 1)
-                                                }
-                                                else if originalHeight > 36 {
-                                                    let tagOriginalHeight = originalHeight
-                                                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                                                    for i in 1...insertCount {
-                                                        if selectedTagIndex + i < combinedTags.count {
-                                                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
-                                                            print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). insert \(insertCount)")
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            
-                                        }
+//                                        if combinedTags[selectedTagIndex + 1].text.isEmpty{
+//                                            if tagHeight > 1 {
+//                                                //목표치가 36보다 크다
+//                                                if originalHeight == 36 {
+//                                                    //1.5시간 이상이 되려고하는데 originalHeight가 36일때
+//                                                    let tagOriginalHeight = originalHeight
+//                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+//                                                    if removalCount < 0 {
+//                                                        removalCount = removalCount * -1
+//                                                        for i in 1...removalCount {
+//                                                                if selectedTagIndex + i < combinedTags.count {
+//                                                                    combinedTags.remove(at: selectedTagIndex + 1)
+//                                                                    print("removalCount is low then 0. \(removalCount)")
+//                                                                }
+//                                                        }
+//                                                        
+//                                                    }
+//                                                }
+//                                                else if originalHeight > 36 {
+//                                                    //1.5시간 이상이 되려고하는데 originalHeight가 54 이상일때
+//                                                    let tagOriginalHeight = originalHeight
+//                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+//                                                    if removalCount < 0 {
+//                                                        removalCount = removalCount * -1
+//                                                        for i in 1...removalCount {
+//                                                            if selectedTagIndex + i < combinedTags.count {
+//                                                                combinedTags.remove(at: selectedTagIndex + 1)
+//                                                                print("removalCount is low then 0")
+//                                                            }
+//                                                        }
+//                                                    } 
+//                                                    else {
+//                                                        let insertCount = removalCount
+////                                                        print("insertCount \(insertCount)")
+//                                                        if insertCount != 0 {
+//                                                            for i in 1...insertCount {
+//                                                                if selectedTagIndex + i < combinedTags.count {
+//                                                                    combinedTags.insert(Tag(text: "", color: .clear, height: 18), at: selectedTagIndex + 1)
+//                                                                    print("not Minus then insert Empty Tag")
+//                                                                }
+//                                                            }
+//                                                        }
+//                                                      
+//                                                    }
+//                                                }
+//                                                else if originalHeight < 36 {
+//                                                    let tagOriginalHeight = originalHeight
+//                                                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+//                                                    if removalCount < 0 {
+//                                                        removalCount = removalCount * -1
+//                                                        for i in 1...removalCount {
+//                                                            if selectedTagIndex + i < combinedTags.count {
+//                                                                combinedTags.remove(at: selectedTagIndex + 1)
+//                                                                print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). remove \(removalCount)")
+//                                                            }
+//                                                        }
+//                                                    }
+//                                                }
+//                                            } else if tagHeight == 1{
+//                                                let tagOriginalHeight = originalHeight
+//                                                if originalHeight > 36 {
+//                                                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+//                                                    for i in 1...insertCount {
+//                                                        if selectedTagIndex + i < combinedTags.count {
+//                                                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
+//                                                            print("insert")
+//
+//                                                        }
+//                                                    }
+//                                                } else if originalHeight < 36 {
+//                                                    combinedTags.remove(at: selectedTagIndex + 1)
+//                                                }
+//                                            } else if tagHeight < 1 {
+//                                                if originalHeight == 36 {
+//                                                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + 1)
+//                                                }
+//                                                else if originalHeight > 36 {
+//                                                    let tagOriginalHeight = originalHeight
+//                                                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+//                                                    for i in 1...insertCount {
+//                                                        if selectedTagIndex + i < combinedTags.count {
+//                                                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
+//                                                            print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). insert \(insertCount)")
+//                                                        }
+//                                                    }
+//                                                }
+//                                            }
+//                                            
+//                                        }
                                         print("changeOne")
                                         
-                                        combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
+//                                        combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
 
                                     }
                                 }
@@ -292,6 +350,7 @@ struct DaysTagView: View {
                                         }
                                     }
                                 }
+                                //각 Tag별 height에 맞게 보완 필요
                             }
                             
                             
@@ -299,32 +358,172 @@ struct DaysTagView: View {
                         }
                     }
                 }
-                .matchedGeometryEffect(id: tag.id, in: animation)
-                .if(!tag.text.isEmpty) { draggableText in
-                                draggableText.draggable(tag.text) {
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(.ultraThinMaterial)
-                                        .frame(width: 1, height: 1)
-                                        .onAppear {
-                                            draggedTag = tag
-                                            tagView = false
-                                        }
-                                }
-                            }
+//                .matchedGeometryEffect(id: tag.id, in: animation)
+                
+               
         }
-
+        .if(!tag.text.isEmpty) { draggableText in
+                        draggableText.draggable(tag.text) {
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(.ultraThinMaterial)
+                                .frame(width: 1, height: 1)
+                                .onAppear {
+                                    draggedTag = tag
+                                    tagView = false
+                                }
+                        }
+   
+                    }
     }
     //MARK: - Function
     
+    func updateTagHeight(selectedTagIndex: Int, originalHeight: CGFloat, tagHeight: Double) {
 
+        // combinedTags[selectedTagIndex + 1]이 비어 있는지 확인하고 필요에 따라 조정
+        //만약 selectedTagIndex +insertCount or removalCount의 위치에 공백 Tag가 아닌 Tag가 있다면 insert나 remove를 멈춰야함
+            
+            let originalHeight = combinedTags[selectedTagIndex].height
+            
+            let tagOriginalHeight = originalHeight
+
+            if combinedTags[selectedTagIndex + 1].text.isEmpty{
+                if tagHeight > 1 {
+                    //목표시간이 1시간 반 이상이고
+                    if originalHeight == 36 {
+                      
+                        if originalHeight != 36{
+                            print("pass")
+                        } else {
+                            // 현재 시간이 1시간일때
+                            var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                            if removalCount < 0 {
+                                removalCount = removalCount * -1
+                                for i in 1...removalCount {
+                                        if selectedTagIndex + i < combinedTags.count {
+                                            combinedTags.remove(at: selectedTagIndex + 1)
+                                            print("removalCount is low then 0. \(removalCount)")
+                                        }
+                                }
+                                
+                            }
+                        }
+                    }
+                    else if originalHeight > 36 {
+                        //현재시간이 1시간 반 이상일때
+                        var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                        if removalCount < 0 {
+                            removalCount = removalCount * -1
+                            if originalHeight < 36 || originalHeight == 36{
+                                print("pass")
+                            } else {
+                                for i in 1...removalCount {
+                                    if selectedTagIndex + i < combinedTags.count {
+                                        combinedTags.remove(at: selectedTagIndex + 1)
+                                        print("removalCount is low then 0")
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            if originalHeight < 36 || originalHeight == 36{
+                                print("pass")
+                            } else {
+                                //2시간 이상에서 현재시간을 1시간 반 으로 줄일때
+                                let insertCount = removalCount
+                                if insertCount != 0 {
+                                    for i in 1...insertCount {
+                                        if selectedTagIndex + i < combinedTags.count {
+                                            combinedTags.insert(Tag(text: "", color: .clear, height: 18), at: selectedTagIndex + 1)
+                                            print("not Minus then insert Empty Tag")
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if originalHeight < 36 {
+                        
+                        if originalHeight > 36 || originalHeight == 36{
+                            print("pass")
+                        } else {
+                            //현재시간이 30분 일때
+                             var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                            if removalCount < 0 {
+                                removalCount = removalCount * -1
+                                for i in 1...removalCount {
+                                    if selectedTagIndex + i < combinedTags.count {
+                                        combinedTags.remove(at: selectedTagIndex + 1)
+                                        print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). remove \(removalCount)")
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else if tagHeight == 1{
+                    //목표시간이 1시간이고
+                    if originalHeight > 36 {
+                       
+                        if originalHeight < 36 || originalHeight == 36{
+                            print("pass")
+                        } else {
+                            //현재시간이 1시간 반 이상일때
+                            let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                            for i in 1...insertCount {
+                                if selectedTagIndex + i < combinedTags.count {
+                                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
+                                    print("insert")
+
+                                }
+                            }
+                        }
+                    } else if originalHeight < 36 {
+                  
+                        if originalHeight > 36 || originalHeight == 36{
+                            print("pass")
+                        } else {
+                            //현재시간이 30분일때
+                            combinedTags.remove(at: selectedTagIndex + 1)
+                        }
+                        
+                    }
+                } else if tagHeight < 1 {
+                    //목표시간이 30분일때
+                    if originalHeight == 36 {
+                        if originalHeight != 36{
+                            print("pass")
+                        } else {
+                            //현재시간이 1시간일때
+                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + 1)
+                        }
+            
+                    }
+                    else if originalHeight > 36 {
+                        if originalHeight < 36 || originalHeight == 36{
+                            print("pass")
+                        } else {
+                            //현재시간이 1시간30분 이상일떄
+                            let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                            for i in 1...insertCount {
+                                if selectedTagIndex + i < combinedTags.count {
+                                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18),at: selectedTagIndex + i)
+                                    print("tag originalHeight \(tagOriginalHeight) -> \(tagHeight * 36). insert \(insertCount)")
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
+
+    }
     //MARK: - DragDropDelegate
 
     struct DaysTagViewDragDropDelegate: DropDelegate {
         @Binding var tags: [Tag]
 
         func performDrop(info: DropInfo) -> Bool {
-            guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
 
+            guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
             return false
         }
 
@@ -337,8 +536,10 @@ struct DaysTagView: View {
         @Binding var tags: [Tag]
         @Binding var combinedTags: [Tag]
         @Binding var getTagColor: Color
+        @Binding var tagView: Bool
 
         func performDrop(info: DropInfo) -> Bool {
+
             guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
 
             itemProvider.loadObject(ofClass: String.self) { (text, error) in
@@ -346,12 +547,12 @@ struct DaysTagView: View {
                     var droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
 
                     let location = info.location
-
                     let index = Int(floor(location.y / (18)))
+                    //location과 index 보완 필요
 
-                    if index >= 0 && index < combinedTags.count {
+                    if index >= 0 && index < combinedTags.count , combinedTags[index].text.isEmpty {
+                        //Tag 덮어씌우지 못하도록 처리
                         combinedTags.remove(at: index)
-
                         // Check if the tag at index + 1 is empty and remove it
                         if index + 1 < combinedTags.count, combinedTags[index + 1].text.isEmpty {
                             combinedTags.remove(at: index + 1)
@@ -366,9 +567,11 @@ struct DaysTagView: View {
                     }
                 }
             }
+            tagView = false
 
             return true
         }
+        
 
         func validateDrop(info: DropInfo) -> Bool {
             return info.hasItemsConforming(to: ["public.text"])
