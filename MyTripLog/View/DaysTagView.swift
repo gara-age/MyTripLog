@@ -36,9 +36,13 @@ struct DaysTagView: View {
     @Binding var escape : Bool
     let startFunction: () -> Void
     let cancelFunction: () -> Void
-
-
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void) {
+    let taskManager = TaskManager()
+    @State private var secTimer: Timer?
+    @State private var timeSpentInView: TimeInterval = 0
+    let threshold: TimeInterval = 3
+    @Binding var dayIndex : Int
+    
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -55,6 +59,7 @@ struct DaysTagView: View {
         self._escape = escape
         self.startFunction = startFunction
         self.cancelFunction = cancelFunction
+        self._dayIndex = dayIndex
         self._emptyTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "12345", color: .clear, height: 18, fontColor: .clear), count: 100).enumerated().map { index, _ in
             Tag(id: UUID().uuidString, text: "12345", color: .clear, height: 18, fontColor: .clear)
         })
@@ -125,8 +130,10 @@ struct DaysTagView: View {
                                             RowView
                                             //여러개의 DaysTagView의 empryTags에서 draggedTag가 insert 되었을 경우 움직임이 없는곳에서 지우도록
                                                 .dropDestination(for: String.self) { items, location in
-                                                  print("drop not blocked yet")
                                                     cancelFunction()
+                                                    if dayIndex >= 1 {
+                                                        stopSingleTimer()
+                                                    }
                                                     var droppedTag = MyTripLog.addTag(text: draggedTag!.text, fontSize: 16)
 
                                                     if lastIndex >= 0 && lastIndex < combinedTags.count , combinedTags[index].text.isEmpty {
@@ -156,13 +163,14 @@ struct DaysTagView: View {
            
                                                     return false
                                                 } isTargeted: { status in
-                                                   
                                                     let draggedTag = self.draggedTag
                                                     if let draggedTag, status, draggedTag != emptyTags[index] {
+
                                                         cancelFunction()
+                                                        stopSingleTimer()
+
                                                         if index == 0 {
                                                             emptyTags[0] = draggedTag
-                                                            print("index 0")
                                                         }
                                                         if emptyTags[0].text == "12345" {
                                                             emptyTags[0] = draggedTag
@@ -181,6 +189,9 @@ struct DaysTagView: View {
                                                             emptyTags.insert(sourceItem, at: destinationIndex)
                                                             lastIndex = destinationIndex
                                                             startFunction()
+                                                            if dayIndex > 0 {
+                                                                startSingleTimer()
+                                                            }
                                                         }
                                                        
                                                     }
@@ -206,9 +217,13 @@ struct DaysTagView: View {
                 }
                 .onChange(of: escape) {
                     if escape {
-                        print("reset Tag")
                         emptyTags[lastIndex] = Tag(text: "12345", color: .clear, height: 18, fontColor: .clear)
 
+                    }
+                }
+                .onChange(of: tagView) {
+                    if !tagView {
+                        stopSingleTimer()
                     }
                 }
             } //overlay 끝
@@ -395,7 +410,7 @@ struct DaysTagView: View {
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(tag.text.isEmpty || tag.text == "12345" ? Color.blue :  tag.color)
+                            .fill(tag.text.isEmpty || tag.text == "12345" ? Color.clear :  tag.color)
                             .frame(width: 150)
                             .frame(height: tag.text.isEmpty || tag.text == "12345" ? 18 : tag.height)
                     )
@@ -548,8 +563,59 @@ struct DaysTagView: View {
 
     }
     
+    func startSingleTimer() {
+        taskManager.executeTask {
+            print("Start Reset")
+            secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+                    timeSpentInView += 1
+                print(timeSpentInView)
+                    if timeSpentInView >= threshold {
+                        // 임계값 이상으로 머무른 경우 print
+                        print("User spent more than \(threshold) seconds in this view.")
+                        for index in (0..<emptyTags.count) {
+                            emptyTags[index] = Tag(text: "12345", color: .clear, height: 18, fontColor: .clear)
+                        }                        // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
+                        secTimer?.invalidate() // 타이머 중지
+                        timeSpentInView = 0
+                        print("timer is stopped")
+                        escape = false
 
+                    }
+                }
+        }
+    }
+    func stopSingleTimer() {
+        // 타이머 중지
+        taskManager.cancelTask()
+        secTimer?.invalidate()
+        timeSpentInView = 0
 
+    }
+
+    //MARK: - Class
+    class TaskManager {
+           private var currentTask: DispatchWorkItem?
+
+           func executeTask(_ task: @escaping () -> Void) {
+               // 이전 작업이 있는 경우 취소
+               currentTask?.cancel()
+
+               // 새 작업 생성
+               let newTask = DispatchWorkItem {
+                   task()
+               }
+
+               // 현재 작업 업데이트
+               currentTask = newTask
+
+               // 새 작업 실행
+               DispatchQueue.main.async(execute: newTask)
+           }
+           func cancelTask() {
+                  // 현재 작업이 있는 경우 취소
+                  currentTask?.cancel()
+              }
+       }
     
     //MARK: - DragDropDelegate
 

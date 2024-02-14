@@ -57,7 +57,8 @@ struct Home: View {
     @State private var timeSpentInView: TimeInterval = 0
         let threshold: TimeInterval = 5
         let thresLongWaithold: TimeInterval = 10
-
+    @State private var shownDayIndex : Int = 0
+    @State private var deleteDayRequest : Bool = false
     
     var body: some View {
         NavigationStack{
@@ -179,6 +180,8 @@ struct Home: View {
                             ForEach(0..<(currentDayIndex + 1), id: \.self) { dayIndex in
                                 getDayView(for: dayIndex)
                                     .frame(minWidth: 150)
+                                    
+                                   
                                 
                             }
                             
@@ -212,6 +215,9 @@ struct Home: View {
                     stopTimer()
                 }
             }
+            .onChange(of: currentDayIndex){
+                    shownDayIndex = currentDayIndex
+            }
             .frame(maxWidth: .infinity)
             
             .blur(radius: editMode || setHeight ? 5 : 0)
@@ -234,6 +240,7 @@ struct Home: View {
             }
             
         }
+       
         .disabled(editMode || setHeight)
         .overlay(
                     ColorPicker("", selection: $originalColor, supportsOpacity: false)
@@ -356,9 +363,8 @@ struct Home: View {
                                     if index == currentDayIndex {
                                         Menu(content: {
                                             Button {
-                                                withAnimation {
-                                                    deleteDay(at: index)
-                                                }
+                                                deleteDayRequest.toggle()
+                                                
                                             } label: {
                                                 Text("지우기")
                                             }
@@ -389,11 +395,28 @@ struct Home: View {
                     }
                 }
             }
+           
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex)
                 
                     .frame(height: geometry.size.height)
+            }
+        }
+        .alert("해당 일자에 포함된 모든 일정이 삭제됩니다. 정말 삭제하시겠습니까?", isPresented: $deleteDayRequest) {
+            Button(role: .destructive) {
+                withAnimation {
+                    deleteDay(at: index)
+                }
+                deleteDayRequest = false
+            } label: {
+                Text("삭제")
+            }
+
+            Button(role: .cancel) {
+                deleteDayRequest = false
+            } label: {
+                Text("취소")
             }
         }
         .frame(maxWidth: 150)
@@ -434,23 +457,18 @@ struct Home: View {
             escape = true
             tagView = false
             dropDone = true
-            print("this is last View")
     }
     
     func startTimer() {
         taskManager.executeTask {
-            print("Start Task")
             secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
                     timeSpentInView += 1
-                print(timeSpentInView)
                     if timeSpentInView >= threshold {
                         // 임계값 이상으로 머무른 경우 print
-                        print("User spent more than \(threshold) seconds in this view.")
                         startCancel()
                         // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
                         secTimer?.invalidate() // 타이머 중지
                         timeSpentInView = 0
-                        print("timer is stopped")
                         escape = false
 
                     }
@@ -459,18 +477,14 @@ struct Home: View {
     }
     func cancelByWaitFunction() {
         taskManager.executeTask {
-            print("Start LongWaitT")
             secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
                     timeSpentInView += 1
-                print(timeSpentInView)
                     if timeSpentInView >= thresLongWaithold {
                         // 임계값 이상으로 머무른 경우 print
-                        print("User spent more than \(thresLongWaithold) seconds in this view.")
                         startCancel()
                         // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
                         secTimer?.invalidate() // 타이머 중지
                         timeSpentInView = 0
-                        print("timer is stopped")
                         escape = false
 
                     }
@@ -479,7 +493,6 @@ struct Home: View {
     }
     func stopTimer() {
         // 타이머 중지
-        print("Stop Task")
         escape = false
 
         taskManager.cancelTask()
@@ -521,7 +534,6 @@ struct Home: View {
             DispatchQueue.main.async(execute: newTask)
         }
         func cancelTask() {
-            print("cancel task")
                // 현재 작업이 있는 경우 취소
                currentTask?.cancel()
                currentTask = nil
