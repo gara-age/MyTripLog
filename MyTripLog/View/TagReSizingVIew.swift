@@ -73,7 +73,7 @@ struct TagReSizingVIew: View {
                         .frame(width: 150)
                         .frame(height: heightSize )
                 )
-                .foregroundColor(Color("BG"))
+                .foregroundColor(Color.BG)
                 .lineLimit(1)
                 .contentShape(RoundedRectangle(cornerRadius: 5))
             Spacer()

@@ -49,21 +49,47 @@ struct Home: View {
     @State private var endTime = 24
     @State private var tagSizeUpdatedNotificationReceived = false
     @State private var draggedTag: Tag?
+    @State private var dropDone : Bool = true
+    @State private var escape = false
+    @State private var forCheck : Int = 0
+    let taskManager = TaskManager()
+    @State private var secTimer: Timer?
+    @State private var timeSpentInView: TimeInterval = 0
+        let threshold: TimeInterval = 5
+        let thresLongWaithold: TimeInterval = 10
 
+    
     var body: some View {
         NavigationStack{
             VStack{
                 //MARK: -TagView
                 
                 ScrollView(.vertical){
-                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, updateTags: updateTags)
+                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, updateTags: updateTags)
+                }
+                .onTapGesture{
+                    tagView = false
+                    dropDone = true
+                }
+                .if(tagView && !dropDone){ RowView in
+                    RowView
+                        .dropDestination(for: String.self) { items, location in
+                            print("return false")
+                            tagView = false
+                            dropDone = true
+                        return false
+                    } isTargeted: { status in
+                        if let draggedTag, status, draggedTag != tags[0] {
+                           
+                        }
+                    }
                 }
                 .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity)
                 .clipped()
                 
                 HStack{
-                    TextField("apple", text: $text) // 동일한 Tag생성 막을지 말지
+                    TextField("새로운 일정명을 입력하세요.", text: $text)
                         .padding(.vertical, 10)
                         .padding(.horizontal)
                         .background(
@@ -80,9 +106,9 @@ struct Home: View {
                             text = ""
                         }
                     } label: {
-                        Text("Add")
+                        Text("추가")
                             .fontWeight(.semibold)
-                            .foregroundStyle(Color("BG"))
+                            .foregroundStyle(Color("BGColor"))
                             .padding(.vertical, 12)
                             .padding(.horizontal, 45)
                             .background(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tags.contains(where: { $0.text == text }) ? Color.gray : Color("Tag"))
@@ -92,6 +118,20 @@ struct Home: View {
 
 
                 }
+                .if(tagView && !dropDone){ RowView in
+                    RowView
+                        .dropDestination(for: String.self) { items, location in
+                            print("return false")
+                            tagView = false
+                            dropDone = true
+                        return false
+                    } isTargeted: { status in
+                        if let draggedTag, status, draggedTag != tags[0] {
+                           
+                        }
+                    }
+                }
+                .padding(.horizontal, 7)
             }
             .background(.ultraThinMaterial)
             .blur(radius: editMode || setHeight ? 5 : 0)
@@ -110,9 +150,27 @@ struct Home: View {
                             }
                         }
                     }
+                    .onTapGesture{
+                        tagView = false
+                        dropDone = true
+                    }
+                    .if(tagView && !dropDone){ RowView in
+                        RowView
+                            .dropDestination(for: String.self) { items, location in
+                                print("return false")
+                                tagView = false
+                                dropDone = true
+                            return false
+                        } isTargeted: { status in
+                            if let draggedTag, status, draggedTag != tags[0] {
+                              
+                            }
+                        }
+                    }
                     .padding(.top, 10)
                     
                     .frame(maxWidth: 50)
+                    
                     
                     ScrollView(.horizontal,showsIndicators: false){
                         
@@ -142,14 +200,20 @@ struct Home: View {
                             }
                             
                         }
-                        
                         .background(.clear)
                         
                     }
-                    
+
                 }
                 
             }
+            .onChange(of: !tagView){
+                if !tagView {
+                    stopTimer()
+                }
+            }
+            .frame(maxWidth: .infinity)
+            
             .blur(radius: editMode || setHeight ? 5 : 0)
 
             .navigationTitle(title)
@@ -170,17 +234,12 @@ struct Home: View {
             }
             
         }
-        .onChange(of: tagView) {
-            print(tagView)
-        }
-
         .disabled(editMode || setHeight)
         .overlay(
                     ColorPicker("", selection: $originalColor, supportsOpacity: false)
                         .labelsHidden()
                         .opacity(0)
                         .onChange(of: originalColor) { newColor in
-                            // Post a notification with the selected color and originalText
                             NotificationCenter.default.post(
                                 name: Notification.Name("TagColorChanged"),
                                 object: ["color": newColor, "originalText": originalText]
@@ -198,8 +257,6 @@ struct Home: View {
                         }
                        
                         NotificationCenter.default.post(name: Notification.Name("TagUpdated"), object: ["tag": editedTag, "newText": editedText, "originalText": originalText])
-                        // Update the tags in DaysTagView
-                        // (You may need to pass similar update logic to DaysTagView)
                         
                         // Reset the editedTag and editedText
                         editedTag = nil
@@ -319,9 +376,23 @@ struct Home: View {
                     .font(.system(size: fontSize))
                 }
             }
+            .if(tagView && !dropDone){ RowView in
+                RowView
+                    .dropDestination(for: String.self) { items, location in
+                        print("return false")
+                        tagView = false
+                        dropDone = true
+                    return false
+                } isTargeted: { status in
+                    if let draggedTag, status, draggedTag != tags[0] {
+                      
+                    }
+                }
+            }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime,draggedTag: $draggedTag)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer)
+                
                     .frame(height: geometry.size.height)
             }
         }
@@ -357,6 +428,104 @@ struct Home: View {
         if currentDayIndex == 8 {
             isPlusButtonVisible = true
         }
+    }
+
+    func startCancel() {
+            escape = true
+            tagView = false
+            dropDone = true
+            print("this is last View")
+    }
+    
+    func startTimer() {
+        taskManager.executeTask {
+            print("Start Task")
+            secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+                    timeSpentInView += 1
+                print(timeSpentInView)
+                    if timeSpentInView >= threshold {
+                        // 임계값 이상으로 머무른 경우 print
+                        print("User spent more than \(threshold) seconds in this view.")
+                        startCancel()
+                        // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
+                        secTimer?.invalidate() // 타이머 중지
+                        timeSpentInView = 0
+                        print("timer is stopped")
+                        escape = false
+
+                    }
+                }
+        }
+    }
+    func cancelByWaitFunction() {
+        taskManager.executeTask {
+            print("Start LongWaitT")
+            secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
+                    timeSpentInView += 1
+                print(timeSpentInView)
+                    if timeSpentInView >= thresLongWaithold {
+                        // 임계값 이상으로 머무른 경우 print
+                        print("User spent more than \(thresLongWaithold) seconds in this view.")
+                        startCancel()
+                        // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
+                        secTimer?.invalidate() // 타이머 중지
+                        timeSpentInView = 0
+                        print("timer is stopped")
+                        escape = false
+
+                    }
+                }
+        }
+    }
+    func stopTimer() {
+        // 타이머 중지
+        print("Stop Task")
+        escape = false
+
+        taskManager.cancelTask()
+        secTimer?.invalidate()
+        timeSpentInView = 0
+
+    }
+    class TaskManager {
+        private var currentTask: DispatchWorkItem?
+
+        func executeTask(_ task: @escaping () -> Void) {
+            // 이전 작업이 있는 경우 취소
+            currentTask?.cancel()
+            
+            // 새 작업 생성
+            let newTask = DispatchWorkItem {
+                task()
+            }
+
+            // 현재 작업 업데이트
+            currentTask = newTask
+
+            // 새 작업 실행
+            DispatchQueue.main.async(execute: newTask)
+        }
+        func longWaitExecuteTask(_ task: @escaping () -> Void) {
+            // 이전 작업이 있는 경우 취소
+            currentTask?.cancel()
+            
+            // 새 작업 생성
+            let newTask = DispatchWorkItem {
+                task()
+            }
+
+            // 현재 작업 업데이트
+            currentTask = newTask
+
+            // 새 작업 실행
+            DispatchQueue.main.async(execute: newTask)
+        }
+        func cancelTask() {
+            print("cancel task")
+               // 현재 작업이 있는 경우 취소
+               currentTask?.cancel()
+               currentTask = nil
+           }
     }
 }
 

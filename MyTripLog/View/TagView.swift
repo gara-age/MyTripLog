@@ -14,7 +14,6 @@ struct TagView: View {
     var fontSize: CGFloat = 16
     @Binding var draggedTag: Tag?
     @Binding var tagText : String
-
     //Adding Geometry Effect to Tag
     @Namespace var animation
     @Binding var tagView : Bool
@@ -22,10 +21,18 @@ struct TagView: View {
      @State private var editedText: String = ""
     @Binding var originalText: String
     @Binding var getTagColor : Color
-
+    @Binding var dropDone : Bool
+    @Binding var escape : Bool
     @State private var deleteRequest : Bool = false
     @State private var tagToDelete: Tag?
+    @State private var cancelExecute: DispatchWorkItem?
+    let cancelFunction: () -> Void
+    let cancelByWaitFunction: () -> Void
+
+
     var updateTags: ((Tag, String) -> Void)?
+    
+    
     var body: some View {
 //ScrollView
         VStack(alignment: .leading,spacing: 15){
@@ -42,7 +49,7 @@ struct TagView: View {
                                 
                                 //Row View
                                 RowView(tag: row)
-                                
+                              
                             }
                         }
                     }
@@ -56,7 +63,7 @@ struct TagView: View {
             .frame(maxWidth: .infinity)
  
         }
-
+      
         .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
     }
     //MARK: - RowView
@@ -71,7 +78,7 @@ struct TagView: View {
             RoundedRectangle(cornerRadius: 5)
                 .fill(tag.color)
             )
-            .foregroundColor(Color("BG"))
+            .foregroundColor(tag.fontColor)
             .lineLimit(1)
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
@@ -96,35 +103,45 @@ struct TagView: View {
 
                 }
             }
-            .onDrag {
-                tagView = true
-                getTagColor = tag.color
+        //드랍이 잘못된 위치에 이루어진다면 tagView false , dropDone true 및 draggable 종료되어야함
+//            .onDrag {
+//                tagView = true
+//                getTagColor = tag.color
+//                draggedTag = tag
+//                dropDone = false
+//     
+//                return NSItemProvider(object: tag.text as NSString)
+//
+//                       }
+            .if(!escape){
+                $0
+                    .draggable(tag.text) {
+                        
+                        Text(tag.text)
+                            .font(.system(size: fontSize))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical,8)
+                            .background(
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(tag.color)
+                            )
+                            .foregroundColor(Color("BGColor"))
+                            .contentShape(RoundedRectangle(cornerRadius: 5))
 
-                return NSItemProvider(object: tag.text as NSString)
+                           .onAppear{
+                               tagView = true
+                               dropDone = false
+                               escape = false
+                               getTagColor = tag.color
 
-                       }
-//            .draggable(tag.text) {
-//                Text(tag.text)
-//                    .font(.system(size: fontSize))
-//                    .padding(.horizontal, 14)
-//                    .padding(.vertical,8)
-//                    .background(
-//                    RoundedRectangle(cornerRadius: 5)
-//                        .fill(tag.color)
-//                    )
-//                    .foregroundColor(Color("BG"))
-//                    .contentShape(RoundedRectangle(cornerRadius: 5))
-//
-//                   .onAppear{
-//                       tagView = true
-//
-//                       getTagColor = tag.color
-//
-//                       draggedTag = tag
-//
-//                   }
-//
-//           }
+                               draggedTag = tag
+                               cancelFunction()
+                               cancelByWaitFunction()
+
+                           }
+                      
+                   }
+            }
             .matchedGeometryEffect(id: tag.id, in: animation)
             .alert("일정 삭제시 동일한 이름의 일정이 모두 삭제됩니다. 정말 삭제하시겠습니까?", isPresented: $deleteRequest) {
                 Button(role: .destructive) {
@@ -233,7 +250,9 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
 
     let height : CGFloat = 36
     
-    return Tag(text: text, size: size.width, color: color, height: height)
+    var fontColor : Color = Color.BG
+    
+    return Tag(text: text, size: size.width, color: color, height: height, fontColor: fontColor)
 }
 
 func getSize(tags: [Tag])->Int{
