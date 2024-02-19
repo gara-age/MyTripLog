@@ -18,6 +18,8 @@
 		3767BF052B47ECB700AED916 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF042B47ECB700AED916 /* Home.swift */; };
 		3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF062B48DCA600AED916 /* SetdetailVIew.swift */; };
 		3767BF092B48EBDB00AED916 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF082B48EBDB00AED916 /* MainView.swift */; };
+		377D14582B835E6C00F14078 /* TravelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377D14572B835E6C00F14078 /* TravelCardView.swift */; };
+		377FBA292B839597001BD636 /* Travel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377FBA282B839597001BD636 /* Travel.swift */; };
 		379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379189772B5C7771001DB52F /* EditRowTextView.swift */; };
 		37F952F12B65F018004EEAA8 /* TagReSizingVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */; };
 /* End PBXBuildFile section */
@@ -35,6 +37,8 @@
 		3767BF042B47ECB700AED916 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		3767BF062B48DCA600AED916 /* SetdetailVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetdetailVIew.swift; sourceTree = "<group>"; };
 		3767BF082B48EBDB00AED916 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		377D14572B835E6C00F14078 /* TravelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelCardView.swift; sourceTree = "<group>"; };
+		377FBA282B839597001BD636 /* Travel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Travel.swift; sourceTree = "<group>"; };
 		379189772B5C7771001DB52F /* EditRowTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRowTextView.swift; sourceTree = "<group>"; };
 		37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagReSizingVIew.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -92,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				374A64D52B4D2F84003F99A1 /* Tag.swift */,
+				377FBA282B839597001BD636 /* Travel.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -106,6 +111,7 @@
 				374A64E32B4EDB33003F99A1 /* DaysTagView.swift */,
 				379189772B5C7771001DB52F /* EditRowTextView.swift */,
 				37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */,
+				377D14572B835E6C00F14078 /* TravelCardView.swift */,
 			);
 			path = View;
 			sourceTree = "<group>";
@@ -180,8 +186,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				377FBA292B839597001BD636 /* Travel.swift in Sources */,
 				374A64E42B4EDB33003F99A1 /* DaysTagView.swift in Sources */,
 				3767BF092B48EBDB00AED916 /* MainView.swift in Sources */,
+				377D14582B835E6C00F14078 /* TravelCardView.swift in Sources */,
 				3767BEF32B47C0BD00AED916 /* ContentView.swift in Sources */,
 				3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */,
 				374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */,

@@ -45,8 +45,8 @@ struct Home: View {
     @State private var tagID: String = ""
     @State private var changeAll : Bool = false
     @State private var getTagColor : Color = .clear
-    @State private var startTime = 9
-    @State private var endTime = 24
+    @Binding var startTime : Int
+    @Binding var endTime : Int
     @State private var tagSizeUpdatedNotificationReceived = false
     @State private var draggedTag: Tag?
     @State private var dropDone : Bool = true
@@ -60,7 +60,8 @@ struct Home: View {
     @State private var shownDayIndex : Int = 0
     @State private var deleteDayRequest : Bool = false
     @State private var forReset : Bool = false
-    
+    @Binding var nameText : String
+
     var body: some View {
         NavigationStack{
             VStack{
@@ -224,18 +225,19 @@ struct Home: View {
             
             .blur(radius: editMode || setHeight ? 5 : 0)
             
-            .navigationTitle(title)
+            .navigationTitle(nameText)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(NSLocalizedString("취소", comment:"")) {
+                        dismiss()
                     }
                     .tint(.red)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(NSLocalizedString("추가", comment:"")) {
-                        
+//                        dismiss()
                     }
                     .tint(.blue)
                 }

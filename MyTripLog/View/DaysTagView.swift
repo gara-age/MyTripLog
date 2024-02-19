@@ -43,7 +43,7 @@ struct DaysTagView: View {
     @State private var totalHeight: CGFloat = 0
     @State private var copyedCombinedTags: [Tag]
     @Binding var forReset : Bool
-
+    
     init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>) {
         self._tags = tags
         self._tagView = tagView

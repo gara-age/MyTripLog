@@ -9,57 +9,33 @@ import SwiftUI
 
 struct MainView: View {
     @State private var add : Bool = false
-    
+    @State private var searchText  = ""
+    @State private var nameText : String = ""
+    @State private var startTime : Int = 0
+    @State private var endTime : Int = 0
+
     var body: some View {
         NavigationStack{
-            VStack{
-                RoundedRectangle(cornerRadius: 10)
-                    .frame( width: 350, height: 150)
-                    .foregroundColor(Color.purple)
-                    .overlay(
-                        Image(systemName: "ellipsis")
-                            .rotationEffect(.degrees(90))
-                            .alignmentGuide(HorizontalAlignment.trailing, computeValue: { d in
-                                d[.trailing]
-                            })
-                            .alignmentGuide(VerticalAlignment.top, computeValue: { d in
-                                d[.top]
-                            })
-                            .offset(x: 150, y: -40)
-                            .font(.largeTitle)
-                    )
-                RoundedRectangle(cornerRadius: 10)
-                    .frame( width: 350, height: 150)
-                    .foregroundColor(Color.blue)
-                    .overlay(
-                        Image(systemName: "ellipsis")
-                            .rotationEffect(.degrees(90))
-                            .alignmentGuide(HorizontalAlignment.trailing, computeValue: { d in
-                                d[.trailing]
-                            })
-                            .alignmentGuide(VerticalAlignment.top, computeValue: { d in
-                                d[.top]
-                            })
-                            .offset(x: 150, y: -40)
-                            .font(.largeTitle)
-                        
-                    )
-                RoundedRectangle(cornerRadius: 10)
-                    .frame( width: 350, height: 150)
-                    .foregroundColor(Color.orange)
-                    .overlay(
-                        Image(systemName: "ellipsis")
-                            .rotationEffect(.degrees(90))
-                            .alignmentGuide(HorizontalAlignment.trailing, computeValue: { d in
-                                d[.trailing]
-                            })
-                            .alignmentGuide(VerticalAlignment.top, computeValue: { d in
-                                d[.top]
-                            })
-                            .offset(x: 150, y: -40)
-                            .font(.largeTitle)
-                        
-                    )
+            List{
+                Section {
+                    TravelCardView()
+                }
+                .frame(height: 130)
+                Section {
+                    TravelCardView()
+                }
+                .frame(height: 130)
+
+                Section {
+                    TravelCardView()
+                }
+                .frame(height: 130)
+
+                Section {
+                    TravelCardView()
+                }
+                .frame(height: 130)
+                .listRowSeparator(.hidden)
             }
             .navigationTitle("모든 일정")
             .toolbar {
@@ -71,10 +47,14 @@ struct MainView: View {
                     }
                 }
             }
-            .sheet(isPresented: $add, content: {
-                SetdetailVIew()
-            })
+            
+             .sheet(isPresented: $add, content: {
+                 SetdetailVIew(nameText: $nameText,startTime: $startTime, endTime:$endTime)
+             })
+             .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: Text("검색"))
+
         }
+
     }
 }
 
