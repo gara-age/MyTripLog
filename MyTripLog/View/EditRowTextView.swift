@@ -11,10 +11,10 @@ struct EditRowTextView: View {
     @Binding var editedText : String
     @Binding var tags: [Tag]
     @Binding var originalText: String
-
+    
     var onSubmit : () -> ()
     var onClose : () -> ()
- 
+    
     
     var body: some View {
         VStack{
@@ -40,7 +40,7 @@ struct EditRowTextView: View {
                 .buttonBorderShape(.roundedRectangle(radius: 5))
                 .tint(.blue)
                 .disabled(editedText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tags.contains(where: { $0.text == editedText }))
-
+                
             }
             .padding(.top, 10)
         }

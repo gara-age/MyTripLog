@@ -20,8 +20,8 @@ struct TagReSizingVIew: View {
     @State private var setTagTime = 1.0
     @Binding var changeAll : Bool
     @State private var isTagFull : Bool = false
-
-
+    
+    
     var onSubmit : () -> ()
     var onClose : () -> ()
     
@@ -119,7 +119,7 @@ struct TagReSizingVIew: View {
                 Button("수정") {
                     onSubmit()
                     //일정 꽉 찰 경우 + 눌렀을때 비활성화 처리
-                  
+                    
                 }
                 .buttonStyle(.borderedProminent)
                 .buttonBorderShape(.roundedRectangle(radius: 5))
@@ -128,6 +128,7 @@ struct TagReSizingVIew: View {
             }
             Spacer()
         }
+
         .padding()
         .background(.ultraThinMaterial)
         

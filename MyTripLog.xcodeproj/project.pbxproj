@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D52B4D2F84003F99A1 /* Tag.swift */; };
 		374A64D82B4D2F99003F99A1 /* TagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64D72B4D2F99003F99A1 /* TagView.swift */; };
-		374A64E22B4EC2FD003F99A1 /* Task.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64E12B4EC2FD003F99A1 /* Task.swift */; };
 		374A64E42B4EDB33003F99A1 /* DaysTagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374A64E32B4EDB33003F99A1 /* DaysTagView.swift */; };
 		3767BEF12B47C0BD00AED916 /* MyTripLogApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BEF02B47C0BD00AED916 /* MyTripLogApp.swift */; };
 		3767BEF32B47C0BD00AED916 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BEF22B47C0BD00AED916 /* ContentView.swift */; };
@@ -26,7 +25,6 @@
 /* Begin PBXFileReference section */
 		374A64D52B4D2F84003F99A1 /* Tag.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = Tag.swift; path = ../Tag.swift; sourceTree = "<group>"; };
 		374A64D72B4D2F99003F99A1 /* TagView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TagView.swift; sourceTree = "<group>"; };
-		374A64E12B4EC2FD003F99A1 /* Task.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Task.swift; sourceTree = "<group>"; };
 		374A64E32B4EDB33003F99A1 /* DaysTagView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DaysTagView.swift; sourceTree = "<group>"; };
 		3767BEED2B47C0BD00AED916 /* MyTripLog.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MyTripLog.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3767BEF02B47C0BD00AED916 /* MyTripLogApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTripLogApp.swift; sourceTree = "<group>"; };
@@ -94,7 +92,6 @@
 			isa = PBXGroup;
 			children = (
 				374A64D52B4D2F84003F99A1 /* Tag.swift */,
-				374A64E12B4EC2FD003F99A1 /* Task.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -188,7 +185,6 @@
 				3767BEF32B47C0BD00AED916 /* ContentView.swift in Sources */,
 				3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */,
 				374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */,
-				374A64E22B4EC2FD003F99A1 /* Task.swift in Sources */,
 				379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */,
 				3767BF052B47ECB700AED916 /* Home.swift in Sources */,
 				37F952F12B65F018004EEAA8 /* TagReSizingVIew.swift in Sources */,

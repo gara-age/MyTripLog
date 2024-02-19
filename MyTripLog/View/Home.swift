@@ -55,10 +55,11 @@ struct Home: View {
     let taskManager = TaskManager()
     @State private var secTimer: Timer?
     @State private var timeSpentInView: TimeInterval = 0
-        let threshold: TimeInterval = 5
-        let thresLongWaithold: TimeInterval = 10
+    let threshold: TimeInterval = 5
+    let thresLongWaithold: TimeInterval = 10
     @State private var shownDayIndex : Int = 0
     @State private var deleteDayRequest : Bool = false
+    @State private var forReset : Bool = false
     
     var body: some View {
         NavigationStack{
@@ -78,12 +79,12 @@ struct Home: View {
                             print("return false")
                             tagView = false
                             dropDone = true
-                        return false
-                    } isTargeted: { status in
-                        if let draggedTag, status, draggedTag != tags[0] {
-                           
+                            return false
+                        } isTargeted: { status in
+                            if let draggedTag, status, draggedTag != tags[0] {
+                                
+                            }
                         }
-                    }
                 }
                 .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity)
@@ -116,8 +117,8 @@ struct Home: View {
                             .cornerRadius(10)
                     }
                     .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || tags.contains(where: { $0.text == text }))
-
-
+                    
+                    
                 }
                 .if(tagView && !dropDone){ RowView in
                     RowView
@@ -125,18 +126,18 @@ struct Home: View {
                             print("return false")
                             tagView = false
                             dropDone = true
-                        return false
-                    } isTargeted: { status in
-                        if let draggedTag, status, draggedTag != tags[0] {
-                           
+                            return false
+                        } isTargeted: { status in
+                            if let draggedTag, status, draggedTag != tags[0] {
+                                
+                            }
                         }
-                    }
                 }
                 .padding(.horizontal, 7)
             }
             .background(.ultraThinMaterial)
             .blur(radius: editMode || setHeight ? 5 : 0)
-
+            
             ScrollView(.vertical,showsIndicators: false){
                 HStack{
                     VStack {
@@ -161,12 +162,12 @@ struct Home: View {
                                 print("return false")
                                 tagView = false
                                 dropDone = true
-                            return false
-                        } isTargeted: { status in
-                            if let draggedTag, status, draggedTag != tags[0] {
-                              
+                                return false
+                            } isTargeted: { status in
+                                if let draggedTag, status, draggedTag != tags[0] {
+                                    
+                                }
                             }
-                        }
                     }
                     .padding(.top, 10)
                     
@@ -180,8 +181,9 @@ struct Home: View {
                             ForEach(0..<(currentDayIndex + 1), id: \.self) { dayIndex in
                                 getDayView(for: dayIndex)
                                     .frame(minWidth: 150)
-                                    
                                    
+                                
+                                
                                 
                             }
                             
@@ -206,7 +208,7 @@ struct Home: View {
                         .background(.clear)
                         
                     }
-
+                    
                 }
                 
             }
@@ -216,12 +218,12 @@ struct Home: View {
                 }
             }
             .onChange(of: currentDayIndex){
-                    shownDayIndex = currentDayIndex
+                shownDayIndex = currentDayIndex
             }
             .frame(maxWidth: .infinity)
             
             .blur(radius: editMode || setHeight ? 5 : 0)
-
+            
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -240,20 +242,20 @@ struct Home: View {
             }
             
         }
-       
+        
         .disabled(editMode || setHeight)
         .overlay(
-                    ColorPicker("", selection: $originalColor, supportsOpacity: false)
-                        .labelsHidden()
-                        .opacity(0)
-                        .onChange(of: originalColor) { newColor in
-                            NotificationCenter.default.post(
-                                name: Notification.Name("TagColorChanged"),
-                                object: ["color": newColor, "originalText": originalText]
-                            )
-
-                        }
-                )
+            ColorPicker("", selection: $originalColor, supportsOpacity: false)
+                .labelsHidden()
+                .opacity(0)
+                .onChange(of: originalColor) { newColor in
+                    NotificationCenter.default.post(
+                        name: Notification.Name("TagColorChanged"),
+                        object: ["color": newColor, "originalText": originalText]
+                    )
+                    
+                }
+        )
         .overlay{
             ZStack{
                 if editMode {
@@ -262,12 +264,14 @@ struct Home: View {
                         if let editedTag = editedTag, let index = tags.firstIndex(of: editedTag) {
                             tags[index].text = editedText
                         }
-                       
+                        
                         NotificationCenter.default.post(name: Notification.Name("TagUpdated"), object: ["tag": editedTag, "newText": editedText, "originalText": originalText])
                         
                         // Reset the editedTag and editedText
-                        editedTag = nil
-                        editedText = ""
+                        DispatchQueue.main.async {
+                            editedTag = nil
+                            editedText = ""
+                        }
                         
                         // Close the EditRowTextView
                         editMode = false
@@ -284,14 +288,14 @@ struct Home: View {
             ZStack{
                 if setHeight {
                     TagReSizingVIew(tagText: $tagText,tagColor: $tagColor, tagTime: $tagTime,tagHeight: $tagHeight,tagID: $tagID,changeAll: $changeAll, onSubmit: {
-                        
-                        updateSelectedTagTime(tagTime: tagTime)
-                        setHeight = false
-                        }, onClose: {
+                        DispatchQueue.main.async {
+                            updateSelectedTagTime(tagTime: tagTime)
+                        }
+                    }, onClose: {
                         setHeight = false
                         changeAll = false
                     })
-                
+                    
                     .transition(.opacity)
                 }
             }
@@ -299,17 +303,18 @@ struct Home: View {
         }
     }
     func updateSelectedTagTime(tagTime: Double) {
-           selectedTagTime = tagTime
-
+        selectedTagTime = tagTime
+        
         NotificationCenter.default.post(name: Notification.Name("TagSizeUpdated"), object: ["tagText": tagText, "tagHeight": selectedTagTime, "tagID": tagID, "changeAll": changeAll])
-
-        setHeight = false
+        
         tagText = ""
         tagID = ""
         changeAll = false
-       }
+        setHeight = false
 
-       
+    }
+    
+    
     
     func updateTags(tag: Tag, newText: String) {
         // Update the editedTag and editedText
@@ -319,7 +324,7 @@ struct Home: View {
         // Show the EditRowTextView
         editMode = true
     }
-
+    
     private func getTagBinding(for index: Int) -> Binding<[Tag]> {
         switch index {
         case 0:
@@ -388,17 +393,16 @@ struct Home: View {
                         print("return false")
                         tagView = false
                         dropDone = true
-                    return false
-                } isTargeted: { status in
-                    if let draggedTag, status, draggedTag != tags[0] {
-                      
+                        return false
+                    } isTargeted: { status in
+                        if let draggedTag, status, draggedTag != tags[0] {
+                            
+                        }
                     }
-                }
             }
-           
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: $startTime, endTime: $endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex, forReset: $forReset)
                 
                     .frame(height: geometry.size.height)
             }
@@ -412,7 +416,7 @@ struct Home: View {
             } label: {
                 Text("삭제")
             }
-
+            
             Button(role: .cancel) {
                 deleteDayRequest = false
             } label: {
@@ -452,57 +456,58 @@ struct Home: View {
             isPlusButtonVisible = true
         }
     }
-
+    
     func startCancel() {
-            escape = true
-            tagView = false
-            dropDone = true
+        escape = true
+        tagView = false
+        dropDone = true
     }
     
     func startTimer() {
         taskManager.executeTask {
             secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-                    timeSpentInView += 1
-                    if timeSpentInView >= threshold {
-                        // 임계값 이상으로 머무른 경우 print
-                        startCancel()
-                        // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
-                        secTimer?.invalidate() // 타이머 중지
-                        timeSpentInView = 0
-                        escape = false
-
-                    }
+                timeSpentInView += 1
+                if timeSpentInView >= threshold {
+                    //한 데테뷰에서 10초 머무를 경우
+                    startCancel()
+                    // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
+                    secTimer?.invalidate() // 타이머 중지
+                    timeSpentInView = 0
+                    escape = false
+                    
                 }
+            }
         }
     }
     func cancelByWaitFunction() {
         taskManager.executeTask {
             secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
-                    timeSpentInView += 1
-                    if timeSpentInView >= thresLongWaithold {
-                        // 임계값 이상으로 머무른 경우 print
-                        startCancel()
-                        // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
-                        secTimer?.invalidate() // 타이머 중지
-                        timeSpentInView = 0
-                        escape = false
+                timeSpentInView += 1
+                if timeSpentInView >= thresLongWaithold {
+                    //태그뷰에서 드래그 시작 후 5초 머무를 경우
+                    startCancel()
 
-                    }
+                    // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
+                    secTimer?.invalidate() // 타이머 중지
+                    timeSpentInView = 0
+                    escape = false
+                    
                 }
+            }
         }
     }
     func stopTimer() {
         // 타이머 중지
         escape = false
-
+        
         taskManager.cancelTask()
         secTimer?.invalidate()
         timeSpentInView = 0
-
+        
     }
     class TaskManager {
         private var currentTask: DispatchWorkItem?
-
+        
         func executeTask(_ task: @escaping () -> Void) {
             // 이전 작업이 있는 경우 취소
             currentTask?.cancel()
@@ -511,10 +516,10 @@ struct Home: View {
             let newTask = DispatchWorkItem {
                 task()
             }
-
+            
             // 현재 작업 업데이트
             currentTask = newTask
-
+            
             // 새 작업 실행
             DispatchQueue.main.async(execute: newTask)
         }
@@ -526,26 +531,26 @@ struct Home: View {
             let newTask = DispatchWorkItem {
                 task()
             }
-
+            
             // 현재 작업 업데이트
             currentTask = newTask
-
+            
             // 새 작업 실행
             DispatchQueue.main.async(execute: newTask)
         }
         func cancelTask() {
-               // 현재 작업이 있는 경우 취소
-               currentTask?.cancel()
-               currentTask = nil
-           }
+            // 현재 작업이 있는 경우 취소
+            currentTask?.cancel()
+            currentTask = nil
+        }
     }
 }
 
 extension UIColorWell {
-
+    
     override open func didMoveToSuperview() {
         super.didMoveToSuperview()
-
+        
         if let uiButton = self.subviews.first?.subviews.last as? UIButton {
             UIColorWellHelper.helper.execute = {
                 uiButton.sendActions(for: .touchUpInside)

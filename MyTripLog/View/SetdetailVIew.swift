@@ -9,13 +9,13 @@ import SwiftUI
 
 struct SetdetailVIew: View {
     @Environment(\.dismiss) private var dismiss
-
+    
     @State private var nameText : String = ""
     @State private var selectedColor: Color = .purple
     @State private var add: Bool = false
     @State var currentTime = Date()
     var closedRange = Calendar.current.date(byAdding: .year, value: -1, to: Date())!
-
+    
     var body: some View {
         NavigationStack{
             List{
@@ -44,7 +44,7 @@ struct SetdetailVIew: View {
                                 DatePicker("Pick a time:", selection: $currentTime, displayedComponents: .hourAndMinute)
                             }
                         }
-
+                        
                     }
                 }
                 Section{
@@ -66,7 +66,7 @@ struct SetdetailVIew: View {
                     .tint(.blue)
                 }
             }
-
+            
         }
         .presentationDetents([.height(340)])
         .interactiveDismissDisabled()

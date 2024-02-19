@@ -18,7 +18,7 @@ struct TagView: View {
     @Namespace var animation
     @Binding var tagView : Bool
     @Binding var editMode: Bool
-     @State private var editedText: String = ""
+    @State private var editedText: String = ""
     @Binding var originalText: String
     @Binding var getTagColor : Color
     @Binding var dropDone : Bool
@@ -28,28 +28,28 @@ struct TagView: View {
     @State private var cancelExecute: DispatchWorkItem?
     let cancelFunction: () -> Void
     let cancelByWaitFunction: () -> Void
-
-
+    
+    
     var updateTags: ((Tag, String) -> Void)?
     
     
     var body: some View {
-//ScrollView
+        //ScrollView
         VStack(alignment: .leading,spacing: 15){
-
+            
             
             ScrollView(.vertical, showsIndicators: false){
                 
                 VStack(alignment: .leading, spacing: 10){
                     //Displaying Tags
                     ForEach(getRows(), id: \.self){ rows in
-                     
+                        
                         HStack(spacing: 6){
                             ForEach(rows){ row in
                                 
                                 //Row View
                                 RowView(tag: row)
-                              
+                                
                             }
                         }
                     }
@@ -61,13 +61,13 @@ struct TagView: View {
                 
             }
             .frame(maxWidth: .infinity)
- 
+            
         }
-      
+        
         .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
     }
     //MARK: - RowView
-
+    
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
@@ -75,44 +75,48 @@ struct TagView: View {
             .padding(.horizontal, 14)
             .padding(.vertical,8)
             .background(
-            RoundedRectangle(cornerRadius: 5)
-                .fill(tag.color)
+                RoundedRectangle(cornerRadius: 5)
+                    .fill(tag.color)
             )
             .foregroundColor(tag.fontColor)
             .lineLimit(1)
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
                 Button("내용 수정") {
-                    tagText = tag.text
-
-                    originalText = tag.text
+                    DispatchQueue.main.async {
+                        tagText = tag.text
+                        originalText = tag.text
+                    }
                     updateTags?(tag, editedText)
                     
                 }
                 Button("색상 변경") {
-                    originalText = tag.text
-                    tagText = tag.text
-
+                    DispatchQueue.main.async {
+                        originalText = tag.text
+                        tagText = tag.text
+                    }
+                    
                     UIColorWellHelper.helper.execute?()
                 }
                 Button("삭제"){
-                    tagText = tag.text
-                    tagToDelete = tag
-
+                    DispatchQueue.main.async {
+                        tagText = tag.text
+                        tagToDelete = tag
+                    }
                     deleteRequest.toggle()
-
+                    
                 }
             }
         //드랍이 잘못된 위치에 이루어진다면 tagView false , dropDone true 및 draggable 종료되어야함
-//            .onDrag {
-//                tagView = true
-//                getTagColor = tag.color
-//                draggedTag = tag
-//                dropDone = false
-//     
-//                return NSItemProvider(object: tag.text as NSString)
-//
-//                       }
+        //            .onDrag {
+        //                tagView = true
+        //                getTagColor = tag.color
+        //                draggedTag = tag
+        //                dropDone = false
+        //     
+        //                return NSItemProvider(object: tag.text as NSString)
+        //
+        //                       }
             .if(!escape){
                 $0
                     .draggable(tag.text) {
@@ -122,25 +126,25 @@ struct TagView: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical,8)
                             .background(
-                            RoundedRectangle(cornerRadius: 5)
-                                .fill(tag.color)
+                                RoundedRectangle(cornerRadius: 5)
+                                    .fill(tag.color)
                             )
                             .foregroundColor(Color("BGColor"))
                             .contentShape(RoundedRectangle(cornerRadius: 5))
-
-                           .onAppear{
-                               tagView = true
-                               dropDone = false
-                               escape = false
-                               getTagColor = tag.color
-
-                               draggedTag = tag
-                               cancelFunction()
-                               cancelByWaitFunction()
-
-                           }
-                      
-                   }
+                        
+                            .onAppear{
+                                tagView = true
+                                dropDone = false
+                                escape = false
+                                getTagColor = tag.color
+                                
+                                draggedTag = tag
+                                cancelFunction()
+                                cancelByWaitFunction()
+                                
+                            }
+                        
+                    }
             }
             .matchedGeometryEffect(id: tag.id, in: animation)
             .alert("일정 삭제시 동일한 이름의 일정이 모두 삭제됩니다. 정말 삭제하시겠습니까?", isPresented: $deleteRequest) {
@@ -153,7 +157,7 @@ struct TagView: View {
                 } label: {
                     Text("삭제")
                 }
-
+                
                 Button(role: .cancel) {
                     deleteRequest = false
                 } label: {
@@ -161,23 +165,23 @@ struct TagView: View {
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagColorChanged"))) { notification in
-                      if let userInfo = notification.object as? [String: Any],
-                         let color = userInfo["color"] as? Color,
-                         let originalText = userInfo["originalText"] as? String {
-                          
-                          // Find and update the tag in tags based on text
-                          if let index = tags.firstIndex(where: { $0.text == originalText }) {
-                              tags[index].color = color
-                          }
-                      }
-                  }
-
+                if let userInfo = notification.object as? [String: Any],
+                   let color = userInfo["color"] as? Color,
+                   let originalText = userInfo["originalText"] as? String {
+                    
+                    // Find and update the tag in tags based on text
+                    if let index = tags.firstIndex(where: { $0.text == originalText }) {
+                        tags[index].color = color
+                    }
+                }
+            }
+        
     }
     private func deleteTag(tag: Tag) {
-         tags.removeAll { $0.text == tag.text }
-         // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
-         NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tag)
-     }
+        tags.removeAll { $0.text == tag.text }
+        // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
+        NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tag)
+    }
     func getIndex(tag: Tag) ->Int{
         let index = tags.firstIndex{ currentTag in
             return tag.id == currentTag.id
@@ -194,7 +198,7 @@ struct TagView: View {
         var currentRow: [Tag] = []
         
         var totalWidth: CGFloat = 0
-    //For safety extra 10
+        //For safety extra 10
         let screenWidth: CGFloat = UIScreen.main.bounds.width - 90
         
         tags.forEach { tag in
@@ -245,9 +249,9 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
     let attributes = [NSAttributedString.Key.font: font]
     
     let size = (text as NSString).size(withAttributes: attributes)
-
+    
     let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.5, brightness: 0.9)
-
+    
     let height : CGFloat = 36
     
     var fontColor : Color = Color.BG

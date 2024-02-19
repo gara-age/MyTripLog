@@ -42,7 +42,7 @@ struct MainView: View {
                             })
                             .offset(x: 150, y: -40)
                             .font(.largeTitle)
-
+                        
                     )
                 RoundedRectangle(cornerRadius: 10)
                     .frame( width: 350, height: 150)
@@ -58,7 +58,7 @@ struct MainView: View {
                             })
                             .offset(x: 150, y: -40)
                             .font(.largeTitle)
-
+                        
                     )
             }
             .navigationTitle("모든 일정")
