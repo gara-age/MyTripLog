@@ -15,5 +15,6 @@ struct MyTripLogApp: App {
         WindowGroup {
             ContentView()
         }
+        .modelContainer(for: Travel.self)
     }
 }

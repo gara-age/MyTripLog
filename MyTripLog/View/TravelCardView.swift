@@ -6,65 +6,45 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct TravelCardView: View {
+    @Environment(\.modelContext) private var context
+    @Binding var editTitle : Bool
+     var trip : Travel
+    
+    let dateFormatter: DateFormatter = {
+           let formatter = DateFormatter()
+           formatter.dateFormat = "yyyy.MM.dd"
+           return formatter
+       }()
+    
     var body: some View {
-        HStack{
-            VStack{
-                Text("오사카 3박 4일 여행")
-                    .padding(.top)
-                Text("2024.04.10 ~ 2024.04.13")
-                Spacer()
-            }
-            .foregroundColor(.white)
-            .padding(.trailing, 80)
-        }
-        
-        .background(     RoundedRectangle(cornerRadius: 10)
-            .frame( width: 350, height: 150)
-            .foregroundColor(Color.tag))
-        .frame(width: 350, height: 150)
-        .frame(maxWidth: .infinity, maxHeight: .infinity , alignment: .topLeading)
-        .overlay(
-            Group {
-                Menu(content: {
-                    Button {
-                        
-                    } label: {
-                        Text("PDF로 내보내기")
+                HStack{
+                    VStack(alignment: .leading){
+                        Text(trip.title)
+                            .padding(.vertical)
+                        Text("\(dateFormatter.string(from:trip.startDate)) ~ \(dateFormatter.string(from: trip.endDate))")
+                        Spacer()
                     }
-                    Button {
-                        
-                    } label: {
-                        Text("이미지로 내보내기")
-                    }
-                    Button {
-                        
-                    } label: {
-                        Text("지우기")
-                    }
-                }, label: {
-                    Image(systemName: "ellipsis")
-                        .foregroundStyle(Color.white)
-                        .rotationEffect(.degrees(90))
-                        .alignmentGuide(HorizontalAlignment.trailing, computeValue: { d in
-                            d[.trailing]
-                        })
-                        .alignmentGuide(VerticalAlignment.top, computeValue: { d in
-                            d[.top]
-                        })
-                        .frame(width: 30, height: 30, alignment: .topTrailing)
-                })
-                .offset(x: 150, y: -30)
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .padding(.trailing, 80)
+                }
                 
-                .font(.largeTitle)
-                .contentShape(Rectangle().size(width: 100, height: 100))
-                .padding(.horizontal, 10)
+                
+                .background(     RoundedRectangle(cornerRadius: 20)
+                    .overlay(Image(trip.imageString)
+                        .resizable()
+                        .scaledToFill()
+                        .colorMultiply(.gray))
+                        .frame( width: 350, height: 150)
+                                 /*.foregroundColor(Color.tag)*/)
+                .frame(width: 350, height: 150)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+             
             }
-        )
-    }
+                  
+    
 }
 
-#Preview {
-    TravelCardView()
-}

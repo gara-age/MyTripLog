@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct Home: View {
     @Environment(\.dismiss) private var dismiss
@@ -229,14 +230,14 @@ struct Home: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString("취소", comment:"")) {
+                    Button("취소") {
                         dismiss()
                     }
                     .tint(.red)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("추가", comment:"")) {
+                    Button("추가") {
 //                        dismiss()
                     }
                     .tint(.blue)
@@ -244,7 +245,8 @@ struct Home: View {
             }
             
         }
-        
+        .interactiveDismissDisabled()
+
         .disabled(editMode || setHeight)
         .overlay(
             ColorPicker("", selection: $originalColor, supportsOpacity: false)

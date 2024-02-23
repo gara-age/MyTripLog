@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 
 // Custom View
 struct TagView: View {

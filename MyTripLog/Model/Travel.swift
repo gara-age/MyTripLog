@@ -12,16 +12,29 @@ import SwiftData
 class Travel : Identifiable {
     
     var title: String
-    var date: Date
+    var startDate : Date
+    var endDate : Date
     var startTime : Int
     var endTime : Int
+//    var dayIndex : Int
+//    var index : Int
+//    var tagColor : String
+//    var tagText : String
+//    var tagHeight : Int
+    var imageString : String
     
-    
-    init(title: String, date: Date, startTime: Int, endTime: Int) {
+    init(title: String, startDate: Date,endDate : Date, startTime: Int, endTime: Int,/* dayIndex: Int, index : Int,tagColor: String, tagText: String, tagHeight: Int,*/imageString: String) {
         self.title = title
-        self.date = date
+        self.startDate = startDate
+        self.endDate = endDate
         self.startTime = startTime
         self.endTime = endTime
+//        self.dayIndex = dayIndex
+//        self.index = index
+//        self.tagColor = tagColor
+//        self.tagText = tagText
+//        self.tagHeight = tagHeight
+        self.imageString = imageString
     }
 
    
