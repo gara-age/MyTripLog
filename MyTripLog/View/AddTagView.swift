@@ -236,7 +236,7 @@ struct AddTagView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("추가") {
                         addScheduleTag()
-//                        dismiss()
+                        dismiss()
                     }
                     .tint(.blue)
                 }

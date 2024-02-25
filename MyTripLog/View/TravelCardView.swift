@@ -10,7 +10,6 @@ import SwiftData
 
 struct TravelCardView: View {
     @Environment(\.modelContext) private var context
-    @Binding var editTitle : Bool
      var trip : Travel
     
     let dateFormatter: DateFormatter = {
@@ -39,7 +38,7 @@ struct TravelCardView: View {
                         .scaledToFill()
                         .colorMultiply(.gray))
                         .frame( width: 350, height: 150)
-                                 /*.foregroundColor(Color.tag)*/)
+                    )
                 .frame(width: 350, height: 150)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
              

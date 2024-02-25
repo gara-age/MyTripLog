@@ -10,10 +10,11 @@ import SwiftUI
 struct SetdetailVIew: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-
+//    @Binding var add : Bool
     @Binding var nameText : String
+    @Binding var moveToATV : Bool
     @State private var selectedColor: Color = .purple
-    @State private var add: Bool = false
+    @State private var addTagView: Bool = false
     @State var startDay = Date()
     @State var endDay = Date()
     @State private var calendarId: Int = 0
@@ -34,8 +35,8 @@ struct SetdetailVIew: View {
     var body: some View {
         NavigationStack{
             List{
-                Section("새로운 일정명"){
-                    TextField("일정의 이름을 입력해주세요." , text: $nameText)
+                Section("새로운 여정명"){
+                    TextField("여정의 이름을 입력해주세요." , text: $nameText)
                 }
                 Section{
                     HStack{
@@ -123,6 +124,8 @@ struct SetdetailVIew: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
+            .navigationTitle("여정 추가")
+            .navigationBarTitleDisplayMode(.inline)
             .disabled(showImage)
 
             .blur(radius: showImage ? 5 : 0)
@@ -143,18 +146,26 @@ struct SetdetailVIew: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button(NSLocalizedString("취소", comment:"")) {
-                        dismiss()
+//                        add = false
                         nameText = ""
                         startTime = 0
                         endTime = 0
+                        moveToATV = false
+                        dismiss()
+
                     }
                     .tint(.red)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("추가") {
-                        add.toggle()
+//                        addTagView.toggle()
+                        moveToATV = true
                         addTravel()
+
+                        dismiss()
+//                        add = false
+
                     }
                     .disabled(nameText.isEmpty)
                     .tint(.blue)
@@ -162,15 +173,16 @@ struct SetdetailVIew: View {
             }
             
         }
-        .interactiveDismissDisabled()
-        .fullScreenCover(isPresented: $add) {
-            AddTagView(startTime: $startTime,endTime: $endTime , nameText: $nameText)
-
+        .onAppear{
+            nameText = ""
+            startDay = Date()
+            endDay = startDay
+            startTime = 0
+            endTime = startTime + 1
+            selectedImage = "USA"
         }
-//        .sheet(isPresented: $add, content: {
-//            Home(startTime: $startTime,endTime: $endTime , nameText: $nameText)
-//            
-//        })
+        .interactiveDismissDisabled()
+
     }
     func addTravel() {
         let travel = Travel(title: nameText, startDate: startDay, endDate: endDay, startTime: startTime, endTime: endTime, imageString: selectedImage ?? "USA")

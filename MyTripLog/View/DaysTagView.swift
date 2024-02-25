@@ -451,8 +451,7 @@ struct DaysTagView: View {
                 if let userInfo = notification.object as? [String: Any],
                     let travelTitle = userInfo["TravelTitle"] as? String {
 
-                    let tagIndex = combinedTags.firstIndex(of: tag)
-                    let savedTag = ScheduleTag(travelTitle: travelTitle, dayIndex: originalDayIndex, index: tagIndex!, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
+                    let savedTag = ScheduleTag(travelTitle: travelTitle, dayIndex: originalDayIndex, index: index, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
                     context.insert(savedTag)
                     try? context.save()
                 }

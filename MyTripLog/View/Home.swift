@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftData
 
 struct Home: View {
-    @Query var trips : [Travel]
+    @Query(animation: .snappy) private var allTravels: [Travel]
+
     @Environment(\.modelContext) private var context
     @State private var add : Bool = false
     @State private var searchText  = ""
@@ -19,17 +20,19 @@ struct Home: View {
     @State private var isEditTitle : Bool = false
     @State private var selectedTrip : Travel?
     @State private var deleteRequest = false
+    @State private var moveToATV : Bool = false
+    @State private var openATV = false
     var body: some View {
         NavigationStack{
             List{
-                ForEach(trips) { trip in
+                ForEach(allTravels) { trip in
                     Section{
-                        TravelCardView(editTitle: $isEditTitle, trip: trip)
+                        TravelCardView(trip: trip)
                             .contextMenu{
                                 Button {
                                     selectedTrip = trip
-                                        editTitle(trip: trip)
-                                
+                                    editTitle(trip: trip)
+                                    
                                 } label: {
                                     Text("여정명 수정")
                                 }
@@ -46,27 +49,26 @@ struct Home: View {
                                 Button {
                                     deleteRequest.toggle()
                                     selectedTrip = trip
-
+                                    
                                 } label: {
                                     Text("여정 삭제")
                                 }
                             }
-
+                        
                             .frame(height: 130)
                             .listRowSeparator(.hidden)
-                         
+                        
                     }
-                              }
+                }
                 .frame(height: 130)
-               
+                
                 .listRowSeparator(.hidden)
             }
             .alert("삭제시 복구가 어렵습니다. 정말 삭제하시겠습니까?", isPresented: $deleteRequest) {
                 Button(role: .destructive) {
                     withAnimation{
                         if let selectedTrip = selectedTrip {
-                            context.delete(selectedTrip)
-//                            self.selectedTrip = nil
+                            deleteTravel(selectedTrip) 
                         }
                     }
                 } label: {
@@ -74,11 +76,10 @@ struct Home: View {
                 }
                 
                 Button(role: .cancel) {
-//                    selectedTrip = nil
                 } label: {
                     Text("취소")
                 }
-            }           
+            }
             .navigationTitle("모든 일정")
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -90,23 +91,45 @@ struct Home: View {
                 }
             }
             
-             .sheet(isPresented: $add, content: {
-                 SetdetailVIew(nameText: $nameText,startTime: $startTime, endTime:$endTime)
-             })
-             .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: Text("검색"))
-
+            
+            .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: Text("검색"))
+            
         }
+        .overlay{
+            if allTravels.isEmpty{
+                ContentUnavailableView{
+                    Label("생성된 여정이 없습니다" , systemImage: "suitcase.rolling")
+                }
+            }
+        }
+        .sheet(isPresented: $add, onDismiss: {
+            if moveToATV {
+                openATV.toggle()
+            }
+        }){
+            SetdetailVIew(nameText: $nameText, moveToATV: $moveToATV, startTime: $startTime, endTime: $endTime)
+        }
+        .sheet(isPresented: $openATV, content: {
+            AddTagView(startTime: $startTime,endTime: $endTime , nameText: $nameText)
+        })
         .sheet(item: $selectedTrip) { trip in
             EditTitleView(travel: trip)
         }
-
+        
     }
     func editTitle(trip: Travel) {
         selectedTrip = trip
         isEditTitle.toggle()
     }
+    func deleteTravel(_ travel: Travel) {
+          if let scheduleTags = travel.scheduleTag {
+              for scheduleTag in scheduleTags {
+                  if scheduleTag.travelTitle == travel.title {
+                      context.delete(scheduleTag)
+                  }
+              }
+          }
+          
+          context.delete(travel)
+      }
 }
-//
-//#Preview {
-//    MainView()
-//}
