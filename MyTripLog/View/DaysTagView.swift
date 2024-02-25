@@ -447,14 +447,16 @@ struct DaysTagView: View {
                         tagView = false
                     }
             }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
-                if let userInfo = notification.object as? [String: Any],
-                    let travelTitle = userInfo["TravelTitle"] as? String {
+       
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
+            if let userInfo = notification.object as? [String: Any],
+                let travelTitle = userInfo["TravelTitle"] as? String {
 
-                    let savedTag = ScheduleTag(travelTitle: travelTitle, dayIndex: originalDayIndex, index: index, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
-                    context.insert(savedTag)
-                    try? context.save()
-                }
+                let savedTag = ScheduleTag(tagId:tag.id , travelTitle: travelTitle, dayIndex: originalDayIndex, index: index, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
+                context.insert(savedTag)
+                try? context.save()
+                print(savedTag)
             }
         }
     }

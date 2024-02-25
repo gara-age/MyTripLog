@@ -11,6 +11,7 @@ import SwiftData
 @Model
 class ScheduleTag : Identifiable {
     
+        var tagId : String
         var travelTitle: String
         var dayIndex : Int
         var index : Int
@@ -20,7 +21,8 @@ class ScheduleTag : Identifiable {
     
     var travel: Travel?
     
-    init(travelTitle: String, dayIndex: Int, index: Int, tagColor: String, tagText: String, tagHeight: CGFloat, travel: Travel? = nil) {
+    init(tagId: String, travelTitle: String, dayIndex: Int, index: Int, tagColor: String, tagText: String, tagHeight: CGFloat, travel: Travel? = nil) {
+        self.tagId = tagId
         self.travelTitle = travelTitle
         self.dayIndex = dayIndex
         self.index = index
