@@ -9,17 +9,21 @@ import SwiftUI
 import SwiftData
 
 @Model
-class Travel : Identifiable {
+class Travel {
     
+    var id: UUID
     var title: String
     var startDate : Date
     var endDate : Date
     var startTime : Int
     var endTime : Int
-
     var imageString : String
     
-    init(title: String, startDate: Date,endDate : Date, startTime: Int, endTime: Int, imageString: String) {
+    @Relationship(deleteRule: .cascade, inverse: \ScheduleTag.travel)
+    var scheduleTag: [ScheduleTag]?
+    
+    init(id: UUID = UUID(), title: String, startDate: Date,endDate : Date, startTime: Int, endTime: Int, imageString: String) {
+        self.id = UUID()
         self.title = title
         self.startDate = startDate
         self.endDate = endDate

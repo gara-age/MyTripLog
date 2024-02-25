@@ -164,7 +164,7 @@ struct SetdetailVIew: View {
         }
         .interactiveDismissDisabled()
         .fullScreenCover(isPresented: $add) {
-            Home(startTime: $startTime,endTime: $endTime , nameText: $nameText)
+            AddTagView(startTime: $startTime,endTime: $endTime , nameText: $nameText)
 
         }
 //        .sheet(isPresented: $add, content: {

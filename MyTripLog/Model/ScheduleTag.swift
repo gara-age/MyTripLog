@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class scheduleTag : Identifiable {
+class ScheduleTag : Identifiable {
     
         var travelTitle: String
         var dayIndex : Int
@@ -18,12 +18,15 @@ class scheduleTag : Identifiable {
         var tagText : String
         var tagHeight : CGFloat
     
-    init(travelTitle: String, dayIndex: Int, index: Int, tagColor: String, tagText: String, tagHeight: CGFloat) {
-        self.travelTitle = travelTitle //빌드 오류 발생
+    var travel: Travel?
+    
+    init(travelTitle: String, dayIndex: Int, index: Int, tagColor: String, tagText: String, tagHeight: CGFloat, travel: Travel? = nil) {
+        self.travelTitle = travelTitle
         self.dayIndex = dayIndex
         self.index = index
         self.tagColor = tagColor
         self.tagText = tagText
         self.tagHeight = tagHeight
+        self.travel = travel
     }
 }

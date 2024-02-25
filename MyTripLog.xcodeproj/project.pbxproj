@@ -15,15 +15,15 @@
 		3767BEF52B47C0BD00AED916 /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BEF42B47C0BD00AED916 /* Item.swift */; };
 		3767BEF72B47C0BE00AED916 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3767BEF62B47C0BE00AED916 /* Assets.xcassets */; };
 		3767BEFA2B47C0BE00AED916 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3767BEF92B47C0BE00AED916 /* Preview Assets.xcassets */; };
-		3767BF052B47ECB700AED916 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF042B47ECB700AED916 /* Home.swift */; };
+		3767BF052B47ECB700AED916 /* AddTagView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF042B47ECB700AED916 /* AddTagView.swift */; };
 		3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF062B48DCA600AED916 /* SetdetailVIew.swift */; };
-		3767BF092B48EBDB00AED916 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF082B48EBDB00AED916 /* MainView.swift */; };
+		3767BF092B48EBDB00AED916 /* Home.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3767BF082B48EBDB00AED916 /* Home.swift */; };
 		377D14582B835E6C00F14078 /* TravelCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377D14572B835E6C00F14078 /* TravelCardView.swift */; };
 		377FBA292B839597001BD636 /* Travel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377FBA282B839597001BD636 /* Travel.swift */; };
 		377FBA2B2B86A529001BD636 /* ChoosePictureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377FBA2A2B86A529001BD636 /* ChoosePictureView.swift */; };
 		377FBA2D2B88A578001BD636 /* EditTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377FBA2C2B88A578001BD636 /* EditTitleView.swift */; };
 		379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379189772B5C7771001DB52F /* EditRowTextView.swift */; };
-		37E3F6092B8B3A37004DA9CE /* scheduleTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3F6082B8B3A37004DA9CE /* scheduleTag.swift */; };
+		37E3F6092B8B3A37004DA9CE /* ScheduleTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3F6082B8B3A37004DA9CE /* ScheduleTag.swift */; };
 		37F952F12B65F018004EEAA8 /* TagReSizingVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */; };
 /* End PBXBuildFile section */
 
@@ -37,15 +37,15 @@
 		3767BEF42B47C0BD00AED916 /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
 		3767BEF62B47C0BE00AED916 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3767BEF92B47C0BE00AED916 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
-		3767BF042B47ECB700AED916 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
+		3767BF042B47ECB700AED916 /* AddTagView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddTagView.swift; sourceTree = "<group>"; };
 		3767BF062B48DCA600AED916 /* SetdetailVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetdetailVIew.swift; sourceTree = "<group>"; };
-		3767BF082B48EBDB00AED916 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		3767BF082B48EBDB00AED916 /* Home.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Home.swift; sourceTree = "<group>"; };
 		377D14572B835E6C00F14078 /* TravelCardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TravelCardView.swift; sourceTree = "<group>"; };
 		377FBA282B839597001BD636 /* Travel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Travel.swift; sourceTree = "<group>"; };
 		377FBA2A2B86A529001BD636 /* ChoosePictureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoosePictureView.swift; sourceTree = "<group>"; };
 		377FBA2C2B88A578001BD636 /* EditTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTitleView.swift; sourceTree = "<group>"; };
 		379189772B5C7771001DB52F /* EditRowTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRowTextView.swift; sourceTree = "<group>"; };
-		37E3F6082B8B3A37004DA9CE /* scheduleTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = scheduleTag.swift; sourceTree = "<group>"; };
+		37E3F6082B8B3A37004DA9CE /* ScheduleTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleTag.swift; sourceTree = "<group>"; };
 		37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagReSizingVIew.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -103,7 +103,7 @@
 			children = (
 				374A64D52B4D2F84003F99A1 /* Tag.swift */,
 				377FBA282B839597001BD636 /* Travel.swift */,
-				37E3F6082B8B3A37004DA9CE /* scheduleTag.swift */,
+				37E3F6082B8B3A37004DA9CE /* ScheduleTag.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -111,10 +111,10 @@
 		3767BF012B47E9ED00AED916 /* View */ = {
 			isa = PBXGroup;
 			children = (
-				3767BF042B47ECB700AED916 /* Home.swift */,
+				3767BF042B47ECB700AED916 /* AddTagView.swift */,
 				377FBA2A2B86A529001BD636 /* ChoosePictureView.swift */,
 				3767BF062B48DCA600AED916 /* SetdetailVIew.swift */,
-				3767BF082B48EBDB00AED916 /* MainView.swift */,
+				3767BF082B48EBDB00AED916 /* Home.swift */,
 				374A64D72B4D2F99003F99A1 /* TagView.swift */,
 				374A64E32B4EDB33003F99A1 /* DaysTagView.swift */,
 				379189772B5C7771001DB52F /* EditRowTextView.swift */,
@@ -198,15 +198,15 @@
 				377FBA292B839597001BD636 /* Travel.swift in Sources */,
 				374A64E42B4EDB33003F99A1 /* DaysTagView.swift in Sources */,
 				377FBA2D2B88A578001BD636 /* EditTitleView.swift in Sources */,
-				3767BF092B48EBDB00AED916 /* MainView.swift in Sources */,
+				3767BF092B48EBDB00AED916 /* Home.swift in Sources */,
 				377D14582B835E6C00F14078 /* TravelCardView.swift in Sources */,
-				37E3F6092B8B3A37004DA9CE /* scheduleTag.swift in Sources */,
+				37E3F6092B8B3A37004DA9CE /* ScheduleTag.swift in Sources */,
 				3767BEF32B47C0BD00AED916 /* ContentView.swift in Sources */,
 				3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */,
 				374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */,
 				379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */,
 				377FBA2B2B86A529001BD636 /* ChoosePictureView.swift in Sources */,
-				3767BF052B47ECB700AED916 /* Home.swift in Sources */,
+				3767BF052B47ECB700AED916 /* AddTagView.swift in Sources */,
 				37F952F12B65F018004EEAA8 /* TagReSizingVIew.swift in Sources */,
 				3767BEF52B47C0BD00AED916 /* Item.swift in Sources */,
 				3767BEF12B47C0BD00AED916 /* MyTripLogApp.swift in Sources */,

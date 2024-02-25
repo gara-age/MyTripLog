@@ -46,8 +46,8 @@ struct DaysTagView: View {
     @State private var totalHeight: CGFloat = 0
     @State private var copyedCombinedTags: [Tag]
     @Binding var forReset : Bool
-    
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>) {
+    let originalDayIndex : Int
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -66,6 +66,7 @@ struct DaysTagView: View {
         self.cancelFunction = cancelFunction
         self._dayIndex = dayIndex
         self._forReset = forReset
+        self.originalDayIndex = originalDayIndex
         let repeatCount = (startTime.wrappedValue - endTime.wrappedValue) * 2
             let tagRepeatCount: Int
            if repeatCount < 0 {
@@ -451,7 +452,7 @@ struct DaysTagView: View {
                     let travelTitle = userInfo["TravelTitle"] as? String {
 
                     let tagIndex = combinedTags.firstIndex(of: tag)
-                    let savedTag = scheduleTag(travelTitle: travelTitle, dayIndex: dayIndex, index: tagIndex!, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
+                    let savedTag = ScheduleTag(travelTitle: travelTitle, dayIndex: originalDayIndex, index: tagIndex!, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
                     context.insert(savedTag)
                     try? context.save()
                 }
