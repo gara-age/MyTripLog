@@ -28,8 +28,8 @@ struct DaysTagView: View {
     @Binding var tagHeight : CGFloat
     @Binding var tagID : String
     @Binding var getTagColor : Color
-    @Binding var startTime : Int
-    @Binding var endTime : Int
+    let startTime : Int
+    let endTime : Int
     @Binding var tagTime : CGFloat
     @State private var originalTag : Tag?
     @Binding var dropDone : Bool
@@ -47,7 +47,7 @@ struct DaysTagView: View {
     @State private var copyedCombinedTags: [Tag]
     @Binding var forReset : Bool
     let originalDayIndex : Int
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Binding<Int>, endTime: Binding<Int>, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int) {
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -56,8 +56,8 @@ struct DaysTagView: View {
         self._tagHeight = tagHeight
         self._tagID = tagID
         self._getTagColor = getTagColor
-        self._startTime = startTime
-        self._endTime = endTime
+        self.startTime = startTime
+        self.endTime = endTime
         self._tagTime = tagTime
         self._draggedTag = draggedTag
         self._dropDone = dropDone
@@ -67,7 +67,7 @@ struct DaysTagView: View {
         self._dayIndex = dayIndex
         self._forReset = forReset
         self.originalDayIndex = originalDayIndex
-        let repeatCount = (startTime.wrappedValue - endTime.wrappedValue) * 2
+        let repeatCount = (startTime - endTime) * 2
             let tagRepeatCount: Int
            if repeatCount < 0 {
                tagRepeatCount = -repeatCount

@@ -22,12 +22,19 @@ struct Home: View {
     @State private var deleteRequest = false
     @State private var moveToATV : Bool = false
     @State private var openATV = false
+    
     var body: some View {
         NavigationStack{
             List{
                 ForEach(allTravels) { trip in
                     Section{
                         TravelCardView(trip: trip)
+                            .onTapGesture {
+                                    nameText = trip.title
+                                    startTime = trip.startTime
+                                    endTime = trip.endTime
+                                         openATV.toggle()
+                                     }
                             .contextMenu{
                                 Button {
                                     selectedTrip = trip
@@ -95,6 +102,7 @@ struct Home: View {
             .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: Text("검색"))
             
         }
+        
         .overlay{
             if allTravels.isEmpty{
                 ContentUnavailableView{
