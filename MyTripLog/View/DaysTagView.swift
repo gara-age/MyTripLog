@@ -11,6 +11,8 @@ import SwiftData
 
 // Custom View
 struct DaysTagView: View {
+    @Environment(\.modelContext) private var context
+
     @Binding var tags: [Tag]
     @Binding var draggedTag: Tag?
     var title: String = "Add Some Tags"
@@ -100,7 +102,6 @@ struct DaysTagView: View {
 
                                 .if(!tagView){ RowView in
                                     RowView
-                                      
                                         .dropDestination(for: String.self) { items, location in
                                             draggedTag = nil
                                             return false
@@ -445,7 +446,16 @@ struct DaysTagView: View {
                         tagView = false
                     }
             }
-            
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
+                if let userInfo = notification.object as? [String: Any],
+                    let travelTitle = userInfo["TravelTitle"] as? String {
+
+                    let tagIndex = combinedTags.firstIndex(of: tag)
+                    let savedTag = scheduleTag(travelTitle: travelTitle, dayIndex: dayIndex, index: tagIndex!, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
+                    context.insert(savedTag)
+                    try? context.save()
+                }
+            }
         }
     }
     
@@ -786,7 +796,27 @@ extension View {
         }
     }
 }
-
+extension Color {
+    func toHexString() -> String {
+        guard let components = cgColor?.components else { return "Invalid Color" }
+        guard components.count >= 3 else { return "Invalid Color" }
+        
+        let r = Int(components[0] * 255)
+        let g = Int(components[1] * 255)
+        let b = Int(components[2] * 255)
+        
+        var a = Int(components[3] * 255)
+        
+        // 투명도 값이 255인 경우에는 생략하여 반환
+        if a == 255 {
+            a = 0
+        } else {
+            return String(format: "#%02X%02X%02X%02X", r, g, b, a)
+        }
+        
+        return String(format: "#%02X%02X%02X", r, g, b)
+    }
+}
 
 
 #Preview {

@@ -25,52 +25,32 @@ struct MainView: View {
                 ForEach(trips) { trip in
                     Section{
                         TravelCardView(editTitle: $isEditTitle, trip: trip)
-                            .overlay(
-                                Group {
-                                    Menu(content: {
-                                        Button {
-                                                editTitle(trip: trip)
-                                        
-                                        } label: {
-                                            Text("여정명 수정")
-                                        }
-                                        Button {
-                                            
-                                        } label: {
-                                            Text("PDF로 내보내기")
-                                        }
-                                        Button {
-                                            
-                                        } label: {
-                                            Text("이미지로 내보내기")
-                                        }
-                                        Button {
-                                            deleteRequest.toggle()
-                                            selectedTrip = trip
-
-                                        } label: {
-                                            Text("여정 삭제")
-                                            //경고창 띄우기
-                                        }
-                                    }, label: {
-                                        Image(systemName: "ellipsis")
-                                            .foregroundStyle(Color.white)
-                                            .rotationEffect(.degrees(90))
-                                            .alignmentGuide(HorizontalAlignment.trailing, computeValue: { d in
-                                                d[.trailing]
-                                            })
-                                            .alignmentGuide(VerticalAlignment.top, computeValue: { d in
-                                                d[.top]
-                                            })
-                                            .frame(width: 30, height: 30, alignment: .topTrailing)
-                                    })
-                                    .offset(x: 150, y: -30)
-                                    
-                                    .font(.largeTitle)
-                                    .contentShape(Rectangle().size(width: 100, height: 100))
-                                    .padding(.horizontal, 10)
+                            .contextMenu{
+                                Button {
+                                    selectedTrip = trip
+                                        editTitle(trip: trip)
+                                
+                                } label: {
+                                    Text("여정명 수정")
                                 }
-                            )
+                                Button {
+                                    
+                                } label: {
+                                    Text("PDF로 내보내기")
+                                }
+                                Button {
+                                    
+                                } label: {
+                                    Text("이미지로 내보내기")
+                                }
+                                Button {
+                                    deleteRequest.toggle()
+                                    selectedTrip = trip
+
+                                } label: {
+                                    Text("여정 삭제")
+                                }
+                            }
 
                             .frame(height: 130)
                             .listRowSeparator(.hidden)
@@ -86,7 +66,7 @@ struct MainView: View {
                     withAnimation{
                         if let selectedTrip = selectedTrip {
                             context.delete(selectedTrip)
-                            self.selectedTrip = nil
+//                            self.selectedTrip = nil
                         }
                     }
                 } label: {
@@ -94,7 +74,7 @@ struct MainView: View {
                 }
                 
                 Button(role: .cancel) {
-                    selectedTrip = nil
+//                    selectedTrip = nil
                 } label: {
                     Text("취소")
                 }
@@ -116,25 +96,12 @@ struct MainView: View {
              .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: Text("검색"))
 
         }
-        .sheet(item: $selectedTrip) { trip in // selectedTrip이 nil이 아닐 때만 sheet를 표시
+        .sheet(item: $selectedTrip) { trip in
             EditTitleView(travel: trip)
         }
 
-//        .overlay(
-//            ZStack{
-//                if editTitle {
-//                    EditTitleView(travel: selectedTrip!, onClose: {
-//                        editTitle = false
-//                    }, onEdit: { newTitle in
-//                        editTitle = false
-//
-//                    })
-//                }
-//            }
-//        )
     }
     func editTitle(trip: Travel) {
-        
         selectedTrip = trip
         isEditTitle.toggle()
     }

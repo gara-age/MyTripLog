@@ -83,16 +83,9 @@ struct SetdetailVIew: View {
                                 }
                                 .environment(\.locale, Locale(identifier: "ko_KR"))
                             }
-
-                            .onChange(of: startTime){
-                                endTime = startTime + 1
-                            }
                         }
                         
                     }
-                }
-                .onChange(of: startTime){
-                    
                 }
                 HStack{
                         Section("이미지로 배경 설정"){
@@ -159,7 +152,7 @@ struct SetdetailVIew: View {
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(NSLocalizedString("추가", comment:"")) {
+                    Button("추가") {
                         add.toggle()
                         addTravel()
                     }
@@ -170,14 +163,20 @@ struct SetdetailVIew: View {
             
         }
         .interactiveDismissDisabled()
-        .sheet(isPresented: $add, content: {
+        .fullScreenCover(isPresented: $add) {
             Home(startTime: $startTime,endTime: $endTime , nameText: $nameText)
-        })
+
+        }
+//        .sheet(isPresented: $add, content: {
+//            Home(startTime: $startTime,endTime: $endTime , nameText: $nameText)
+//            
+//        })
     }
     func addTravel() {
         let travel = Travel(title: nameText, startDate: startDay, endDate: endDay, startTime: startTime, endTime: endTime, imageString: selectedImage ?? "USA")
         context.insert(travel)
        try? context.save()
+        
     }
 }
 

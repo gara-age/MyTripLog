@@ -37,6 +37,7 @@ struct EditTitleView: View {
                         try? context.save()
                             dismiss()
                     }
+                    .disabled(newTitle.isEmpty)
                     .tint(.blue)
                 }
             }

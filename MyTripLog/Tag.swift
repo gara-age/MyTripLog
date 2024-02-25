@@ -15,6 +15,7 @@ struct Tag: Identifiable, Hashable , Equatable {
     var color: Color 
     var height: CGFloat
     var fontColor : Color
+    var travel: Travel?
     
     var transferableItem: NSItemProvider {
         NSItemProvider(object: text as NSString)

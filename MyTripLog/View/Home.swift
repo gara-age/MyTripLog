@@ -62,7 +62,7 @@ struct Home: View {
     @State private var deleteDayRequest : Bool = false
     @State private var forReset : Bool = false
     @Binding var nameText : String
-
+    
     var body: some View {
         NavigationStack{
             VStack{
@@ -183,9 +183,6 @@ struct Home: View {
                             ForEach(0..<(currentDayIndex + 1), id: \.self) { dayIndex in
                                 getDayView(for: dayIndex)
                                     .frame(minWidth: 150)
-                                   
-                                
-                                
                                 
                             }
                             
@@ -238,6 +235,7 @@ struct Home: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("추가") {
+                        addScheduleTag()
 //                        dismiss()
                     }
                     .tint(.blue)
@@ -431,7 +429,12 @@ struct Home: View {
         .background(.ultraThinMaterial)
         .contentShape(.rect)
     }
-    
+    func addScheduleTag() {
+        NotificationCenter.default.post(
+            name: Notification.Name("saveTag"),
+            object: ["TravelTitle" : nameText])
+
+    }
     private func deleteDay(at index: Int) {
         switch index {
         case 1:
