@@ -23,7 +23,6 @@
 		377FBA2B2B86A529001BD636 /* ChoosePictureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377FBA2A2B86A529001BD636 /* ChoosePictureView.swift */; };
 		377FBA2D2B88A578001BD636 /* EditTitleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 377FBA2C2B88A578001BD636 /* EditTitleView.swift */; };
 		379189782B5C7771001DB52F /* EditRowTextView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 379189772B5C7771001DB52F /* EditRowTextView.swift */; };
-		37E3F6092B8B3A37004DA9CE /* ScheduleTag.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37E3F6082B8B3A37004DA9CE /* ScheduleTag.swift */; };
 		37F952F12B65F018004EEAA8 /* TagReSizingVIew.swift in Sources */ = {isa = PBXBuildFile; fileRef = 37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */; };
 /* End PBXBuildFile section */
 
@@ -45,7 +44,6 @@
 		377FBA2A2B86A529001BD636 /* ChoosePictureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChoosePictureView.swift; sourceTree = "<group>"; };
 		377FBA2C2B88A578001BD636 /* EditTitleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditTitleView.swift; sourceTree = "<group>"; };
 		379189772B5C7771001DB52F /* EditRowTextView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditRowTextView.swift; sourceTree = "<group>"; };
-		37E3F6082B8B3A37004DA9CE /* ScheduleTag.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScheduleTag.swift; sourceTree = "<group>"; };
 		37F952F02B65F018004EEAA8 /* TagReSizingVIew.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagReSizingVIew.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -103,7 +101,6 @@
 			children = (
 				374A64D52B4D2F84003F99A1 /* Tag.swift */,
 				377FBA282B839597001BD636 /* Travel.swift */,
-				37E3F6082B8B3A37004DA9CE /* ScheduleTag.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -200,7 +197,6 @@
 				377FBA2D2B88A578001BD636 /* EditTitleView.swift in Sources */,
 				3767BF092B48EBDB00AED916 /* Home.swift in Sources */,
 				377D14582B835E6C00F14078 /* TravelCardView.swift in Sources */,
-				37E3F6092B8B3A37004DA9CE /* ScheduleTag.swift in Sources */,
 				3767BEF32B47C0BD00AED916 /* ContentView.swift in Sources */,
 				3767BF072B48DCA600AED916 /* SetdetailVIew.swift in Sources */,
 				374A64D62B4D2F84003F99A1 /* Tag.swift in Sources */,

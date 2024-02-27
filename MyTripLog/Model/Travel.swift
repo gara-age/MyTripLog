@@ -19,8 +19,8 @@ class Travel {
     var endTime : Int
     var imageString : String
     
-    @Relationship(deleteRule: .cascade, inverse: \ScheduleTag.travel)
-    var scheduleTag: [ScheduleTag]?
+    @Relationship(deleteRule: .cascade, inverse: \Tag.travel)
+    var tag: [Tag]?
     
     init(id: UUID = UUID(), title: String, startDate: Date,endDate : Date, startTime: Int, endTime: Int, imageString: String) {
         self.id = UUID()

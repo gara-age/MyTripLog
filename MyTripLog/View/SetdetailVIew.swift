@@ -148,7 +148,6 @@ struct SetdetailVIew: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("취소") {
-//                        add = false
                         nameText = ""
                         startTime = 0
                         endTime = 0
@@ -167,7 +166,7 @@ struct SetdetailVIew: View {
                         dismiss()
 
                     }
-                                        .disabled(nameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || allTravels.contains(where: { $0.title == nameText }))
+                    .disabled(nameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || allTravels.contains(where: { $0.title == nameText }))
                     .tint(.blue)
                 }
             }

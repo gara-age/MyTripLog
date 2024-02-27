@@ -19,6 +19,7 @@ struct Home: View {
     @State private var endTime : Int = 0
     @State private var isEditTitle : Bool = false
     @State private var selectedTrip : Travel?
+    @State private var editedTrip : Travel = Travel(title: "", startDate: Date(), endDate: Date(), startTime: 0, endTime: 0, imageString: "")
     @State private var deleteRequest = false
     @State private var moveToATV : Bool = false
     @State private var openATV = false
@@ -30,14 +31,10 @@ struct Home: View {
                     Section{
                         TravelCardView(trip: trip)
                             .onTapGesture {
-                                    nameText = trip.title
-                                    startTime = trip.startTime
-                                    endTime = trip.endTime
-                                         openATV.toggle()
+                             openTravel(trip: trip)
                                      }
                             .contextMenu{
                                 Button {
-                                    selectedTrip = trip
                                     editTitle(trip: trip)
                                     
                                 } label: {
@@ -54,8 +51,11 @@ struct Home: View {
                                     Text("이미지로 내보내기")
                                 }
                                 Button {
-                                    deleteRequest.toggle()
+                                    let trip = trip
+
                                     selectedTrip = trip
+                                    deleteRequest.toggle()
+
                                     
                                 } label: {
                                     Text("여정 삭제")
@@ -118,22 +118,30 @@ struct Home: View {
             SetdetailVIew(nameText: $nameText, moveToATV: $moveToATV, startTime: $startTime, endTime: $endTime)
         }
         .sheet(isPresented: $openATV, content: {
-            AddTagView(startTime: $startTime,endTime: $endTime , nameText: $nameText)
+            AddTagView(startTime: $startTime,endTime: $endTime , nameText: $nameText, moveToATV: $moveToATV)
         })
-        .sheet(item: $selectedTrip) { trip in
-            EditTitleView(travel: trip)
+        .sheet(isPresented: $isEditTitle) {
+            EditTitleView(selectedTrip: $editedTrip)
         }
         
     }
+    func openTravel(trip: Travel) {
+        nameText = trip.title
+        startTime = trip.startTime
+        endTime = trip.endTime
+             openATV.toggle()
+    }
+    
     func editTitle(trip: Travel) {
-        selectedTrip = trip
+        editedTrip = trip
         isEditTitle.toggle()
     }
+    
     func deleteTravel(_ travel: Travel) {
-          if let scheduleTags = travel.scheduleTag {
-              for scheduleTag in scheduleTags {
-                  if scheduleTag.travelTitle == travel.title {
-                      context.delete(scheduleTag)
+          if let tags = travel.tag {
+              for tag in tags {
+                  if tag.travelTitle == travel.title {
+                      context.delete(tag)
                   }
               }
           }

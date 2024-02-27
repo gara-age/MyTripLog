@@ -47,7 +47,11 @@ struct DaysTagView: View {
     @State private var copyedCombinedTags: [Tag]
     @Binding var forReset : Bool
     let originalDayIndex : Int
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int) {
+    @State private var travel: Travel?
+    @Binding var nameText : String
+
+    
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -67,6 +71,7 @@ struct DaysTagView: View {
         self._dayIndex = dayIndex
         self._forReset = forReset
         self.originalDayIndex = originalDayIndex
+        self._nameText = nameText
         let repeatCount = (startTime - endTime) * 2
             let tagRepeatCount: Int
            if repeatCount < 0 {
@@ -75,14 +80,14 @@ struct DaysTagView: View {
                tagRepeatCount = repeatCount
            }
 
-        self._emptyTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "12345", color: .clear, height: 18, fontColor: .clear), count: 100).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "12345", color: .clear, height: 18, fontColor: .clear)
+        self._emptyTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), count: 100).enumerated().map { index, _ in
+            Tag(id: UUID().uuidString, text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
         })
-        self._combinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear, height: 18, fontColor: .clear), count: tagRepeatCount).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "" , color: .clear, height: 18, fontColor: .clear)
+        self._combinedTags = State(initialValue: Array(repeating:   Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), count: tagRepeatCount).enumerated().map { index, _ in
+            Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
         } + tags.wrappedValue)
-        self._copyedCombinedTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "", color: .clear, height: 18, fontColor: .clear), count: tagRepeatCount).enumerated().map { index, _ in
-            Tag(id: UUID().uuidString, text: "" , color: .clear, height: 18, fontColor: .clear)
+        self._copyedCombinedTags = State(initialValue: Array(repeating:   Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), count: tagRepeatCount).enumerated().map { index, _ in
+            Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
         } + tags.wrappedValue)
     }
     
@@ -97,6 +102,9 @@ struct DaysTagView: View {
                         ForEach(combinedTags.indices, id: \.self) { index in
 
                             RowView(tag: combinedTags[index], index: index)
+                                .onAppear{
+                                    loadTags(index: index)
+                                }
                                 .if(combinedTags[index].text.isEmpty){ RowVIew in
                                     RowVIew.padding(.vertical,1.725)
                                 }
@@ -165,7 +173,7 @@ struct DaysTagView: View {
                                                     if lastIndex >= 0 && lastIndex < combinedTags.count , combinedTags[index].text.isEmpty {
                                                         //Tag 덮어씌우지 못하도록 처리
                                                         combinedTags.remove(at: index)
-                                                            combinedTags.append(Tag(text: "", color: .clear, height: 18, fontColor: .clear))
+                                                        combinedTags.append(Tag(text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"))
                                                         // Check if the tag at index + 1 is empty and remove it
                                                         if lastIndex + 1 < combinedTags.count, combinedTags[lastIndex + 1].text.isEmpty {
                                                             combinedTags.remove(at: lastIndex + 1)
@@ -173,7 +181,7 @@ struct DaysTagView: View {
                                                         
                                                         let color = Color(hue: Double(draggedTag!.text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
                                                         
-                                                        let originalColor = tags.first { $0.text == draggedTag!.text }?.color ?? getTagColor
+                                                        let originalColor = tags.first { $0.text == draggedTag!.text }?.color ?? getTagColor.toHex()
                                                         droppedTag.color = originalColor
                                                         
                                                         combinedTags.insert(droppedTag, at: lastIndex)
@@ -188,7 +196,6 @@ struct DaysTagView: View {
                                                     
                                                     return false
                                                 } isTargeted: { status in
-//                                                    forReset.toggle()
 
                                                     let draggedTag = self.draggedTag
                                                     if let draggedTag, status, draggedTag != copyedCombinedTags[index] {
@@ -208,7 +215,7 @@ struct DaysTagView: View {
                                                             let sourceItem = copyedCombinedTags.remove(at: sourceIndex)
                                                             for index in (0..<copyedCombinedTags.count) {
 
-                                                                copyedCombinedTags[index] = Tag(text: "12345", color: .clear, height: combinedTags[index].height, fontColor: .clear)
+                                                                copyedCombinedTags[index] = Tag(text: "12345", color: "#F4FAFC", height: combinedTags[index].height, fontColor: "#F4FAFC")
 
                                                               
                                                             }
@@ -249,7 +256,7 @@ struct DaysTagView: View {
                                     copyedCombinedTags[index] = Tag(text: copyedCombinedTags[index].text, color: copyedCombinedTags[index].color, height: copyedCombinedTags[index].height, fontColor: copyedCombinedTags[index].fontColor)
 
                                 }
-                                copyedCombinedTags[index] = Tag(text: "12345", color: .clear, height: 18, fontColor: .clear)
+                                copyedCombinedTags[index] = Tag(text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
                             }
                            
                         }
@@ -259,7 +266,7 @@ struct DaysTagView: View {
                 }
                 .onChange(of: escape) {
                     if escape {
-                        emptyTags[lastIndex] = Tag(text: "12345", color: .clear, height: 18, fontColor: .clear)
+                        emptyTags[lastIndex] = Tag(text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
                         
                     }
                 }
@@ -296,11 +303,11 @@ struct DaysTagView: View {
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(tag.text.isEmpty ? Color.clear :  tag.color)
+                        .fill(tag.text.isEmpty ? Color.clear :  Color(hex: tag.color))
                         .frame(width: 150)
                         .frame(height: tag.text.isEmpty ? 18 : tag.height <= 36 ? tag.height : tag.height + paddingCount)
                 )
-                .foregroundColor(tag.fontColor)
+                .foregroundColor(tag.text.isEmpty ? Color.clear : Color(hex:tag.fontColor))
                 .lineLimit(nil)
                 .contentShape(RoundedRectangle(cornerRadius: 5))
                 .contextMenu {
@@ -311,7 +318,7 @@ struct DaysTagView: View {
                                 tagHeight = tag.height
                                 tagTime = tagHeight / 36
                                 
-                                tagColor = tag.color
+                                tagColor = Color(hex: tag.color)
                                 tagText = tag.text
                                 setHeight = true
                             }
@@ -328,7 +335,7 @@ struct DaysTagView: View {
                                 combinedTags.remove(at: tagIndex)
                                 //tagIndex의 tag
                                 for _ in 0..<insertCount {
-                                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18, fontColor: .clear), at: tagIndex)
+                                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: tagIndex)
                                 }
                                 
                             }
@@ -386,7 +393,7 @@ struct DaysTagView: View {
                                 combinedTags = combinedTags.map { existingTag in
                                     if existingTag.text == originalText {
                                         var updatedTag = existingTag
-                                        updatedTag.color = color
+                                        updatedTag.color = color.toHex()
                                         return updatedTag
                                     }
                                     else {
@@ -421,7 +428,7 @@ struct DaysTagView: View {
                                         let insertCount = Int(originalHeight / 18) - 1
                                         if let tagIndex = combinedTags.firstIndex(where: { $0.text == tagWithSameText.text && $0.id == tagWithSameText.id }) {
                                             for _ in 0..<insertCount + 1 {
-                                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18, fontColor: .clear), at: tagIndex)
+                                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: tagIndex)
                                                 print("tag inserted \(insertCount) times")
                                             }
                                         }
@@ -447,18 +454,17 @@ struct DaysTagView: View {
                         tagView = false
                     }
             }
-       
-        }
-        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
-            if let userInfo = notification.object as? [String: Any],
-                let travelTitle = userInfo["TravelTitle"] as? String {
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
+                if let userInfo = notification.object as? [String: Any],
+                    let travelTitle = userInfo["TravelTitle"] as? String {
 
-                let savedTag = ScheduleTag(tagId:tag.id , travelTitle: travelTitle, dayIndex: originalDayIndex, index: index, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
-                context.insert(savedTag)
-                try? context.save()
-                print(savedTag)
+                    let savedTag = Tag(id: UUID().uuidString, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
+                    context.insert(savedTag)
+                    try? context.save()
+                }
             }
         }
+      
     }
     
     @ViewBuilder
@@ -482,7 +488,7 @@ struct DaysTagView: View {
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(tag.text.isEmpty || tag.text == "12345" ? tag.height > 18 ? Color.clear : Color.clear :  tag.color)
+                            .fill(tag.text.isEmpty || tag.text == "12345" ? tag.height > 18 ? Color.clear : Color.clear :  Color(hex:tag.color))
                             .frame(width: 150)
                             .frame(height: tag.text.isEmpty ? 18 : tag.height <= 36 ? tag.height : tag.height + paddingCount)
                     )
@@ -511,7 +517,7 @@ struct DaysTagView: View {
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 5)
-                            .fill(tag.text.isEmpty || tag.text == "12345" ? tag.height > 18 ? Color.clear : Color.clear :  tag.color)
+                            .fill(tag.text.isEmpty || tag.text == "12345" ? tag.height > 18 ? Color.clear : Color.clear :  Color(hex: tag.color))
                             .frame(width: 150)
                             .frame(height: tag.text.isEmpty ? 18 : tag.height <= 36 ? tag.height : tag.height + paddingCount)
                     )
@@ -537,11 +543,11 @@ struct DaysTagView: View {
             
                 .background(
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(tag.text.isEmpty || tag.text == "12345" ? Color.clear :  tag.color)
+                        .fill(tag.text.isEmpty || tag.text == "12345" ? Color(hex: "#F4FAFC") :  Color(hex:tag.color))
                         .frame(width: 150)
                         .frame(height: tag.text == "12345" ? 18 : tag.height)
                 )
-                .foregroundColor(tag.fontColor)
+                        .foregroundColor(Color(hex:tag.fontColor))
                 .lineLimit(nil)
                 .contentShape(RoundedRectangle(cornerRadius: 5))
             
@@ -549,6 +555,28 @@ struct DaysTagView: View {
         }
     }
     //MARK: - Function
+    
+    func loadTags(index: Int) {
+        let tagsPredicate = #Predicate<Tag> {
+            $0.travelTitle == nameText && $0.dayIndex == originalDayIndex && $0.rowIndex == index
+        }
+      
+        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+
+        do {
+            let tags = try context.fetch(descriptor)
+            
+            DispatchQueue.main.async {
+                // 해당 인덱스에 해당하는 태그가 있다면 배열에 대체
+                if tags.indices.contains(index) {
+                    combinedTags[index] = tags[index]
+                }
+            }
+        } catch {
+            print("Error fetching tags: \(error)")
+        }
+    }
+
     
     func updateTagHeight(selectedTagIndex: Int, originalHeight: CGFloat, tagHeight: Double) {
         
@@ -603,7 +631,7 @@ struct DaysTagView: View {
                             if insertCount != 0 {
                                 for i in 1...insertCount {
                                     if selectedTagIndex + i < combinedTags.count {
-                                        combinedTags.insert(Tag(text: "", color: .clear, height: 18, fontColor: .clear), at: selectedTagIndex + 1)
+                                        combinedTags.insert(Tag(text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: selectedTagIndex + 1)
                                     }
                                 }
                             }
@@ -632,7 +660,7 @@ struct DaysTagView: View {
                         let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
                         for i in 1...insertCount {
                             if selectedTagIndex + i < combinedTags.count {
-                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18, fontColor: .clear),at: selectedTagIndex + i)
+                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
                             }
                         }
                 } else if originalHeight < 36 {
@@ -645,7 +673,7 @@ struct DaysTagView: View {
                 //목표시간이 30분일때
                 if originalHeight == 36 {
                         //현재시간이 1시간일때
-                        combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18, fontColor: .clear),at: selectedTagIndex + 1)
+                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + 1)
                     
                 }
                 else if originalHeight > 36 {
@@ -653,7 +681,7 @@ struct DaysTagView: View {
                         let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
                         for i in 1...insertCount {
                             if selectedTagIndex + i < combinedTags.count {
-                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: .clear, height: 18, fontColor: .clear),at: selectedTagIndex + i)
+                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
                             }
                         }
                 }
@@ -679,7 +707,7 @@ struct DaysTagView: View {
                             copyedCombinedTags[index] = Tag(text: copyedCombinedTags[index].text, color: copyedCombinedTags[index].color, height: copyedCombinedTags[index].height, fontColor: copyedCombinedTags[index].fontColor)
 
                         }
-                        copyedCombinedTags[index] = Tag(text: "12345", color: .clear, height: 18, fontColor: .clear)
+                        copyedCombinedTags[index] = Tag(text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
                     }
 //                    copyedCombinedTags = combinedTags
                     secTimer?.invalidate() // 타이머 중지
@@ -768,7 +796,7 @@ struct DaysTagView: View {
                         
                         let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
                         
-                        let originalColor = tags.first { $0.text == text }?.color ?? getTagColor
+                        let originalColor = tags.first { $0.text == text }?.color ?? getTagColor.toHex()
                         droppedTag.color = originalColor
                         
                         tags.insert(droppedTag, at: index)

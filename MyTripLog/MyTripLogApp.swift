@@ -15,7 +15,7 @@ struct MyTripLogApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [Travel.self, ScheduleTag.self])
+        .modelContainer(for: [Travel.self, Tag.self])
 
 
     }

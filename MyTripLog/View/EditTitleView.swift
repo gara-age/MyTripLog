@@ -9,18 +9,20 @@ import SwiftUI
 import SwiftData
 
 struct EditTitleView: View {
-    @Bindable var travel : Travel
+    
+   @Binding var selectedTrip : Travel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTravels: [Travel]
-
-
+    @State private var oldTitle : String = ""
+    
+    
     @State private var newTitle : String = ""
     var body: some View {
         NavigationStack{
             List{
                 Section{
-                    TextField(travel.title, text: $newTitle)
+                    TextField(selectedTrip.title, text: $newTitle)
                 }
             }
             .navigationTitle("여정명 수정")
@@ -35,7 +37,7 @@ struct EditTitleView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("저장") {
-                        travel.title = newTitle
+                        selectedTrip.title = newTitle
                         try? context.save()
                             dismiss()
                     }

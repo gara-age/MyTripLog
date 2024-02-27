@@ -11,6 +11,7 @@ import SwiftData
 // Custom View
 struct TagView: View {
     @Environment(\.modelContext) private var context
+    @Query(animation: .snappy) private var allTags: [Tag]
 
     @Binding var tags : [Tag]
     var title: String = "Add Some Tags"
@@ -31,6 +32,9 @@ struct TagView: View {
     @State private var cancelExecute: DispatchWorkItem?
     let cancelFunction: () -> Void
     let cancelByWaitFunction: () -> Void
+    @State private var travel: Travel?
+    @Binding var nameText : String
+    @State private var dayIndex = 100
     
     
     var updateTags: ((Tag, String) -> Void)?
@@ -66,22 +70,27 @@ struct TagView: View {
             .frame(maxWidth: .infinity)
             
         }
-        
-        .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
+        .onAppear{
+            loadTags()
+        }
+//        .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
     }
     //MARK: - RowView
     
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
+            .onTapGesture {
+                print(tag.id)
+            }
             .font(.system(size: fontSize))
             .padding(.horizontal, 14)
             .padding(.vertical,8)
             .background(
                 RoundedRectangle(cornerRadius: 5)
-                    .fill(tag.color)
+                    .fill(Color(hex: tag.color))
             )
-            .foregroundColor(tag.fontColor)
+            .foregroundColor(Color(hex: tag.fontColor))
             .lineLimit(1)
             .contentShape(RoundedRectangle(cornerRadius: 5))
             .contextMenu{
@@ -110,16 +119,6 @@ struct TagView: View {
                     
                 }
             }
-        //드랍이 잘못된 위치에 이루어진다면 tagView false , dropDone true 및 draggable 종료되어야함
-        //            .onDrag {
-        //                tagView = true
-        //                getTagColor = tag.color
-        //                draggedTag = tag
-        //                dropDone = false
-        //     
-        //                return NSItemProvider(object: tag.text as NSString)
-        //
-        //                       }
             .if(!escape){
                 $0
                     .draggable(tag.text) {
@@ -130,7 +129,7 @@ struct TagView: View {
                             .padding(.vertical,8)
                             .background(
                                 RoundedRectangle(cornerRadius: 5)
-                                    .fill(tag.color)
+                                    .fill(Color(hex: tag.color))
                             )
                             .foregroundColor(Color("BGColor"))
                             .contentShape(RoundedRectangle(cornerRadius: 5))
@@ -139,7 +138,7 @@ struct TagView: View {
                                 tagView = true
                                 dropDone = false
                                 escape = false
-                                getTagColor = tag.color
+                                getTagColor = Color(hex:tag.color)
                                 
                                 draggedTag = tag
                                 cancelFunction()
@@ -171,23 +170,49 @@ struct TagView: View {
                 if let userInfo = notification.object as? [String: Any],
                    let color = userInfo["color"] as? Color,
                    let originalText = userInfo["originalText"] as? String {
-                    
+                    let hexColor = color.toHex()
+
                     // Find and update the tag in tags based on text
                     if let index = tags.firstIndex(where: { $0.text == originalText }) {
-                        tags[index].color = color
+                        tags[index].color = hexColor
                     }
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
                 if let userInfo = notification.object as? [String: Any],
-                    let travelTitle = userInfo["TravelTitle"] as? String {
+                   let travelTitle = userInfo["TravelTitle"] as? String {
+                    //만약 저장할 Tag가 없다면(삭제되었다면)
 
-                    let savedTag = ScheduleTag(tagId:tag.id , travelTitle: travelTitle, dayIndex: 100, index: 100, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
-                    //dayIndex와 index가 100인경우 tags에 배치
-                    context.insert(savedTag)
-                    try? context.save()
+                    let savedTag = Tag(id: tag.id, text: tag.text, size: tag.size, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: 100, rowIndex: 100)
+                    
+                    // 저장할 Tag와 동일한 text를 가진 Tag가 dayIndex가 100인지 확인
+                    let existingTags = allTags.filter {$0.travelTitle == travelTitle && $0.dayIndex == 100 && $0.text == savedTag.text }
+                    
+                    // dayIndex가 100이고 text가 동일한 Tag가 없을 경우에만 저장
+                    if existingTags.isEmpty {
+                        context.insert(savedTag)
+                        try? context.save()
+                    }
                 }
             }
+
+    }
+    func loadTags() {
+
+        let tagsPredicate = #Predicate<Tag> {
+            $0.travelTitle == nameText && $0.dayIndex == 100
+        }
+      
+        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+
+        do {
+            let trips = try context.fetch(descriptor)
+            DispatchQueue.main.async {
+                tags = trips
+            }
+        } catch {
+            print("fuck")
+        }
     }
     private func deleteTag(tag: Tag) {
         tags.removeAll { $0.text == tag.text }
@@ -220,14 +245,14 @@ struct TagView: View {
             //adding the capsule size into total width with spacing
             //14 + 14 + 6 + 6
             //extra 6 for safe
-            totalWidth += (tag.size + 30) // Capsule일때는 40, roundedRectangle일떄는 30
+            totalWidth += ((tag.size ?? 0) + 30) // Capsule일때는 40, roundedRectangle일떄는 30
             
             //checking if totalwidth is greater than size
             if totalWidth > screenWidth{
                 //adding row in rows
                 //clearing the data
                 //checking for long string
-                totalWidth = (!currentRow.isEmpty || rows.isEmpty ? (tag.size + 40) : 0 )
+                totalWidth = (!currentRow.isEmpty || rows.isEmpty ? ((tag.size ?? 0) + 40) : 0 )
                 
                 rows.append(currentRow)
                 currentRow.removeAll()
@@ -263,22 +288,54 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
     let size = (text as NSString).size(withAttributes: attributes)
     
     let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.5, brightness: 0.9)
-    
+    let hexBG = color.toHex()
+
     let height : CGFloat = 36
     
     var fontColor : Color = Color.BG
+    let hexFG = fontColor.toHex()
+
     
-    return Tag(text: text, size: size.width, color: color, height: height, fontColor: fontColor)
+    return Tag(text: text, size: size.width, color: hexBG, height: height, fontColor: hexFG)
 }
 
 func getSize(tags: [Tag])->Int{
     var count: Int = 0
     
     tags.forEach { tag in
-        count += Int(tag.size)
+        count += Int(tag.size ?? 0)
     }
     return count
 }
 func removeTag(withText text: String, from tags: inout [Tag]) {
     tags.removeAll { $0.text == text }
+}
+extension Color {
+    func toHex() -> String {
+           guard let components = UIColor(self).cgColor.components, components.count >= 3 else {
+               return ""
+           }
+           
+           let red = Int(components[0] * 255.0 + 0.5) // 올바른 반올림 방법 사용
+           let green = Int(components[1] * 255.0 + 0.5) // 올바른 반올림 방법 사용
+           let blue = Int(components[2] * 255.0 + 0.5) // 올바른 반올림 방법 사용
+           
+           return String(format: "#%02X%02X%02X", red, green, blue)
+       }
+    init(hex: String) {
+           // hex 코드에서 '#' 문자 제거
+           var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+           hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+
+           // hex 코드를 UInt32로 변환
+           var rgb: UInt64 = 0
+           Scanner(string: hexSanitized).scanHexInt64(&rgb)
+
+           // 각 색상 채널 값을 추출하여 SwiftUI Color로 변환
+           let red = Double((rgb & 0xFF0000) >> 16) / 255.0
+           let green = Double((rgb & 0x00FF00) >> 8) / 255.0
+           let blue = Double(rgb & 0x0000FF) / 255.0
+
+           self.init(red: red, green: green, blue: blue)
+       }
 }

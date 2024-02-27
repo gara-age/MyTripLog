@@ -12,6 +12,7 @@ struct AddTagView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query private var allTravel: [Travel]
+    @Query(animation: .snappy) private var allTags: [Tag]
 
     //View properties
     @State private var text : String = ""
@@ -64,14 +65,15 @@ struct AddTagView: View {
     @State private var deleteDayRequest : Bool = false
     @State private var forReset : Bool = false
     @Binding var nameText : String
-    
+    @Binding var moveToATV : Bool
+    @State private var cancelRequest = false
     var body: some View {
         NavigationStack{
             VStack{
                 //MARK: -TagView
                 
                 ScrollView(.vertical){
-                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, updateTags: updateTags)
+                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, updateTags: updateTags)
                 }
                 .onTapGesture{
                     tagView = false
@@ -229,20 +231,35 @@ struct AddTagView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("취소") {
-                        dismiss()
+                        cancelRequest.toggle()
                     }
                     .tint(.red)
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("추가") {
-                        addScheduleTag()
+                    Button(moveToATV ? "추가" : "저장") {
+                        saveTags()
                         dismiss()
                     }
                     .tint(.blue)
                 }
             }
             
+        }
+        .alert("저장되지않은 사항은 유지되지않습니다. 여정에서 벗어나시겠습니까?", isPresented: $cancelRequest) {
+            Button(role: .destructive) {
+            dismiss()
+            } label: {
+                Text("나가기")
+            }
+            
+            Button(role: .cancel) {
+            } label: {
+                Text("취소")
+            }
+        }
+        .onDisappear{
+            moveToATV = false 
         }
         .interactiveDismissDisabled()
 
@@ -306,16 +323,27 @@ struct AddTagView: View {
         }
     }
     
-    func loadScheduleTags() {
-        let tripPredicate = #Predicate<ScheduleTag> {
-            $0.travelTitle == nameText
-        }
-      
-        let descriptor = FetchDescriptor<ScheduleTag>(predicate: tripPredicate)
+//    func loadTags() {
+//        guard !moveToATV else { return }
+//        moveToATV.toggle()
+//
+//        let tagsPredicate = #Predicate<Tag> {
+//            $0.travelTitle == nameText && $0.dayIndex == 100
+//        }
+//      
+//        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+//
+//        do {
+//            let trips = try context.fetch(descriptor)
+//            DispatchQueue.main.async {
+//                tags = trips
+//            }
+//        } catch {
+//            print("fuck")
+//        }
+//    }
 
-        let trips = try? context.fetch(descriptor)
-//        tags = trips!
-       }
+
     
     func updateSelectedTagTime(tagTime: Double) {
         selectedTagTime = tagTime
@@ -417,7 +445,7 @@ struct AddTagView: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex, forReset: $forReset, originalDayIndex: index)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex, forReset: $forReset, originalDayIndex: index, nameText: $nameText)
                 
                     .frame(height: geometry.size.height)
             }
@@ -442,7 +470,7 @@ struct AddTagView: View {
         .background(.ultraThinMaterial)
         .contentShape(.rect)
     }
-    func addScheduleTag() {
+    func saveTags() {
         NotificationCenter.default.post(
             name: Notification.Name("saveTag"),
             object: ["TravelTitle" : nameText])
