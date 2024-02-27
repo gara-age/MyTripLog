@@ -12,7 +12,7 @@ import SwiftData
 class Travel {
     
     var id: UUID
-    var title: String
+    @Attribute(.unique) var title: String
     var startDate : Date
     var endDate : Date
     var startTime : Int

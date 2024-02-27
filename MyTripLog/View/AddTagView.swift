@@ -10,7 +10,9 @@ import SwiftData
 
 struct AddTagView: View {
     @Environment(\.dismiss) private var dismiss
-    
+    @Environment(\.modelContext) private var context
+    @Query private var allTravel: [Travel]
+
     //View properties
     @State private var text : String = ""
     @State var tags: [Tag] = []
@@ -172,7 +174,6 @@ struct AddTagView: View {
                             }
                     }
                     .padding(.top, 10)
-                    
                     .frame(maxWidth: 50)
                     
                     
@@ -304,6 +305,18 @@ struct AddTagView: View {
             .animation(.snappy, value: setHeight)
         }
     }
+    
+    func loadScheduleTags() {
+        let tripPredicate = #Predicate<ScheduleTag> {
+            $0.travelTitle == nameText
+        }
+      
+        let descriptor = FetchDescriptor<ScheduleTag>(predicate: tripPredicate)
+
+        let trips = try? context.fetch(descriptor)
+//        tags = trips!
+       }
+    
     func updateSelectedTagTime(tagTime: Double) {
         selectedTagTime = tagTime
         
@@ -435,6 +448,7 @@ struct AddTagView: View {
             object: ["TravelTitle" : nameText])
 
     }
+    
     private func deleteDay(at index: Int) {
         switch index {
         case 1:

@@ -6,10 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct SetdetailVIew: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @Query(animation: .snappy) private var allTravels: [Travel]
+
 //    @Binding var add : Bool
     @Binding var nameText : String
     @Binding var moveToATV : Bool
@@ -48,7 +51,6 @@ struct SetdetailVIew: View {
                                     .onChange(of: startDay) { _ in
                                       calendarId += 1
                                     }
-                                //날짜 선택시 피커 닫히도록
 
                             }
                             Section {
@@ -119,7 +121,7 @@ struct SetdetailVIew: View {
                             .scaledToFill()
                             .colorMultiply(.gray))
                         .frame( width: 350, height: 150)
-                        /*.foregroundColor(Color.tag)*/)
+                        )
                     .frame(width: 350, height: 150)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
@@ -145,7 +147,7 @@ struct SetdetailVIew: View {
             )
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button(NSLocalizedString("취소", comment:"")) {
+                    Button("취소") {
 //                        add = false
                         nameText = ""
                         startTime = 0
@@ -159,15 +161,13 @@ struct SetdetailVIew: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("추가") {
-//                        addTagView.toggle()
                         moveToATV = true
                         addTravel()
 
                         dismiss()
-//                        add = false
 
                     }
-                    .disabled(nameText.isEmpty)
+                                        .disabled(nameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || allTravels.contains(where: { $0.title == nameText }))
                     .tint(.blue)
                 }
             }

@@ -6,11 +6,13 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct EditTitleView: View {
     @Bindable var travel : Travel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
+    @Query(animation: .snappy) private var allTravels: [Travel]
 
 
     @State private var newTitle : String = ""
@@ -37,9 +39,11 @@ struct EditTitleView: View {
                         try? context.save()
                             dismiss()
                     }
-                    .disabled(newTitle.isEmpty)
+                    .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || allTravels.contains(where: { $0.title == newTitle }))
+
                     .tint(.blue)
                 }
+
             }
         }
      

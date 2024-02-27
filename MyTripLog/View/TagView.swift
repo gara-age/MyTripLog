@@ -10,6 +10,8 @@ import SwiftData
 
 // Custom View
 struct TagView: View {
+    @Environment(\.modelContext) private var context
+
     @Binding var tags : [Tag]
     var title: String = "Add Some Tags"
     var fontSize: CGFloat = 16
@@ -176,7 +178,16 @@ struct TagView: View {
                     }
                 }
             }
-        
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
+                if let userInfo = notification.object as? [String: Any],
+                    let travelTitle = userInfo["TravelTitle"] as? String {
+
+                    let savedTag = ScheduleTag(tagId:tag.id , travelTitle: travelTitle, dayIndex: 100, index: 100, tagColor: tag.color.toHexString(), tagText: tag.text, tagHeight: tag.height)
+                    //dayIndex와 index가 100인경우 tags에 배치
+                    context.insert(savedTag)
+                    try? context.save()
+                }
+            }
     }
     private func deleteTag(tag: Tag) {
         tags.removeAll { $0.text == tag.text }
