@@ -73,7 +73,7 @@ struct AddTagView: View {
                 //MARK: -TagView
                 
                 ScrollView(.vertical){
-                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, updateTags: updateTags)
+                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, moveToATV: $moveToATV, updateTags: updateTags)
                 }
                 .onTapGesture{
                     tagView = false
@@ -239,7 +239,9 @@ struct AddTagView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(moveToATV ? "추가" : "저장") {
                         saveTags()
-                        dismiss()
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            dismiss()
+                        }
                     }
                     .tint(.blue)
                 }
@@ -445,7 +447,7 @@ struct AddTagView: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex, forReset: $forReset, originalDayIndex: index, nameText: $nameText)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex, forReset: $forReset, originalDayIndex: index, nameText: $nameText, moveToATV: $moveToATV)
                 
                     .frame(height: geometry.size.height)
             }

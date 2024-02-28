@@ -12,6 +12,7 @@ import SwiftData
 struct TagView: View {
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTags: [Tag]
+    @Query(animation: .snappy) private var allTravel: [Travel]
 
     @Binding var tags : [Tag]
     var title: String = "Add Some Tags"
@@ -35,7 +36,7 @@ struct TagView: View {
     @State private var travel: Travel?
     @Binding var nameText : String
     @State private var dayIndex = 100
-    
+    @Binding var moveToATV : Bool
     
     var updateTags: ((Tag, String) -> Void)?
     
@@ -71,7 +72,9 @@ struct TagView: View {
             
         }
         .onAppear{
-            loadTags()
+            if !moveToATV {
+                loadTags()
+            }
         }
 //        .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
     }
@@ -182,7 +185,9 @@ struct TagView: View {
                 if let userInfo = notification.object as? [String: Any],
                    let travelTitle = userInfo["TravelTitle"] as? String {
                     //만약 저장할 Tag가 없다면(삭제되었다면)
-
+                    if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                                travel = foundTravel
+                            }
                     let savedTag = Tag(id: tag.id, text: tag.text, size: tag.size, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: 100, rowIndex: 100)
                     
                     // 저장할 Tag와 동일한 text를 가진 Tag가 dayIndex가 100인지 확인
@@ -191,19 +196,31 @@ struct TagView: View {
                     // dayIndex가 100이고 text가 동일한 Tag가 없을 경우에만 저장
                     if existingTags.isEmpty {
                         context.insert(savedTag)
-                        try? context.save()
+                        try! context.save()
                     }
                 }
             }
 
     }
+//    func loadTags() {
+//
+//        let tagsPredicate = #Predicate<Tag> {
+//            $0.travelTitle == nameText && $0.dayIndex == 100
+//        }
+//      
+//        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+//
+//        do {
+//            let trips = try context.fetch(descriptor)
+//            DispatchQueue.main.async {
+//                tags = trips
+//            }
+//        } catch {
+//            print("fuck")
+//        }
+//    }
     func loadTags() {
-
-        let tagsPredicate = #Predicate<Tag> {
-            $0.travelTitle == nameText && $0.dayIndex == 100
-        }
-      
-        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+        let descriptor = FetchDescriptor<Tag>()
 
         do {
             let trips = try context.fetch(descriptor)
@@ -211,7 +228,7 @@ struct TagView: View {
                 tags = trips
             }
         } catch {
-            print("fuck")
+            print("Error fetching tags: \(error)")
         }
     }
     private func deleteTag(tag: Tag) {

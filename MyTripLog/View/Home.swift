@@ -51,8 +51,6 @@ struct Home: View {
                                     Text("이미지로 내보내기")
                                 }
                                 Button {
-                                    let trip = trip
-
                                     selectedTrip = trip
                                     deleteRequest.toggle()
 
@@ -138,6 +136,7 @@ struct Home: View {
     }
     
     func deleteTravel(_ travel: Travel) {
+        
           if let tags = travel.tag {
               for tag in tags {
                   if tag.travelTitle == travel.title {
@@ -145,7 +144,7 @@ struct Home: View {
                   }
               }
           }
-          
+          print("delete Travel")
           context.delete(travel)
       }
 }

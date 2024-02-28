@@ -12,6 +12,7 @@ import SwiftData
 // Custom View
 struct DaysTagView: View {
     @Environment(\.modelContext) private var context
+    @Query(animation: .snappy) private var allTravel: [Travel]
 
     @Binding var tags: [Tag]
     @Binding var draggedTag: Tag?
@@ -49,9 +50,10 @@ struct DaysTagView: View {
     let originalDayIndex : Int
     @State private var travel: Travel?
     @Binding var nameText : String
+    @State private var stopFetching = false
+    @Binding var moveToATV : Bool
 
-    
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>) {
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>, moveToATV: Binding<Bool>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -72,6 +74,7 @@ struct DaysTagView: View {
         self._forReset = forReset
         self.originalDayIndex = originalDayIndex
         self._nameText = nameText
+        self._moveToATV = moveToATV
         let repeatCount = (startTime - endTime) * 2
             let tagRepeatCount: Int
            if repeatCount < 0 {
@@ -102,9 +105,7 @@ struct DaysTagView: View {
                         ForEach(combinedTags.indices, id: \.self) { index in
 
                             RowView(tag: combinedTags[index], index: index)
-                                .onAppear{
-                                    loadTags(index: index)
-                                }
+                             
                                 .if(combinedTags[index].text.isEmpty){ RowVIew in
                                     RowVIew.padding(.vertical,1.725)
                                 }
@@ -140,11 +141,16 @@ struct DaysTagView: View {
                 print("모든 Tag의 높이의 합:", totalHeight)
 
             }
+            .onChange(of: stopFetching){
+                print(stopFetching)
+            }
             .onAppear{
                 for tag in combinedTags {
                     totalHeight += tag.height
-                }
-            }
+                }                        
+                
+              
+                    }
             .overlay{
                 //MARK: - Overlay
                 
@@ -278,7 +284,9 @@ struct DaysTagView: View {
              
             } //overlay 끝
         }
-        
+        .onDisappear{
+            stopFetching = false
+        }
     }
     //MARK: - RowView
     
@@ -457,14 +465,20 @@ struct DaysTagView: View {
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
                 if let userInfo = notification.object as? [String: Any],
                     let travelTitle = userInfo["TravelTitle"] as? String {
-
-                    let savedTag = Tag(id: UUID().uuidString, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
+                    if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                                travel = foundTravel
+                            }
+                    let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
                     context.insert(savedTag)
-                    try? context.save()
+                    try! context.save()
                 }
             }
         }
-      
+        .onAppear{
+            if !moveToATV{
+                loadTags(index: index)
+            }
+        }
     }
     
     @ViewBuilder
@@ -557,6 +571,13 @@ struct DaysTagView: View {
     //MARK: - Function
     
     func loadTags(index: Int) {
+//        guard !stopFetching else { return }
+//        guard index != combinedTags.count else { return }
+        //혹시 위의 코드나 stopFetching 으로 막아보기
+//        guard combinedTags[index].text == tags[index].text else { return }
+//        if index == combinedTags.count {
+//            stopFetching = true
+//        }
         let tagsPredicate = #Predicate<Tag> {
             $0.travelTitle == nameText && $0.dayIndex == originalDayIndex && $0.rowIndex == index
         }
