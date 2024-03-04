@@ -55,10 +55,10 @@ struct TagView: View {
                         
                         HStack(spacing: 6){
                             ForEach(rows) { row in
-
+                                
                                 //Row View
                                 RowView(tag: row)
-                                  
+                                
                             }
                         }
                     }
@@ -68,6 +68,13 @@ struct TagView: View {
                 .padding(.vertical)
                 .padding(.bottom, 20)
                 
+            }
+            .onAppear{
+                if !moveToATV {
+                   if tags.isEmpty {
+                        loadTags()
+                    }
+                }
             }
             .frame(maxWidth: .infinity)
             
@@ -79,9 +86,6 @@ struct TagView: View {
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
-            .onTapGesture {
-                print(index)
-            }
             .font(.system(size: fontSize))
             .padding(.horizontal, 14)
             .padding(.vertical,8)
@@ -147,7 +151,6 @@ struct TagView: View {
                         
                     }
             }
-            .matchedGeometryEffect(id: tag.id, in: animation)
             .alert("일정 삭제시 동일한 이름의 일정이 모두 삭제됩니다. 정말 삭제하시겠습니까?", isPresented: $deleteRequest) {
                 Button(role: .destructive) {
                     if let tagToDelete = tagToDelete, let tagIndex = tags.firstIndex(of: tagToDelete) {
@@ -180,19 +183,21 @@ struct TagView: View {
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
                 if let userInfo = notification.object as? [String: Any],
                    let travelTitle = userInfo["TravelTitle"] as? String {
-                    //만약 저장할 Tag가 없다면(삭제되었다면)
-                    if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
-                                travel = foundTravel
-                            }
-                    let savedTag = Tag(id: tag.id, text: tag.text, size: tag.size, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: 100, rowIndex: 100)
-                    
-                    // 저장할 Tag와 동일한 text를 가진 Tag가 dayIndex가 100인지 확인
-                    let existingTags = allTags.filter {$0.travelTitle == travelTitle && $0.dayIndex == 100 && $0.text == savedTag.text }
-                    
-                    // dayIndex가 100이고 text가 동일한 Tag가 없을 경우에만 저장
-                    if existingTags.isEmpty {
+
+                    let existingTags = allTags.filter { $0.travelTitle == travelTitle && $0.dayIndex == 100 }
+
+                    let tagExists = existingTags.contains { existingTag in
+                        existingTag.id == tag.id && existingTag.text == tag.text
+                    }
+
+                    if !tagExists {
+                        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                            travel = foundTravel
+                        }
+
+                        let savedTag = Tag(id: tag.id, text: tag.text, size: tag.size, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: 100, rowIndex: 100)
+
                         DispatchQueue.main.async {
-                            
                             context.insert(savedTag)
                             print("\(savedTag.text) tags")
 
@@ -201,33 +206,30 @@ struct TagView: View {
                     }
                 }
             }
+
            
     }
-//    func loadTags() {
-//        guard !stopFetching else { return }
-//        let tagsPredicate = #Predicate<Tag> {
-//            $0.travelTitle == nameText && $0.dayIndex == 100
-//        }
-//
-//        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
-//
-//        do {
-//            let trips = try context.fetch(descriptor)
-//
-//            DispatchQueue.main.async {
-//
-////                guard tags[index].text != trips[index].text else { return }
-//
-//                tags = trips
-////                print("loaded Tags is \(tags[index].text) and \(index)")
-//
-////                stopFetching = true
-//
-//            }
-//        } catch {
-//            print("fuck! cannot load tags")
-//        }
-//    }
+    func loadTags() {
+        let tagsPredicate = #Predicate<Tag> {
+            $0.travelTitle == nameText && $0.dayIndex == 100
+        }
+
+        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+
+        do {
+            let trips = try context.fetch(descriptor)
+
+            DispatchQueue.main.async {
+                guard tags.isEmpty else { return }
+
+                tags = trips
+
+
+            }
+        } catch {
+            print("fuck! cannot load tags")
+        }
+    }
     private func deleteTag(tag: Tag) {
         tags.removeAll { $0.text == tag.text }
         // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
@@ -330,22 +332,19 @@ extension Color {
                return ""
            }
            
-           let red = Int(components[0] * 255.0 + 0.5) // 올바른 반올림 방법 사용
-           let green = Int(components[1] * 255.0 + 0.5) // 올바른 반올림 방법 사용
-           let blue = Int(components[2] * 255.0 + 0.5) // 올바른 반올림 방법 사용
+           let red = Int(components[0] * 255.0 + 0.5)
+           let green = Int(components[1] * 255.0 + 0.5)
+           let blue = Int(components[2] * 255.0 + 0.5)
            
            return String(format: "#%02X%02X%02X", red, green, blue)
        }
     init(hex: String) {
-           // hex 코드에서 '#' 문자 제거
            var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
            hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
 
-           // hex 코드를 UInt32로 변환
            var rgb: UInt64 = 0
            Scanner(string: hexSanitized).scanHexInt64(&rgb)
 
-           // 각 색상 채널 값을 추출하여 SwiftUI Color로 변환
            let red = Double((rgb & 0xFF0000) >> 16) / 255.0
            let green = Double((rgb & 0x00FF00) >> 8) / 255.0
            let blue = Double(rgb & 0x0000FF) / 255.0

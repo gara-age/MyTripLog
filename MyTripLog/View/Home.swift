@@ -31,11 +31,11 @@ struct Home: View {
                     Section{
                         TravelCardView(trip: trip)
                             .onTapGesture {
-                             openTravel(trip: trip)
+                             openTravel(travel: trip)
                                      }
                             .contextMenu{
                                 Button {
-                                    editTitle(trip: trip)
+                                    editTitle(travel: trip)
                                     
                                 } label: {
                                     Text("여정명 수정")
@@ -123,15 +123,15 @@ struct Home: View {
         }
         
     }
-    func openTravel(trip: Travel) {
-        nameText = trip.title
-        startTime = trip.startTime
-        endTime = trip.endTime
+    func openTravel(travel: Travel) {
+        nameText = travel.title
+        startTime = travel.startTime
+        endTime = travel.endTime
              openATV.toggle()
     }
     
-    func editTitle(trip: Travel) {
-        editedTrip = trip
+    func editTitle(travel: Travel) {
+        editedTrip = travel
         isEditTitle.toggle()
     }
     

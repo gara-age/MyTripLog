@@ -226,7 +226,21 @@ struct AddTagView: View {
                 shownDayIndex = currentDayIndex
             }
             .frame(maxWidth: .infinity)
-            
+            .onTapGesture{
+                if !moveToATV {
+                    print("loaing...")
+                    let tagsPredicate = #Predicate<Tag> {
+                        $0.travelTitle == nameText && $0.dayIndex == 0
+                    }
+
+                    let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+                    let trips = try! context.fetch(descriptor)
+
+                    for tag in trips {
+                        print("\(tag.text)")
+                       }
+                }
+            }
             .blur(radius: editMode || setHeight ? 5 : 0)
             
 //            .navigationTitle(nameText)
@@ -251,16 +265,18 @@ struct AddTagView: View {
                 ToolbarItem(placement: .principal) {
                     HStack{
                         Text(editedTrip.title.isEmpty ? nameText : editedTrip.title)
-                        Button{ 
-                            editTitle()
-                        }
-                    label: {
-                        Image(systemName: "pencil")
-                            .font(.headline)
-                           
+                        if moveToATV {
+                            Button{
+                                editTitle()
+                            }
+                        label: {
+                            Image(systemName: "pencil")
+                                .font(.headline)
+                               
 
+                        }
                     }
-                    }
+                }
                                    }
             }
             
@@ -281,17 +297,9 @@ struct AddTagView: View {
             }
         }
         .onDisappear{
-            moveToATV = false 
+            moveToATV = false
         }
         .interactiveDismissDisabled()
-        .onAppear{
-            if !moveToATV {
-                if tags.isEmpty {
-                    loadTags()
-                }
-            }
-            
-        }
         .disabled(editMode || setHeight)
         .overlay(
             ColorPicker("", selection: $originalColor, supportsOpacity: false)
@@ -351,53 +359,7 @@ struct AddTagView: View {
             .animation(.snappy, value: setHeight)
         }
     }
-    
-//    func loadTags() {
-//        guard !moveToATV else { return }
-//        moveToATV.toggle()
-//
-//        let tagsPredicate = #Predicate<Tag> {
-//            $0.travelTitle == nameText && $0.dayIndex == 100
-//        }
-//      
-//        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
-//
-//        do {
-//            let trips = try context.fetch(descriptor)
-//            DispatchQueue.main.async {
-//                tags = trips
-//            }
-//        } catch {
-//            print("fuck")
-//        }
-//    }
 
-    func loadTags() {
-//        guard !stopFetching else { return }
-        let tagsPredicate = #Predicate<Tag> {
-            $0.travelTitle == nameText && $0.dayIndex == 100
-        }
-
-        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
-
-        do {
-            let trips = try context.fetch(descriptor)
-
-            DispatchQueue.main.async {
-
-//                guard tags[index].text != trips[index].text else { return }
-
-                tags = trips
-//                print("loaded Tags is \(tags[index].text) and \(index)")
-
-//                stopFetching = true
-
-            }
-        } catch {
-            print("fuck! cannot load tags")
-        }
-    }
-    
     func updateSelectedTagTime(tagTime: Double) {
         selectedTagTime = tagTime
         

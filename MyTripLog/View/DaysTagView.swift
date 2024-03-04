@@ -174,7 +174,7 @@ struct DaysTagView: View {
                                                     if dayIndex >= 1 {
                                                         stopSingleTimer()
                                                     }
-                                                    var droppedTag = MyTripLog.addTag(text: draggedTag!.text, fontSize: 16)
+                                                    let droppedTag = MyTripLog.addTag(text: draggedTag!.text, fontSize: 16)
                                                     //드랍 조건 확인해볼것. 대형 Tag의 아래쪽에 드랍 무시되거나 멀리 떨어져서 드랍되는 경우 발생
                                                     if lastIndex >= 0 && lastIndex < combinedTags.count , combinedTags[index].text.isEmpty {
                                                         //Tag 덮어씌우지 못하도록 처리
@@ -184,14 +184,12 @@ struct DaysTagView: View {
                                                         if lastIndex + 1 < combinedTags.count, combinedTags[lastIndex + 1].text.isEmpty {
                                                             combinedTags.remove(at: lastIndex + 1)
                                                         }
-                                                        
-                                                        let color = Color(hue: Double(draggedTag!.text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
-                                                        
+                                                                                                                
                                                         let originalColor = tags.first { $0.text == draggedTag!.text }?.color ?? getTagColor.toHex()
                                                         droppedTag.color = originalColor
                                                         
                                                         combinedTags.insert(droppedTag, at: lastIndex)
-
+                                                        print(lastIndex)
                                                     }
                                                     
 
@@ -294,8 +292,7 @@ struct DaysTagView: View {
     @ViewBuilder
     func RowView(tag: Tag, index: Int) -> some View {
         HStack { //tagView 인 경우 combinedTags[0]의 tag.text 를 draggedTag.text로
-            var draggedTag = draggedTag
-            var paddingCount = ((combinedTags[index].height / 18) - 0) / 2.3
+            let paddingCount = ((combinedTags[index].height / 18) - 0) / 2.3
 
             Text(tag.text.isEmpty ? "" : tag.text)
                 .font(.system(size: fontSize))
@@ -401,7 +398,7 @@ struct DaysTagView: View {
                                 // Find and update all tags in combinedTags based on text
                                 combinedTags = combinedTags.map { existingTag in
                                     if existingTag.text == originalText {
-                                        var updatedTag = existingTag
+                                        let updatedTag = existingTag
                                         updatedTag.color = color.toHex()
                                         return updatedTag
                                     }
@@ -445,7 +442,6 @@ struct DaysTagView: View {
                                     //각 Tag별 height에 맞게 보완 필요
                                 }
                                 
-                                
                                 removeTag(withText: deletedTag.text, from: &combinedTags)
                             }
                         }
@@ -475,8 +471,8 @@ struct DaysTagView: View {
                             }
                     let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
                     context.insert(savedTag)
-                    print("\(savedTag.text) combinedTags")
                     try! context.save()
+                    print("\(savedTag.text) + \(savedTag.dayIndex) + \(savedTag.rowIndex) combinedTags")
                 }
             }
         }
@@ -488,14 +484,18 @@ struct DaysTagView: View {
                 }
             }
         }
+        .onTapGesture{
+            print(index)
+            print(tag.id)
+        }
     }
     
     @ViewBuilder
     func CopyRowView(tag: Tag, index: Int) -> some View {
         if index == 0 {
             HStack { //tagView 인 경우 combinedTags[0]의 tag.text 를 draggedTag.text로
-                var draggedTag = draggedTag
-                var paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 2.3
+                let draggedTag = draggedTag
+                let paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 2.3
                 Text(index == 0 ? draggedTag!.text.isEmpty ? "12345" : draggedTag!.text : tag.text.isEmpty ? "12345" : tag.text)
                     .font(.system(size: fontSize))
                     .if(tag.text.isEmpty && !tagView){  draggableText in
@@ -522,8 +522,8 @@ struct DaysTagView: View {
           
         } else {
             HStack {
-                var draggedTag = draggedTag
-                var paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 2.3
+                let draggedTag = draggedTag
+                let paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 2.3
                 
                 Text("12345")
                     .font(.system(size: fontSize))
@@ -552,36 +552,11 @@ struct DaysTagView: View {
         }
 
     }
-    @ViewBuilder
-    func emptyRowView(tag: Tag, index: Int) -> some View {
-        HStack {
-            let draggedTag = draggedTag
-            
-            Text(index == 0 ? draggedTag!.text.isEmpty ? "" : draggedTag!.text : tag.text.isEmpty ? "12345" : tag.text)
-                .font(.system(size: fontSize))
-                .if(!tag.text.isEmpty || tag.text == "12345"){  draggableText in
-                    draggableText
-                        .frame(width: 150, height: tag.height)
-                }
-            
-                .background(
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(tag.text.isEmpty || tag.text == "12345" ? Color(hex: "#F4FAFC") :  Color(hex:tag.color))
-                        .frame(width: 150)
-                        .frame(height: tag.text == "12345" ? 18 : tag.height)
-                )
-                        .foregroundColor(Color(hex:tag.fontColor))
-                .lineLimit(nil)
-                .contentShape(RoundedRectangle(cornerRadius: 5))
-            
-            
-        }
-    }
+    
     //MARK: - Function
     
     func loadTags(index: Int, dayIndex: Int) {
-        guard !stopFetching else { return }
-        guard combinedTags[index].text.isEmpty else { return }
+//        guard !stopFetching else { return }
         print("Current index value: \(index) , \(dayIndex)")
 
 //        guard index != combinedTags.count else { return }
@@ -600,9 +575,14 @@ struct DaysTagView: View {
             DispatchQueue.main.async {
                 // 해당 인덱스에 해당하는 태그가 있다면 배열에 대체
                 if tags.indices.contains(index) {
-                    guard combinedTags[index].text != tags[index].text else { return }
+                    // combinedTags 배열 내에 이미 해당 id를 가진 태그가 있는지 확인합니다.
+                    guard !combinedTags.contains(where: { $0.id == tags[index].id }) else {
+                        return // 해당 id를 가진 태그가 이미 존재하면 함수를 종료합니다.
+                    }
+
+                    // combinedTags 배열에 태그를 추가합니다.
                     combinedTags[index] = tags[index]
-                    print("loadedTag is \(tags[index].text) , \(tags[index].rowIndex) and \(index)")
+                    print("loadedTag is \(tags[index].text), \(tags[index].rowIndex) and \(index)")
                 }
             }
         } catch {
