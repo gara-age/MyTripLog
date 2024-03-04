@@ -284,6 +284,7 @@ struct DaysTagView: View {
              
             } //overlay 끝
         }
+        
         .onDisappear{
             stopFetching = false
         }
@@ -462,6 +463,10 @@ struct DaysTagView: View {
                         tagView = false
                     }
             }
+            
+        }
+        .if(!tag.text.isEmpty){
+            $0
             .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
                 if let userInfo = notification.object as? [String: Any],
                     let travelTitle = userInfo["TravelTitle"] as? String {
@@ -470,13 +475,17 @@ struct DaysTagView: View {
                             }
                     let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
                     context.insert(savedTag)
+                    print("\(savedTag.text) combinedTags")
                     try! context.save()
                 }
             }
         }
-        .onAppear{
-            if !moveToATV{
-                loadTags(index: index)
+        .if(tag.text.isEmpty){
+            $0
+            .onAppear{
+                if !moveToATV{
+                    loadTags(index: index, dayIndex: originalDayIndex)
+                }
             }
         }
     }
@@ -570,14 +579,15 @@ struct DaysTagView: View {
     }
     //MARK: - Function
     
-    func loadTags(index: Int) {
-//        guard !stopFetching else { return }
+    func loadTags(index: Int, dayIndex: Int) {
+        guard !stopFetching else { return }
+        guard combinedTags[index].text.isEmpty else { return }
+        print("Current index value: \(index) , \(dayIndex)")
+
 //        guard index != combinedTags.count else { return }
         //혹시 위의 코드나 stopFetching 으로 막아보기
 //        guard combinedTags[index].text == tags[index].text else { return }
-//        if index == combinedTags.count {
-//            stopFetching = true
-//        }
+  
         let tagsPredicate = #Predicate<Tag> {
             $0.travelTitle == nameText && $0.dayIndex == originalDayIndex && $0.rowIndex == index
         }
@@ -590,14 +600,15 @@ struct DaysTagView: View {
             DispatchQueue.main.async {
                 // 해당 인덱스에 해당하는 태그가 있다면 배열에 대체
                 if tags.indices.contains(index) {
+                    guard combinedTags[index].text != tags[index].text else { return }
                     combinedTags[index] = tags[index]
+                    print("loadedTag is \(tags[index].text) , \(tags[index].rowIndex) and \(index)")
                 }
             }
         } catch {
-            print("Error fetching tags: \(error)")
+            print("fuck! cannot load combinedTags")
         }
     }
-
     
     func updateTagHeight(selectedTagIndex: Int, originalHeight: CGFloat, tagHeight: Double) {
         

@@ -67,6 +67,9 @@ struct AddTagView: View {
     @Binding var nameText : String
     @Binding var moveToATV : Bool
     @State private var cancelRequest = false
+    @State private var editedTrip : Travel = Travel(title: "", startDate: Date(), endDate: Date(), startTime: 0, endTime: 0, imageString: "")
+    @State private var isEditTitle : Bool = false
+
     var body: some View {
         NavigationStack{
             VStack{
@@ -226,7 +229,7 @@ struct AddTagView: View {
             
             .blur(radius: editMode || setHeight ? 5 : 0)
             
-            .navigationTitle(nameText)
+//            .navigationTitle(nameText)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -245,8 +248,25 @@ struct AddTagView: View {
                     }
                     .tint(.blue)
                 }
+                ToolbarItem(placement: .principal) {
+                    HStack{
+                        Text(editedTrip.title.isEmpty ? nameText : editedTrip.title)
+                        Button{ 
+                            editTitle()
+                        }
+                    label: {
+                        Image(systemName: "pencil")
+                            .font(.headline)
+                           
+
+                    }
+                    }
+                                   }
             }
             
+        }
+        .sheet(isPresented: $isEditTitle) {
+            EditTitleView(selectedTrip: $editedTrip)
         }
         .alert("저장되지않은 사항은 유지되지않습니다. 여정에서 벗어나시겠습니까?", isPresented: $cancelRequest) {
             Button(role: .destructive) {
@@ -264,7 +284,14 @@ struct AddTagView: View {
             moveToATV = false 
         }
         .interactiveDismissDisabled()
-
+        .onAppear{
+            if !moveToATV {
+                if tags.isEmpty {
+                    loadTags()
+                }
+            }
+            
+        }
         .disabled(editMode || setHeight)
         .overlay(
             ColorPicker("", selection: $originalColor, supportsOpacity: false)
@@ -345,7 +372,31 @@ struct AddTagView: View {
 //        }
 //    }
 
+    func loadTags() {
+//        guard !stopFetching else { return }
+        let tagsPredicate = #Predicate<Tag> {
+            $0.travelTitle == nameText && $0.dayIndex == 100
+        }
 
+        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
+
+        do {
+            let trips = try context.fetch(descriptor)
+
+            DispatchQueue.main.async {
+
+//                guard tags[index].text != trips[index].text else { return }
+
+                tags = trips
+//                print("loaded Tags is \(tags[index].text) and \(index)")
+
+//                stopFetching = true
+
+            }
+        } catch {
+            print("fuck! cannot load tags")
+        }
+    }
     
     func updateSelectedTagTime(tagTime: Double) {
         selectedTagTime = tagTime
@@ -471,6 +522,12 @@ struct AddTagView: View {
         .frame(maxWidth: 150)
         .background(.ultraThinMaterial)
         .contentShape(.rect)
+    }
+    func editTitle() {
+        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+            editedTrip = foundTravel
+                }
+        isEditTitle.toggle()
     }
     func saveTags() {
         NotificationCenter.default.post(

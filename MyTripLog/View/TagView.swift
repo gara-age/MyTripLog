@@ -37,7 +37,8 @@ struct TagView: View {
     @Binding var nameText : String
     @State private var dayIndex = 100
     @Binding var moveToATV : Bool
-    
+    @State private var stopFetching = false
+
     var updateTags: ((Tag, String) -> Void)?
     
     
@@ -53,11 +54,11 @@ struct TagView: View {
                     ForEach(getRows(), id: \.self){ rows in
                         
                         HStack(spacing: 6){
-                            ForEach(rows){ row in
-                                
+                            ForEach(rows) { row in
+
                                 //Row View
                                 RowView(tag: row)
-                                
+                                  
                             }
                         }
                     }
@@ -71,11 +72,6 @@ struct TagView: View {
             .frame(maxWidth: .infinity)
             
         }
-        .onAppear{
-            if !moveToATV {
-                loadTags()
-            }
-        }
 //        .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
     }
     //MARK: - RowView
@@ -84,7 +80,7 @@ struct TagView: View {
     func RowView(tag: Tag)->some View{
         Text(tag.text)
             .onTapGesture {
-                print(tag.id)
+                print(index)
             }
             .font(.system(size: fontSize))
             .padding(.horizontal, 14)
@@ -195,42 +191,43 @@ struct TagView: View {
                     
                     // dayIndex가 100이고 text가 동일한 Tag가 없을 경우에만 저장
                     if existingTags.isEmpty {
-                        context.insert(savedTag)
-                        try! context.save()
+                        DispatchQueue.main.async {
+                            
+                            context.insert(savedTag)
+                            print("\(savedTag.text) tags")
+
+                            try! context.save()
+                        }
                     }
                 }
             }
-
+           
     }
 //    func loadTags() {
-//
+//        guard !stopFetching else { return }
 //        let tagsPredicate = #Predicate<Tag> {
 //            $0.travelTitle == nameText && $0.dayIndex == 100
 //        }
-//      
+//
 //        let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
 //
 //        do {
 //            let trips = try context.fetch(descriptor)
+//
 //            DispatchQueue.main.async {
+//
+////                guard tags[index].text != trips[index].text else { return }
+//
 //                tags = trips
+////                print("loaded Tags is \(tags[index].text) and \(index)")
+//
+////                stopFetching = true
+//
 //            }
 //        } catch {
-//            print("fuck")
+//            print("fuck! cannot load tags")
 //        }
 //    }
-    func loadTags() {
-        let descriptor = FetchDescriptor<Tag>()
-
-        do {
-            let trips = try context.fetch(descriptor)
-            DispatchQueue.main.async {
-                tags = trips
-            }
-        } catch {
-            print("Error fetching tags: \(error)")
-        }
-    }
     private func deleteTag(tag: Tag) {
         tags.removeAll { $0.text == tag.text }
         // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
