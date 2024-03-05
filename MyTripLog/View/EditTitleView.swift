@@ -14,8 +14,9 @@ struct EditTitleView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTravels: [Travel]
+    @Query(animation: .snappy) private var allTags: [Tag]
+
     @State private var oldTitle : String = ""
-    
     
     @State private var newTitle : String = ""
     var body: some View {
@@ -37,9 +38,7 @@ struct EditTitleView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("저장") {
-                        selectedTrip.title = newTitle
-                        try? context.save()
-                            dismiss()
+                        saveChanges()
                     }
                     .disabled(newTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || allTravels.contains(where: { $0.title == newTitle }))
 
@@ -48,10 +47,28 @@ struct EditTitleView: View {
 
             }
         }
-     
+        .onAppear{
+            self.oldTitle = selectedTrip.title
+        }
             .presentationDetents([.height(180)])
 
         .interactiveDismissDisabled()
 
     }
+    private func saveChanges() {
+            selectedTrip.title = newTitle
+            try? context.save()
+            
+            // 선택한 여정의 이전 제목으로 태그를 찾아 새 제목으로 업데이트
+            let tagsToUpdate = allTags.filter { $0.travelTitle == oldTitle }
+            for tag in tagsToUpdate {
+                tag.travelTitle = newTitle
+                print("\(tag.text)'s new Travel is \(newTitle)")
+            }
+            
+            // 변경된 태그 저장
+            try? context.save()
+            
+            dismiss()
+        }
 }

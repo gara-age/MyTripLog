@@ -115,9 +115,11 @@ struct Home: View {
         }){
             SetdetailVIew(nameText: $nameText, moveToATV: $moveToATV, startTime: $startTime, endTime: $endTime)
         }
-        .sheet(isPresented: $openATV, content: {
+
+        .fullScreenCover(isPresented: $openATV) {
             AddTagView(startTime: $startTime,endTime: $endTime , nameText: $nameText, moveToATV: $moveToATV)
-        })
+                  }
+
         .sheet(isPresented: $isEditTitle) {
             EditTitleView(selectedTrip: $editedTrip)
         }

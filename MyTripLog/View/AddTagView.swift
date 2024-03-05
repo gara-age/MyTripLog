@@ -226,24 +226,7 @@ struct AddTagView: View {
                 shownDayIndex = currentDayIndex
             }
             .frame(maxWidth: .infinity)
-            .onTapGesture{
-                if !moveToATV {
-                    print("loaing...")
-                    let tagsPredicate = #Predicate<Tag> {
-                        $0.travelTitle == nameText && $0.dayIndex == 0
-                    }
-
-                    let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
-                    let trips = try! context.fetch(descriptor)
-
-                    for tag in trips {
-                        print("\(tag.text)")
-                       }
-                }
-            }
             .blur(radius: editMode || setHeight ? 5 : 0)
-            
-//            .navigationTitle(nameText)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -257,6 +240,8 @@ struct AddTagView: View {
                     Button(moveToATV ? "추가" : "저장") {
                         saveTags()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            try! context.save()
+
                             dismiss()
                         }
                     }
@@ -294,6 +279,11 @@ struct AddTagView: View {
             Button(role: .cancel) {
             } label: {
                 Text("취소")
+            }
+        }
+        .onChange(of: editedTrip.title){
+            if !editedTrip.title.isEmpty {
+                nameText = editedTrip.title
             }
         }
         .onDisappear{
