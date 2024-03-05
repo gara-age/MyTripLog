@@ -14,7 +14,7 @@ struct DaysTagView: View {
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTravel: [Travel]
     @Query(animation: .snappy) private var allTags: [Tag]
-
+    
     @Binding var tags: [Tag]
     @Binding var draggedTag: Tag?
     var title: String = "Add Some Tags"
@@ -53,7 +53,8 @@ struct DaysTagView: View {
     @Binding var nameText : String
     @State private var stopFetching = false
     @Binding var moveToATV : Bool
-
+    
+    
     init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>, moveToATV: Binding<Bool>) {
         self._tags = tags
         self._tagView = tagView
@@ -77,13 +78,13 @@ struct DaysTagView: View {
         self._nameText = nameText
         self._moveToATV = moveToATV
         let repeatCount = (startTime - endTime) * 2
-            let tagRepeatCount: Int
-           if repeatCount < 0 {
-               tagRepeatCount = -repeatCount
-           } else {
-               tagRepeatCount = repeatCount
-           }
-
+        let tagRepeatCount: Int
+        if repeatCount < 0 {
+            tagRepeatCount = -repeatCount
+        } else {
+            tagRepeatCount = repeatCount
+        }
+        
         self._emptyTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), count: 100).enumerated().map { index, _ in
             Tag(id: UUID().uuidString, text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
         })
@@ -104,12 +105,12 @@ struct DaysTagView: View {
                     
                     LazyVGrid(columns: columns, spacing: 1) {
                         ForEach(combinedTags.indices, id: \.self) { index in
-
+                            
                             RowView(tag: combinedTags[index], index: index)
                                 .if(combinedTags[index].text.isEmpty){ RowVIew in
                                     RowVIew.padding(.vertical,1.725)
                                 }
-
+                            
                                 .if(!tagView){ RowView in
                                     RowView
                                         .dropDestination(for: String.self) { items, location in
@@ -139,7 +140,7 @@ struct DaysTagView: View {
             }
             .onChange(of: totalHeight){
                 print("모든 Tag의 높이의 합:", totalHeight)
-
+                
             }
             .onChange(of: stopFetching){
                 print(stopFetching)
@@ -149,8 +150,8 @@ struct DaysTagView: View {
                     totalHeight += tag.height
                 }
                 
-              
-                    }
+                
+            }
             .overlay{
                 //MARK: - Overlay
                 
@@ -159,7 +160,7 @@ struct DaysTagView: View {
                         ScrollView(.vertical, showsIndicators: false) {
                             
                             let columns = Array(repeating: GridItem(spacing: 1), count: 1)
-
+                            
                             LazyVGrid(columns: columns, spacing: 0.44) {
                                 ForEach(copyedCombinedTags.indices, id: \.self) { index in
                                     CopyRowView(tag: copyedCombinedTags[index], index: index)
@@ -184,14 +185,14 @@ struct DaysTagView: View {
                                                         if lastIndex + 1 < combinedTags.count, combinedTags[lastIndex + 1].text.isEmpty {
                                                             combinedTags.remove(at: lastIndex + 1)
                                                         }
-                                                                                                                
+                                                        
                                                         let originalColor = tags.first { $0.text == draggedTag!.text }?.color ?? getTagColor.toHex()
                                                         droppedTag.color = originalColor
                                                         
                                                         combinedTags.insert(droppedTag, at: lastIndex)
                                                     }
                                                     
-
+                                                    
                                                     draggedTag = nil
                                                     dropDone = true
                                                     tagView = false
@@ -199,10 +200,10 @@ struct DaysTagView: View {
                                                     
                                                     return false
                                                 } isTargeted: { status in
-
+                                                    
                                                     let draggedTag = self.draggedTag
                                                     if let draggedTag, status, draggedTag != copyedCombinedTags[index] {
-
+                                                        
                                                         cancelFunction()
                                                         stopSingleTimer()
                                                         
@@ -214,21 +215,21 @@ struct DaysTagView: View {
                                                         }
                                                         if let sourceIndex = copyedCombinedTags.firstIndex(of: draggedTag),
                                                            let destinationIndex = copyedCombinedTags.firstIndex(of: copyedCombinedTags[index]) {
-
+                                                            
                                                             let sourceItem = copyedCombinedTags.remove(at: sourceIndex)
                                                             for index in (0..<copyedCombinedTags.count) {
-
+                                                                
                                                                 copyedCombinedTags[index] = Tag(text: "12345", color: "#F4FAFC", height: combinedTags[index].height, fontColor: "#F4FAFC")
-
-                                                              
+                                                                
+                                                                
                                                             }
                                                             if destinationIndex > 0 && combinedTags[destinationIndex + 1].height >= 36 {
-                                                                    copyedCombinedTags.insert(sourceItem, at: destinationIndex + 1)
+                                                                copyedCombinedTags.insert(sourceItem, at: destinationIndex + 1)
                                                             }
                                                             else if destinationIndex > 0 {
                                                                 copyedCombinedTags.insert(sourceItem, at: destinationIndex)
                                                             }
-                                                           else {
+                                                            else {
                                                                 copyedCombinedTags.insert(sourceItem, at: destinationIndex)
                                                             }
                                                             lastIndex = destinationIndex
@@ -237,9 +238,9 @@ struct DaysTagView: View {
                                                                 startSingleTimer()
                                                             }
                                                         }
-
+                                                        
                                                     }
-
+                                                    
                                                 }
                                             
                                         }
@@ -252,11 +253,11 @@ struct DaysTagView: View {
                             for index in (0..<copyedCombinedTags.count) {
                                 if !copyedCombinedTags[index].text.isEmpty{
                                     copyedCombinedTags[index] = Tag(text: copyedCombinedTags[index].text, color: copyedCombinedTags[index].color, height: copyedCombinedTags[index].height, fontColor: copyedCombinedTags[index].fontColor)
-
+                                    
                                 }
                                 copyedCombinedTags[index] = Tag(text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
                             }
-                           
+                            
                         }
                         .scrollDisabled(true)
                         
@@ -273,10 +274,9 @@ struct DaysTagView: View {
                         stopSingleTimer()
                     }
                 }
-             
+                
             } //overlay 끝
         }
-        
         .onDisappear{
             stopFetching = false
         }
@@ -287,7 +287,7 @@ struct DaysTagView: View {
     func RowView(tag: Tag, index: Int) -> some View {
         HStack { //tagView 인 경우 combinedTags[0]의 tag.text 를 draggedTag.text로
             let paddingCount = ((combinedTags[index].height / 18) - 0) / 2.3
-
+            
             Text(tag.text.isEmpty ? "" : tag.text)
                 .font(.system(size: fontSize))
                 .if(tag.text.isEmpty && !tagView){  draggableText in
@@ -322,16 +322,16 @@ struct DaysTagView: View {
                                 tagText = tag.text
                                 setHeight = true
                             }
-
+                            
                             //if 태그들의 height == viewHeight {시간변경에서 +는 불가 처리 및 잔여시간 없음 안내, 일괄로 처리도 불가한 일정 외에 변경 됩니다 or 불가한 일정이 있어 처리가 어렵습니다}
                             //일정이 꽉찬 DaysTagView에 tagText와 일치하는 Tag가 없을 경우 일괄 처리 가능
-                                
+                            
                         }
                         Button("삭제") {
                             //삭제전 태그의 height / 18 -1 만큼 투명 태그 인서트 해야함
                             if let tagIndex = combinedTags.firstIndex(of: tag) {
                                 let insertCount = Int(tag.height / 18)
-
+                                
                                 combinedTags.remove(at: tagIndex)
                                 //tagIndex의 tag
                                 for _ in 0..<insertCount {
@@ -343,7 +343,7 @@ struct DaysTagView: View {
                     }
                     
                 }
-
+            
                 .if(!tag.text.isEmpty && tag.text == tagText){ RowView in
                     RowView
                         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagSizeUpdated"))) { notification in
@@ -359,7 +359,7 @@ struct DaysTagView: View {
                                             let tag = combinedTags[index]
                                             if combinedTags[index].text == tagText {
                                                 let originalHeight = combinedTags[index].height
-
+                                                
                                                 updateTagHeight(selectedTagIndex: index, originalHeight: originalHeight, tagHeight: tagHeight)
                                                 
                                                 
@@ -405,7 +405,7 @@ struct DaysTagView: View {
                                let originalText = userInfo["originalText"] as? String {
                                 
                                 if let index = combinedTags.firstIndex(where: { $0.text == originalText }) {
-
+                                    
                                     combinedTags[index].text = newText
                                 }
                             }
@@ -413,12 +413,12 @@ struct DaysTagView: View {
                         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("TagDeleted"))) { notification in
                             if let deletedTag = notification.object as? Tag {
                                 let copyDeletedTag = deletedTag
-
+                                
                                 let tagsWithSameText = combinedTags.filter { $0.text == copyDeletedTag.text }
                                 
                                 for tagWithSameText in tagsWithSameText {
                                     if let originalHeight = tagWithSameText.height as CGFloat? , originalHeight > 18 {
-
+                                        
                                         let insertCount = Int(originalHeight / 18) - 1
                                         if let tagIndex = combinedTags.firstIndex(where: { $0.text == tagWithSameText.text && $0.id == tagWithSameText.id }) {
                                             for _ in 0..<insertCount + 1 {
@@ -451,37 +451,65 @@ struct DaysTagView: View {
         }
         .if(tag.text.isEmpty){
             $0
-            .onAppear{
-                if !moveToATV{
-                    loadTags(index: index, dayIndex: originalDayIndex)
+                .onAppear{
+                    if !moveToATV{
+                        loadTags(index: index, dayIndex: originalDayIndex)
+                    }
                 }
-            }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
             if let userInfo = notification.object as? [String: Any],
-                let travelTitle = userInfo["TravelTitle"] as? String {
+               let travelTitle = userInfo["TravelTitle"] as? String {
                 
                 let existingTags = allTags.filter { $0.travelTitle == travelTitle && $0.dayIndex == originalDayIndex }
+                let isTagExist = existingTags.contains(where: { $0.id == tag.id })
+                if isTagExist {
 
-                if let existingTag = existingTags.first(where: { $0.id == tag.id && $0.text == tag.text }) {
+                    let tagsOnlyInExistingTags = existingTags.filter { existingTag in
+                        !combinedTags.contains { combinedTag in
+
+                            return existingTag.id == combinedTag.id
+                        }
+                    }
+                  
+                    for tagWillDelete in tagsOnlyInExistingTags {
+                        if !tagWillDelete.text.isEmpty {
+                            context.delete(tagWillDelete)
+                            print(tagWillDelete.text)
+                        }
+                    }
                     
-                    if !tag.text.isEmpty {
-                        existingTag.rowIndex = index
-                        try! context.save()
+                    if let existingTag = existingTags.first(where: { $0.id == tag.id && $0.text == tag.text }) {
+                        print("\(tag.text) is tag Text")
+                        if !tag.text.isEmpty {
+                            existingTag.rowIndex = index
+                            try! context.save()
+                            
+                        }
+                    }
+                } else  if !isTagExist {
 
-                    }
-                } else {
-                    if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
-                        travel = foundTravel
-                    }
-                    let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
-                    
-                    if !tag.text.isEmpty {
-                        context.insert(savedTag)
-                        try! context.save()
+                    let isNewTag = !existingTags.contains(where: { $0.id == tag.id })
+                    if isNewTag {
+                        if !tag.text.isEmpty {
 
+                        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                            travel = foundTravel
+                        }
+                        let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
+//                        print("\(tag.text) is tagText")
+                            context.insert(savedTag)
+                            try! context.save()
+                            
+                        }
                     }
+                    else if !isNewTag {
+                        print("asdfg")
+                                          //combinedTags에는 없지만 existingTags에서만 존재하는 tag를 찾아야함
+                                          
+                                        }
                 }
+                
             }
         }
         .onTapGesture{
@@ -520,7 +548,7 @@ struct DaysTagView: View {
                     .lineLimit(nil)
                     .contentShape(RoundedRectangle(cornerRadius: 5))
             }
-          
+            
         } else {
             HStack {
                 let draggedTag = draggedTag
@@ -549,48 +577,46 @@ struct DaysTagView: View {
                     .lineLimit(nil)
                     .contentShape(RoundedRectangle(cornerRadius: 5))
             }
-
+            
         }
-
+        
     }
     
     //MARK: - Function
     
     func loadTags(index: Int, dayIndex: Int) {
+        guard !stopFetching else { return }
         let tagsPredicate = #Predicate<Tag> {
             ( $0.travelTitle == nameText ) && ( $0.dayIndex == originalDayIndex ) && ( $0.rowIndex == index )
         } //여정명 동일하고, 날짜 동일하고, rowIndex와 index가 동일한 Tag 배열
-       
+        
         let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
-
+        
         do {
             let tags = try context.fetch(descriptor)
-            for tag in tags{
-                print("saved tag : \(tag.text) / \(tag.rowIndex)")
-            }
+            
             DispatchQueue.main.async {
-                // 해당 인덱스에 해당하는 태그가 있다면 배열에 대체
+                
                 tags.forEach { tag in
-                    // rowIndex와 index가 일치하는 경우에만 처리합니다.
+                    
                     if tag.rowIndex == index {
-                        // tag.text가 비어 있지 않은 경우에만 처리합니다.
+                        
                         if !tag.text.isEmpty {
                             print("\(tag.text) + \(tag.rowIndex) / \(index)")
-
-                            // combinedTags 배열에 해당 id를 가진 태그가 이미 있는지 확인합니다.
+                            
                             guard !combinedTags.contains(where: { $0.id == tag.id }) else {
-                                return // 해당 id를 가진 태그가 이미 존재하면 함수를 종료합니다.
+                                return
                             }
-
-                            // combinedTags 배열의 해당 인덱스가 비어 있는 경우에만 추가합니다.
+                            
                             if combinedTags[index].text.isEmpty {
                                 combinedTags[index] = tag
-                                // print("loadedTag is \(tag.text), \(tag.rowIndex) and \(index)")
+                                stopFetching = true
+                                
                             }
                         }
                     }
                 }
-
+                
             }
         } catch {
             print("Cannot load combinedTags: \(error)")
@@ -612,96 +638,96 @@ struct DaysTagView: View {
                 if originalHeight == 36 {
                     //현재 시간이 1시간일때
                     var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                        if removalCount < 0 {
-                            removalCount = removalCount * -1
-                            for i in 1...removalCount {
-                                let nextIndex = selectedTagIndex + i
-                                if nextIndex < combinedTags.count {
-                                    // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
-                                    if !combinedTags[nextIndex].text.isEmpty {
-                                        break
-                                    }
-                                    combinedTags.remove(at: nextIndex)
+                    if removalCount < 0 {
+                        removalCount = removalCount * -1
+                        for i in 1...removalCount {
+                            let nextIndex = selectedTagIndex + i
+                            if nextIndex < combinedTags.count {
+                                // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
+                                if !combinedTags[nextIndex].text.isEmpty {
+                                    break
                                 }
+                                combinedTags.remove(at: nextIndex)
                             }
-
-                            
                         }
+                        
+                        
+                    }
                 }
                 else if originalHeight > 36 {
                     //현재시간이 1시간 반 이상일때
                     var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
                     if removalCount < 0 {
                         removalCount = removalCount * -1
-                            for i in 1...removalCount {
-                                let nextIndex = selectedTagIndex + i
-                                if nextIndex < combinedTags.count {
-                                    // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
-                                    if !combinedTags[nextIndex].text.isEmpty {
-                                        break
-                                    }
-                                    combinedTags.remove(at: nextIndex)
+                        for i in 1...removalCount {
+                            let nextIndex = selectedTagIndex + i
+                            if nextIndex < combinedTags.count {
+                                // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
+                                if !combinedTags[nextIndex].text.isEmpty {
+                                    break
                                 }
+                                combinedTags.remove(at: nextIndex)
                             }
+                        }
                     } else {
-                            //2시간 이상에서 현재시간을 1시간 반 으로 줄일때
-                            let insertCount = removalCount
-                            if insertCount != 0 {
-                                for i in 1...insertCount {
-                                    if selectedTagIndex + i < combinedTags.count {
-                                        combinedTags.insert(Tag(text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: selectedTagIndex + 1)
-                                    }
-                                }
-                            }
-                    }
-                } else if originalHeight < 36 {
-                        //현재시간이 30분 일때
-                        var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                        if removalCount < 0 {
-                            removalCount = removalCount * -1
-                            for i in 1...removalCount {
-                                let nextIndex = selectedTagIndex + i
-                                if nextIndex < combinedTags.count {
-                                    // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
-                                    if !combinedTags[nextIndex].text.isEmpty {
-                                        break
-                                    }
-                                    combinedTags.remove(at: nextIndex)
+                        //2시간 이상에서 현재시간을 1시간 반 으로 줄일때
+                        let insertCount = removalCount
+                        if insertCount != 0 {
+                            for i in 1...insertCount {
+                                if selectedTagIndex + i < combinedTags.count {
+                                    combinedTags.insert(Tag(text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: selectedTagIndex + 1)
                                 }
                             }
                         }
+                    }
+                } else if originalHeight < 36 {
+                    //현재시간이 30분 일때
+                    var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                    if removalCount < 0 {
+                        removalCount = removalCount * -1
+                        for i in 1...removalCount {
+                            let nextIndex = selectedTagIndex + i
+                            if nextIndex < combinedTags.count {
+                                // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
+                                if !combinedTags[nextIndex].text.isEmpty {
+                                    break
+                                }
+                                combinedTags.remove(at: nextIndex)
+                            }
+                        }
+                    }
                 }
             } else if tagHeight == 1{
                 //목표시간이 1시간이고
                 if originalHeight > 36 {
-                        //현재시간이 1시간 반 이상일때
-                        let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                        for i in 1...insertCount {
-                            if selectedTagIndex + i < combinedTags.count {
-                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
-                            }
+                    //현재시간이 1시간 반 이상일때
+                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                    for i in 1...insertCount {
+                        if selectedTagIndex + i < combinedTags.count {
+                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
                         }
+                    }
                 } else if originalHeight < 36 {
                     //현재시간 30분일때
-                        //현재시간이 30분일때
-                        combinedTags.remove(at: selectedTagIndex + 1)
+                    //현재시간이 30분일때
+                    combinedTags.remove(at: selectedTagIndex + 1)
                     
                 }
             } else if tagHeight < 1 {
                 //목표시간이 30분일때
                 if originalHeight == 36 {
-                        //현재시간이 1시간일때
+                    //현재시간이 1시간일때
                     combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + 1)
                     
                 }
                 else if originalHeight > 36 {
-                        //현재시간이 1시간30분 이상일떄
-                        let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
-                        for i in 1...insertCount {
-                            if selectedTagIndex + i < combinedTags.count {
-                                combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
-                            }
+                    //현재시간이 1시간30분 이상일떄
+                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                    for i in 1...insertCount {
+                        if selectedTagIndex + i < combinedTags.count {
+                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
                         }
+                    }
                 }
             }
         }
@@ -721,13 +747,13 @@ struct DaysTagView: View {
                     copyedCombinedTags = combinedTags
                     for index in (0..<copyedCombinedTags.count) {
                         if !copyedCombinedTags[index].text.isEmpty{
-//                                    continue
+                            //                                    continue
                             copyedCombinedTags[index] = Tag(text: copyedCombinedTags[index].text, color: copyedCombinedTags[index].color, height: copyedCombinedTags[index].height, fontColor: copyedCombinedTags[index].fontColor)
-
+                            
                         }
                         copyedCombinedTags[index] = Tag(text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
                     }
-                    secTimer?.invalidate() // 타이머 중지
+                    secTimer?.invalidate()
                     timeSpentInView = 0
                     escape = false
                     
@@ -736,7 +762,7 @@ struct DaysTagView: View {
         }
     }
     func stopSingleTimer() {
-        // 타이머 중지
+        
         taskManager.cancelTask()
         secTimer?.invalidate()
         timeSpentInView = 0
