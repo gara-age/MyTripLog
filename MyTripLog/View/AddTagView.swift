@@ -13,7 +13,7 @@ struct AddTagView: View {
     @Environment(\.modelContext) private var context
     @Query private var allTravel: [Travel]
     @Query(animation: .snappy) private var allTags: [Tag]
-
+    @State private var travel : Travel?
     //View properties
     @State private var text : String = ""
     @State var tags: [Tag] = []
@@ -85,7 +85,6 @@ struct AddTagView: View {
                 .if(tagView && !dropDone){ RowView in
                     RowView
                         .dropDestination(for: String.self) { items, location in
-                            print("return false")
                             tagView = false
                             dropDone = true
                             return false
@@ -132,7 +131,6 @@ struct AddTagView: View {
                 .if(tagView && !dropDone){ RowView in
                     RowView
                         .dropDestination(for: String.self) { items, location in
-                            print("return false")
                             tagView = false
                             dropDone = true
                             return false
@@ -168,7 +166,6 @@ struct AddTagView: View {
                     .if(tagView && !dropDone){ RowView in
                         RowView
                             .dropDestination(for: String.self) { items, location in
-                                print("return false")
                                 tagView = false
                                 dropDone = true
                                 return false
@@ -239,6 +236,7 @@ struct AddTagView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(moveToATV ? "추가" : "저장") {
                         saveTags()
+                       saveMaxDays()
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                             try! context.save()
 
@@ -284,6 +282,17 @@ struct AddTagView: View {
         .onChange(of: editedTrip.title){
             if !editedTrip.title.isEmpty {
                 nameText = editedTrip.title
+            }
+        }
+        .onAppear{
+            if !moveToATV {
+                //Travel 의 maxDayIndex 확인하여 처리
+                if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                    travel = foundTravel
+                }
+                if travel?.maxDayIndex ?? 0 > 0 {
+                    currentDayIndex = (travel?.maxDayIndex)!
+                }
             }
         }
         .onDisappear{
@@ -350,6 +359,28 @@ struct AddTagView: View {
         }
     }
 
+    func saveMaxDays() {
+        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+            travel = foundTravel
+        }
+        let originalDayIndex = travel?.maxDayIndex ?? 0
+
+        travel?.maxDayIndex = currentDayIndex
+        //originalDayIndex가 3일때 maxDayIndex가 1이라고 하면
+        //dayIndex가 0~1인 Tag는 보존
+        
+        if travel?.maxDayIndex ?? 0 < originalDayIndex {
+            //allTags 에서 travelTitle 일치하는 Tag 중 dayIndex 확인하여 삭제
+            let tagsWillDelete = allTags.filter {  $0.travelTitle == nameText && (travel?.maxDayIndex)! < originalDayIndex && $0.dayIndex != 100 && $0.dayIndex! > (travel?.maxDayIndex)!}
+            for tag in tagsWillDelete {
+                context.delete(tag)
+            }
+            
+        } else {
+            travel?.maxDayIndex = currentDayIndex
+        }
+        
+    }
     func updateSelectedTagTime(tagTime: Double) {
         selectedTagTime = tagTime
         
@@ -438,7 +469,6 @@ struct AddTagView: View {
             .if(tagView && !dropDone){ RowView in
                 RowView
                     .dropDestination(for: String.self) { items, location in
-                        print("return false")
                         tagView = false
                         dropDone = true
                         return false

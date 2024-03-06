@@ -138,13 +138,6 @@ struct DaysTagView: View {
                 .frame(maxWidth: .infinity)
                 .onDrop(of: ["public.text"], delegate: tagView ? dropDone ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor, tagView: $tagView, draggedTag: $draggedTag) : TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor, tagView: $tagView, draggedTag: $draggedTag) : DaysTagViewDragDropDelegate(tags: $combinedTags))
             }
-            .onChange(of: totalHeight){
-                print("모든 Tag의 높이의 합:", totalHeight)
-                
-            }
-            .onChange(of: stopFetching){
-                print(stopFetching)
-            }
             .onAppear{
                 for tag in combinedTags {
                     totalHeight += tag.height
@@ -362,8 +355,6 @@ struct DaysTagView: View {
                                                 
                                                 updateTagHeight(selectedTagIndex: index, originalHeight: originalHeight, tagHeight: tagHeight)
                                                 
-                                                
-                                                print("changeAll")
                                             }
                                             
                                         }
@@ -373,9 +364,6 @@ struct DaysTagView: View {
                                         let originalHeight = combinedTags[selectedTagIndex].height
                                         
                                         updateTagHeight(selectedTagIndex: selectedTagIndex, originalHeight: originalHeight, tagHeight: tagHeight)
-                                        
-                                        print("changeOne")
-                                        
                                         
                                     }
                                 }
@@ -427,7 +415,6 @@ struct DaysTagView: View {
                                             }
                                         }
                                     }
-                                    //각 Tag별 height에 맞게 보완 필요
                                 }
                                 
                                 removeTag(withText: deletedTag.text, from: &combinedTags)
@@ -475,12 +462,11 @@ struct DaysTagView: View {
                     for tagWillDelete in tagsOnlyInExistingTags {
                         if !tagWillDelete.text.isEmpty {
                             context.delete(tagWillDelete)
-                            print(tagWillDelete.text)
                         }
                     }
                     
                     if let existingTag = existingTags.first(where: { $0.id == tag.id && $0.text == tag.text }) {
-                        print("\(tag.text) is tag Text")
+
                         if !tag.text.isEmpty {
                             existingTag.rowIndex = index
                             try! context.save()
@@ -497,26 +483,17 @@ struct DaysTagView: View {
                             travel = foundTravel
                         }
                         let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
-//                        print("\(tag.text) is tagText")
+
                             context.insert(savedTag)
                             try! context.save()
                             
                         }
                     }
-                    else if !isNewTag {
-                        print("asdfg")
-                                          //combinedTags에는 없지만 existingTags에서만 존재하는 tag를 찾아야함
-                                          
-                                        }
                 }
                 
             }
         }
-        .onTapGesture{
-            print(index)
-            print(tag.id)
-            print("tagText \(tag.text)")
-        }
+
     }
     
     @ViewBuilder
@@ -602,7 +579,6 @@ struct DaysTagView: View {
                     if tag.rowIndex == index {
                         
                         if !tag.text.isEmpty {
-                            print("\(tag.text) + \(tag.rowIndex) / \(index)")
                             
                             guard !combinedTags.contains(where: { $0.id == tag.id }) else {
                                 return
@@ -737,13 +713,12 @@ struct DaysTagView: View {
     
     func startSingleTimer() {
         taskManager.executeTask {
-            print("Start Reset")
+
             secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
                 timeSpentInView += 1
-                print(timeSpentInView)
+
                 if timeSpentInView >= threshold {
-                    // 임계값 이상으로 머무른 경우 print
-                    print("User spent more than \(threshold) seconds in this view.")
+
                     copyedCombinedTags = combinedTags
                     for index in (0..<copyedCombinedTags.count) {
                         if !copyedCombinedTags[index].text.isEmpty{

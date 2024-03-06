@@ -146,7 +146,6 @@ struct Home: View {
                   }
               }
           }
-          print("delete Travel")
           context.delete(travel)
       }
 }

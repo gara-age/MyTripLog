@@ -19,6 +19,8 @@ class Travel {
     var endTime : Int
     var imageString : String
     
+    var maxDayIndex : Int?
+
     @Relationship(deleteRule: .cascade, inverse: \Tag.travel)
     var tag: [Tag]?
     

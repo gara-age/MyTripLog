@@ -63,7 +63,6 @@ struct EditTitleView: View {
             let tagsToUpdate = allTags.filter { $0.travelTitle == oldTitle }
             for tag in tagsToUpdate {
                 tag.travelTitle = newTitle
-                print("\(tag.text)'s new Travel is \(newTitle)")
             }
             
             // 변경된 태그 저장

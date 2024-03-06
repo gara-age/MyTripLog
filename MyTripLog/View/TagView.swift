@@ -191,6 +191,7 @@ struct TagView: View {
                     }
 
                     if !tagExists {
+                        
                         if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
                             travel = foundTravel
                         }
@@ -199,11 +200,24 @@ struct TagView: View {
 
                         DispatchQueue.main.async {
                             context.insert(savedTag)
-                            print("\(savedTag.text) tags")
 
                             try! context.save()
                         }
+                    }   else {
+                        let tagsOnlyInExistingTags = existingTags.filter { existingTag in
+                            !tags.contains { tagsTag in
+
+                                return existingTag.id == tagsTag.id
+                            }
+                        }
+                      
+                        for tagWillDelete in tagsOnlyInExistingTags {
+                            if !tagWillDelete.text.isEmpty {
+                                context.delete(tagWillDelete)
+                            }
+                        }
                     }
+                    
                 }
             }
 
