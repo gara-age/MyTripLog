@@ -136,7 +136,6 @@ struct DaysTagView: View {
                 }
                 .scrollDisabled(true)
                 .frame(maxWidth: .infinity)
-                .onDrop(of: ["public.text"], delegate: tagView ? dropDone ? TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor, tagView: $tagView, draggedTag: $draggedTag) : TagViewDragDropDelegate(tags: $combinedTags, combinedTags: $combinedTags, getTagColor: $getTagColor, tagView: $tagView, draggedTag: $draggedTag) : DaysTagViewDragDropDelegate(tags: $combinedTags))
             }
             .onAppear{
                 for tag in combinedTags {
@@ -434,7 +433,55 @@ struct DaysTagView: View {
                         tagView = false
                     }
             }
-            
+            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
+                if let userInfo = notification.object as? [String: Any],
+                   let travelTitle = userInfo["TravelTitle"] as? String {
+                    
+                    let existingTags = allTags.filter { $0.travelTitle == travelTitle && $0.dayIndex == originalDayIndex }
+                    let isTagExist = existingTags.contains(where: { $0.id == tag.id })
+                    if isTagExist {
+
+                        let tagsOnlyInExistingTags = existingTags.filter { existingTag in
+                            !combinedTags.contains { combinedTag in
+
+                                return existingTag.id == combinedTag.id
+                            }
+                        }
+                      
+                        for tagWillDelete in tagsOnlyInExistingTags {
+                            if !tagWillDelete.text.isEmpty {
+                                context.delete(tagWillDelete)
+                            }
+                        }
+                        
+                        if let existingTag = existingTags.first(where: { $0.id == tag.id && $0.text == tag.text }) {
+
+                            if !tag.text.isEmpty {
+                                existingTag.rowIndex = index
+                                try! context.save()
+                                
+                            }
+                        }
+                    } else  if !isTagExist {
+
+                        let isNewTag = !existingTags.contains(where: { $0.id == tag.id })
+                        if isNewTag {
+                            if !tag.text.isEmpty {
+
+                            if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                                travel = foundTravel
+                            }
+                            let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
+
+                                context.insert(savedTag)
+                                try! context.save()
+                                
+                            }
+                        }
+                    }
+                    
+                }
+            }
         }
         .if(tag.text.isEmpty){
             $0
@@ -444,55 +491,7 @@ struct DaysTagView: View {
                     }
                 }
         }
-        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
-            if let userInfo = notification.object as? [String: Any],
-               let travelTitle = userInfo["TravelTitle"] as? String {
-                
-                let existingTags = allTags.filter { $0.travelTitle == travelTitle && $0.dayIndex == originalDayIndex }
-                let isTagExist = existingTags.contains(where: { $0.id == tag.id })
-                if isTagExist {
-
-                    let tagsOnlyInExistingTags = existingTags.filter { existingTag in
-                        !combinedTags.contains { combinedTag in
-
-                            return existingTag.id == combinedTag.id
-                        }
-                    }
-                  
-                    for tagWillDelete in tagsOnlyInExistingTags {
-                        if !tagWillDelete.text.isEmpty {
-                            context.delete(tagWillDelete)
-                        }
-                    }
-                    
-                    if let existingTag = existingTags.first(where: { $0.id == tag.id && $0.text == tag.text }) {
-
-                        if !tag.text.isEmpty {
-                            existingTag.rowIndex = index
-                            try! context.save()
-                            
-                        }
-                    }
-                } else  if !isTagExist {
-
-                    let isNewTag = !existingTags.contains(where: { $0.id == tag.id })
-                    if isNewTag {
-                        if !tag.text.isEmpty {
-
-                        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
-                            travel = foundTravel
-                        }
-                        let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
-
-                            context.insert(savedTag)
-                            try! context.save()
-                            
-                        }
-                    }
-                }
-                
-            }
-        }
+   
 
     }
     
@@ -565,7 +564,7 @@ struct DaysTagView: View {
         guard !stopFetching else { return }
         let tagsPredicate = #Predicate<Tag> {
             ( $0.travelTitle == nameText ) && ( $0.dayIndex == originalDayIndex ) && ( $0.rowIndex == index )
-        } //여정명 동일하고, 날짜 동일하고, rowIndex와 index가 동일한 Tag 배열
+        } 
         
         let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
         
@@ -766,69 +765,6 @@ struct DaysTagView: View {
         func cancelTask() {
             // 현재 작업이 있는 경우 취소
             currentTask?.cancel()
-        }
-    }
-    
-    //MARK: - DragDropDelegate
-    
-    struct DaysTagViewDragDropDelegate: DropDelegate {
-        @Binding var tags: [Tag]
-        
-        func performDrop(info: DropInfo) -> Bool {
-            
-            guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
-            return false
-        }
-        
-        func validateDrop(info: DropInfo) -> Bool {
-            return info.hasItemsConforming(to: ["public.text"])
-        }
-    }
-    
-    struct TagViewDragDropDelegate: DropDelegate {
-        @Binding var tags: [Tag]
-        @Binding var combinedTags: [Tag]
-        @Binding var getTagColor: Color
-        @Binding var tagView: Bool
-        @Binding var draggedTag : Tag?
-        
-        func performDrop(info: DropInfo) -> Bool {
-            
-            guard let itemProvider = info.itemProviders(for: ["public.text"]).first else { return false }
-            
-            itemProvider.loadObject(ofClass: String.self) { (text, error) in
-                if let text = text as? String {
-                    var droppedTag = MyTripLog.addTag(text: text, fontSize: 16)
-                    
-                    let location = info.location
-                    let index = Int(floor(location.y / (18)))
-                    //location과 index 보완 필요
-                    
-                    if index >= 0 && index < combinedTags.count , combinedTags[index].text.isEmpty {
-                        //Tag 덮어씌우지 못하도록 처리
-                        combinedTags.remove(at: index)
-                        // Check if the tag at index + 1 is empty and remove it
-                        if index + 1 < combinedTags.count, combinedTags[index + 1].text.isEmpty {
-                            combinedTags.remove(at: index + 1)
-                        }
-                        
-                        let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.8, brightness: 0.8)
-                        
-                        let originalColor = tags.first { $0.text == text }?.color ?? getTagColor.toHex()
-                        droppedTag.color = originalColor
-                        
-                        tags.insert(droppedTag, at: index)
-                    }
-                }
-            }
-            tagView = false
-            print("drop")
-            return true
-        }
-        
-        
-        func validateDrop(info: DropInfo) -> Bool {
-            return info.hasItemsConforming(to: ["public.text"])
         }
     }
     

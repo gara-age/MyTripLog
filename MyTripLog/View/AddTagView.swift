@@ -237,7 +237,7 @@ struct AddTagView: View {
                     Button(moveToATV ? "추가" : "저장") {
                         saveTags()
                        saveMaxDays()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
                             try! context.save()
 
                             dismiss()
