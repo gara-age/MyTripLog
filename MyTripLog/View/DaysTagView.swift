@@ -1,4 +1,4 @@
-//　수정본
+//
 //  DaysTagView.swift
 //  TaggingApp
 //
@@ -9,7 +9,6 @@ import SwiftUI
 import Foundation
 import SwiftData
 
-// Custom View
 struct DaysTagView: View {
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTravel: [Travel]
@@ -44,7 +43,7 @@ struct DaysTagView: View {
     @State private var secTimer: Timer?
     @State private var timeSpentInView: TimeInterval = 0
     let threshold: TimeInterval = 1.5
-    @Binding var dayIndex : Int
+
     @State private var totalHeight: CGFloat = 0
     @State private var copyedCombinedTags: [Tag]
     @Binding var forReset : Bool
@@ -53,9 +52,10 @@ struct DaysTagView: View {
     @Binding var nameText : String
     @State private var stopFetching = false
     @Binding var moveToATV : Bool
+    @Binding var saveTag : Bool
+    @Binding var currentDayIndex : Int
     
-    
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void, dayIndex: Binding<Int>, forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>, moveToATV: Binding<Bool>) {
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void,  forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>, moveToATV: Binding<Bool>, saveTags: Binding<Bool>, currentDayIndex: Binding<Int>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -72,11 +72,12 @@ struct DaysTagView: View {
         self._escape = escape
         self.startFunction = startFunction
         self.cancelFunction = cancelFunction
-        self._dayIndex = dayIndex
         self._forReset = forReset
         self.originalDayIndex = originalDayIndex
         self._nameText = nameText
         self._moveToATV = moveToATV
+        self._saveTag = saveTags
+        self._currentDayIndex = currentDayIndex
         let repeatCount = (startTime - endTime) * 2
         let tagRepeatCount: Int
         if repeatCount < 0 {
@@ -137,15 +138,15 @@ struct DaysTagView: View {
                 .scrollDisabled(true)
                 .frame(maxWidth: .infinity)
             }
+         
             .onAppear{
                 for tag in combinedTags {
                     totalHeight += tag.height
                 }
-                
-                
             }
+            //MARK: - Overlay
+
             .overlay{
-                //MARK: - Overlay
                 
                 ZStack {
                     if tagView && !dropDone {
@@ -153,7 +154,7 @@ struct DaysTagView: View {
                             
                             let columns = Array(repeating: GridItem(spacing: 1), count: 1)
                             
-                            LazyVGrid(columns: columns, spacing: 0.44) {
+                            LazyVGrid(columns: columns, spacing: 0.65) {
                                 ForEach(copyedCombinedTags.indices, id: \.self) { index in
                                     CopyRowView(tag: copyedCombinedTags[index], index: index)
                                         .if(!copyedCombinedTags[index].text.isEmpty) {
@@ -164,7 +165,7 @@ struct DaysTagView: View {
                                             RowView
                                                 .dropDestination(for: String.self) { items, location in
                                                     cancelFunction()
-                                                    if dayIndex >= 1 {
+                                                    if currentDayIndex >= 1 {
                                                         stopSingleTimer()
                                                     }
                                                     let droppedTag = MyTripLog.addTag(text: draggedTag!.text, fontSize: 16)
@@ -226,7 +227,7 @@ struct DaysTagView: View {
                                                             }
                                                             lastIndex = destinationIndex
                                                             startFunction()
-                                                            if dayIndex > 0 {
+                                                            if currentDayIndex > 0 {
                                                                 startSingleTimer()
                                                             }
                                                         }
@@ -255,6 +256,7 @@ struct DaysTagView: View {
                         
                     }
                 }
+            
                 .onChange(of: escape) {
                     if escape {
                         emptyTags[lastIndex] = Tag(text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
@@ -269,6 +271,11 @@ struct DaysTagView: View {
                 
             } //overlay 끝
         }
+        .onChange(of: saveTag){
+            if saveTag {
+                findDeletedTag()
+            }
+        }
         .onDisappear{
             stopFetching = false
         }
@@ -277,8 +284,8 @@ struct DaysTagView: View {
     
     @ViewBuilder
     func RowView(tag: Tag, index: Int) -> some View {
-        HStack { //tagView 인 경우 combinedTags[0]의 tag.text 를 draggedTag.text로
-            let paddingCount = ((combinedTags[index].height / 18) - 0) / 2.3
+        HStack {
+            let paddingCount = ((combinedTags[index].height / 18) - 0) / 5.5
             
             Text(tag.text.isEmpty ? "" : tag.text)
                 .font(.system(size: fontSize))
@@ -410,7 +417,6 @@ struct DaysTagView: View {
                                         if let tagIndex = combinedTags.firstIndex(where: { $0.text == tagWithSameText.text && $0.id == tagWithSameText.id }) {
                                             for _ in 0..<insertCount + 1 {
                                                 combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: tagIndex)
-                                                print("tag inserted \(insertCount) times")
                                             }
                                         }
                                     }
@@ -433,53 +439,9 @@ struct DaysTagView: View {
                         tagView = false
                     }
             }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
-                if let userInfo = notification.object as? [String: Any],
-                   let travelTitle = userInfo["TravelTitle"] as? String {
-                    
-                    let existingTags = allTags.filter { $0.travelTitle == travelTitle && $0.dayIndex == originalDayIndex }
-                    let isTagExist = existingTags.contains(where: { $0.id == tag.id })
-                    if isTagExist {
-
-                        let tagsOnlyInExistingTags = existingTags.filter { existingTag in
-                            !combinedTags.contains { combinedTag in
-
-                                return existingTag.id == combinedTag.id
-                            }
-                        }
-                      
-                        for tagWillDelete in tagsOnlyInExistingTags {
-                            if !tagWillDelete.text.isEmpty {
-                                context.delete(tagWillDelete)
-                            }
-                        }
-                        
-                        if let existingTag = existingTags.first(where: { $0.id == tag.id && $0.text == tag.text }) {
-
-                            if !tag.text.isEmpty {
-                                existingTag.rowIndex = index
-                                try! context.save()
-                                
-                            }
-                        }
-                    } else  if !isTagExist {
-
-                        let isNewTag = !existingTags.contains(where: { $0.id == tag.id })
-                        if isNewTag {
-                            if !tag.text.isEmpty {
-
-                            if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
-                                travel = foundTravel
-                            }
-                            let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: originalDayIndex, rowIndex: index)
-
-                                context.insert(savedTag)
-                                try! context.save()
-                                
-                            }
-                        }
-                    }
-                    
+            .onChange(of: saveTag){
+                if saveTag {
+                    saveFunction(tag: tag, index: index)
                 }
             }
         }
@@ -500,7 +462,7 @@ struct DaysTagView: View {
         if index == 0 {
             HStack { //tagView 인 경우 combinedTags[0]의 tag.text 를 draggedTag.text로
                 let draggedTag = draggedTag
-                let paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 2.3
+                let paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 5.5
                 Text(index == 0 ? draggedTag!.text.isEmpty ? "12345" : draggedTag!.text : tag.text.isEmpty ? "12345" : tag.text)
                     .font(.system(size: fontSize))
                     .if(tag.text.isEmpty && !tagView){  draggableText in
@@ -528,7 +490,7 @@ struct DaysTagView: View {
         } else {
             HStack {
                 let draggedTag = draggedTag
-                let paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 2.3
+                let paddingCount = ((copyedCombinedTags[index].height / 18) - 0) / 5.5
                 
                 Text("12345")
                     .font(.system(size: fontSize))
@@ -560,11 +522,67 @@ struct DaysTagView: View {
     
     //MARK: - Function
     
+    func saveFunction(tag: Tag, index: Int) {
+           
+                let existingTags = allTags.filter { $0.travelTitle == nameText && $0.dayIndex == originalDayIndex }
+                let isTagExist = existingTags.contains(where: { $0.id == tag.id })
+                if isTagExist {
+                    
+                    if let existingTag = existingTags.first(where: { $0.id == tag.id && $0.text == tag.text }) {
+
+                        DispatchQueue.main.async{
+                            
+                            if !tag.text.isEmpty {
+                                existingTag.rowIndex = index
+                                try! context.save()
+                                
+                            }
+                        }
+                    }
+                } else  if !isTagExist {
+
+                    let isNewTag = !existingTags.contains(where: { $0.id == tag.id })
+                    if isNewTag {
+                        if !tag.text.isEmpty {
+
+                        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                            travel = foundTravel
+                        }
+                        let savedTag = Tag(id: tag.id, text: tag.text, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: nameText, dayIndex: originalDayIndex, rowIndex: index)
+                            DispatchQueue.main.async{
+                                context.insert(savedTag)
+                                try! context.save()
+                            }
+                        }
+                    }
+                }
+                
+    }
+    
+    func findDeletedTag() {
+    
+        let existingTags = allTags.filter { $0.travelTitle == nameText && $0.dayIndex == originalDayIndex }
+            let tagsOnlyInExistingTags = existingTags.filter { existingTag in
+                !combinedTags.contains { combinedTag in
+                    
+                    return existingTag.id == combinedTag.id
+                }
+            }
+        DispatchQueue.main.async{
+            
+            for tagWillDelete in tagsOnlyInExistingTags {
+                if !tagWillDelete.text.isEmpty {
+                    context.delete(tagWillDelete)
+                }
+            }
+        }
+    }
+    
     func loadTags(index: Int, dayIndex: Int) {
         guard !stopFetching else { return }
         let tagsPredicate = #Predicate<Tag> {
             ( $0.travelTitle == nameText ) && ( $0.dayIndex == originalDayIndex ) && ( $0.rowIndex == index )
-        } 
+        }
         
         let descriptor = FetchDescriptor<Tag>(predicate: tagsPredicate)
         

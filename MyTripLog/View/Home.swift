@@ -17,9 +17,9 @@ struct Home: View {
     @State private var nameText : String = ""
     @State private var startTime : Int = 0
     @State private var endTime : Int = 0
-    @State private var isEditTitle : Bool = false
-    @State private var selectedTrip : Travel?
-    @State private var editedTrip : Travel = Travel(title: "", startDate: Date(), endDate: Date(), startTime: 0, endTime: 0, imageString: "")
+    @State private var isEditTravel : Bool = false
+    @State private var selectedTravel : Travel?
+    @State private var travelWillEdit : Travel = Travel(title: "", startDate: Date(), endDate: Date(), startTime: 0, endTime: 0, imageString: "")
     @State private var deleteRequest = false
     @State private var moveToATV : Bool = false
     @State private var openATV = false
@@ -35,10 +35,10 @@ struct Home: View {
                                      }
                             .contextMenu{
                                 Button {
-                                    editTitle(travel: trip)
+                                    editTravel(travel: trip)
                                     
                                 } label: {
-                                    Text("여정명 수정")
+                                    Text("여정정보 수정")
                                 }
                                 Button {
                                     
@@ -51,7 +51,7 @@ struct Home: View {
                                     Text("이미지로 내보내기")
                                 }
                                 Button {
-                                    selectedTrip = trip
+                                    selectedTravel = trip
                                     deleteRequest.toggle()
 
                                     
@@ -72,8 +72,8 @@ struct Home: View {
             .alert("삭제시 복구가 어렵습니다. 정말 삭제하시겠습니까?", isPresented: $deleteRequest) {
                 Button(role: .destructive) {
                     withAnimation{
-                        if let selectedTrip = selectedTrip {
-                            deleteTravel(selectedTrip) 
+                        if let selectedTravel = selectedTravel {
+                            deleteTravel(selectedTravel)
                         }
                     }
                 } label: {
@@ -120,8 +120,8 @@ struct Home: View {
             AddTagView(startTime: $startTime,endTime: $endTime , nameText: $nameText, moveToATV: $moveToATV)
                   }
 
-        .sheet(isPresented: $isEditTitle) {
-            EditTitleView(selectedTrip: $editedTrip)
+        .sheet(isPresented: $isEditTravel) {
+            EditDetailView(selectedTravel: $travelWillEdit)
         }
         
     }
@@ -132,9 +132,9 @@ struct Home: View {
              openATV.toggle()
     }
     
-    func editTitle(travel: Travel) {
-        editedTrip = travel
-        isEditTitle.toggle()
+    func editTravel(travel: Travel) {
+        travelWillEdit = travel
+        isEditTravel.toggle()
     }
     
     func deleteTravel(_ travel: Travel) {

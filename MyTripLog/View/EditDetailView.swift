@@ -1,5 +1,5 @@
 //
-//  SetdetailVIew.swift
+//  EditDetailView.swift
 //  MyTripLog
 //
 //  Created by 최민서 on 1/6/24.
@@ -8,26 +8,26 @@
 import SwiftUI
 import SwiftData
 
-struct SetdetailVIew: View {
+struct EditDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTravels: [Travel]
-    @State private var selectedTravel : Travel?
-//    @Binding var add : Bool
-    @Binding var nameText : String
-    @Binding var moveToATV : Bool
+    @Query(animation: .snappy) private var allTags: [Tag]
+
+    @Binding var selectedTravel : Travel
+    @State private var newTitle : String = ""
     @State private var selectedColor: Color = .purple
     @State private var addTagView: Bool = false
-    @State var startDay = Date()
-    @State var endDay = Date()
+    @State var startDate = Date()
+    @State var endDate = Date()
     @State private var calendarId: Int = 0
 
     var closedRange = Calendar.current.date(byAdding: .year, value: -1, to: Date())!
-    @Binding var startTime : Int
-    @Binding var endTime : Int
+    @State private var startTime : Int = 0
+    @State private var endTime : Int = 0
     @State private var defaultTime : Int = 0
     @State private var showImage : Bool = false
-    @State private var selectedImage: String?
+    @State private var selectedImage: String = ""
     
     let dateFormatter: DateFormatter = {
            let formatter = DateFormatter()
@@ -39,25 +39,25 @@ struct SetdetailVIew: View {
         NavigationStack{
             List{
                 Section("새로운 여정명"){
-                    TextField("여정의 이름을 입력해주세요." , text: $nameText)
+                    TextField(selectedTravel.title , text: $newTitle)
                 }
                 Section{
                     HStack{
                         VStack{
                             Section(header:(Text("전체 일정"))) {
-                                DatePicker("일정 시작날짜", selection: $startDay, in: Date()..., displayedComponents: .date)
+                                DatePicker("일정 시작날짜", selection: $startDate, in: Date()..., displayedComponents: .date)
                                     .environment(\.locale, Locale(identifier:"ko_KR"))
                                     .id(calendarId)
-                                    .onChange(of: startDay) { _ in
+                                    .onChange(of: startDate) { _ in
                                       calendarId += 1
                                     }
 
                             }
                             Section {
-                                DatePicker("일정 종료날짜", selection: $endDay, in: startDay..., displayedComponents: .date)
+                                DatePicker("일정 종료날짜", selection: $endDate, in: startDate..., displayedComponents: .date)
                                     .environment(\.locale, Locale(identifier:"ko_KR"))
                                     .id(calendarId)
-                                    .onChange(of: endDay) { _ in
+                                    .onChange(of: endDate) { _ in
                                       calendarId += 1
                                     }
                             }
@@ -103,9 +103,9 @@ struct SetdetailVIew: View {
                 Section{
                     HStack{
                         VStack(alignment: .leading){
-                            Text(nameText.isEmpty ? "일정의 이름을 입력해주세요." : nameText)
+                            Text(newTitle.isEmpty ? selectedTravel.title : newTitle)
                                 .padding(.vertical)
-                            Text("\(dateFormatter.string(from: startDay)) ~ \(dateFormatter.string(from:endDay))")
+                            Text("\(dateFormatter.string(from: startDate)) ~ \(dateFormatter.string(from:endDate))")
 
                             Spacer()
                         }
@@ -116,7 +116,7 @@ struct SetdetailVIew: View {
                     
                     .background(
                         RoundedRectangle(cornerRadius: 20)
-                        .overlay(Image(selectedImage ?? "USA")
+                            .overlay(Image(selectedImage.isEmpty ? selectedTravel.imageString : selectedImage)
                             .resizable()
                             .scaledToFill()
                             .colorMultiply(.gray))
@@ -126,7 +126,7 @@ struct SetdetailVIew: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
             }
-            .navigationTitle("여정 추가")
+            .navigationTitle("여정 수정")
             .navigationBarTitleDisplayMode(.inline)
             .disabled(showImage)
 
@@ -148,10 +148,9 @@ struct SetdetailVIew: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("취소") {
-                        nameText = ""
+                        newTitle = ""
                         startTime = 0
                         endTime = 0
-                        moveToATV = false
                         dismiss()
 
                     }
@@ -160,33 +159,46 @@ struct SetdetailVIew: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("추가") {
-                        moveToATV = true
-                        addTravel()
+                        saveEditedTravel()
 
                         dismiss()
 
                     }
-                    .disabled(nameText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || allTravels.contains(where: { $0.title == nameText }))
+                    .disabled(allTravels.contains(where: { $0.title == newTitle }))
                     .tint(.blue)
                 }
             }
             
         }
         .onAppear{
-            nameText = ""
-            startDay = Date()
-            endDay = startDay
-            startTime = 0
-            endTime = startTime + 1
-            selectedImage = "USA"
+            newTitle = ""
+            startDate = selectedTravel.startDate
+            endDate = selectedTravel.endDate
+            startTime = selectedTravel.startTime
+            endTime = selectedTravel.endTime
         }
         .interactiveDismissDisabled()
 
     }
-    func addTravel() {
-        let travel = Travel(title: nameText, startDate: startDay, endDate: endDay, startTime: startTime, endTime: endTime, imageString: selectedImage ?? "USA")
-        context.insert(travel)
-       try? context.save()
+    func saveEditedTravel() {
+        let oldTitle = selectedTravel.title
+        
+        if !newTitle.isEmpty {
+            selectedTravel.title = newTitle
+            let tagsToUpdate = allTags.filter { $0.travelTitle == oldTitle }
+            for tag in tagsToUpdate {
+                tag.travelTitle = newTitle
+            }
+        }
+        selectedTravel.startDate = startDate
+        selectedTravel.endDate = endDate
+        selectedTravel.startTime = startTime
+        selectedTravel.endTime = endTime
+        
+        if !selectedImage.isEmpty{
+            selectedTravel.imageString = selectedImage
+        }
+        try? context.save()
         
     }
 }

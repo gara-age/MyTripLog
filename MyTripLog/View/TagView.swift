@@ -38,6 +38,7 @@ struct TagView: View {
     @State private var dayIndex = 100
     @Binding var moveToATV : Bool
     @State private var stopFetching = false
+    @Binding var saveTag : Bool
 
     var updateTags: ((Tag, String) -> Void)?
     
@@ -68,6 +69,11 @@ struct TagView: View {
                 .padding(.vertical)
                 .padding(.bottom, 20)
                 
+            }
+            .onChange(of: saveTag){
+                if saveTag {
+                    findDeletedTag()
+                }
             }
             .onAppear{
                 if !moveToATV {
@@ -180,49 +186,56 @@ struct TagView: View {
                     }
                 }
             }
-            .onReceive(NotificationCenter.default.publisher(for: Notification.Name("saveTag"))) { notification in
-                if let userInfo = notification.object as? [String: Any],
-                   let travelTitle = userInfo["TravelTitle"] as? String {
-
-                    let existingTags = allTags.filter { $0.travelTitle == travelTitle && $0.dayIndex == 100 }
-
-                    let tagExists = existingTags.contains { existingTag in
-                        existingTag.id == tag.id && existingTag.text == tag.text
-                    }
-
-                    if !tagExists {
-                        
-                        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
-                            travel = foundTravel
-                        }
-
-                        let savedTag = Tag(id: tag.id, text: tag.text, size: tag.size, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: travelTitle, dayIndex: 100, rowIndex: 100)
-
-                        DispatchQueue.main.async {
-                            context.insert(savedTag)
-
-                            try! context.save()
-                        }
-                    }   else {
-                        let tagsOnlyInExistingTags = existingTags.filter { existingTag in
-                            !tags.contains { tagsTag in
-
-                                return existingTag.id == tagsTag.id
-                            }
-                        }
-                      
-                        for tagWillDelete in tagsOnlyInExistingTags {
-                            if !tagWillDelete.text.isEmpty {
-                                context.delete(tagWillDelete)
-                            }
-                        }
-                    }
-                    
+            .onChange(of: saveTag){
+                if saveTag {
+                    saveFunction(tag: tag)
                 }
             }
 
            
     }
+    func saveFunction(tag: Tag) {
+        let existingTags = allTags.filter { $0.travelTitle == nameText && $0.dayIndex == 100 }
+
+        let tagExists = existingTags.contains { existingTag in
+            existingTag.id == tag.id && existingTag.text == tag.text
+        }
+
+        if !tagExists {
+            
+            if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                travel = foundTravel
+            }
+
+            let savedTag = Tag(id: tag.id, text: tag.text, size: tag.size, color: tag.color, height: tag.height, fontColor: tag.fontColor, travel: travel, travelTitle: nameText, dayIndex: 100, rowIndex: 100)
+
+            DispatchQueue.main.async {
+                context.insert(savedTag)
+
+                try! context.save()
+            }
+        }
+    }
+    
+    func findDeletedTag() {
+        let existingTags = allTags.filter { $0.travelTitle == nameText && $0.dayIndex == 100 }
+
+           let tagsOnlyInExistingTags = existingTags.filter { existingTag in
+               !tags.contains { tagsTag in
+
+                   return existingTag.id == tagsTag.id
+               }
+           }
+         
+           for tagWillDelete in tagsOnlyInExistingTags {
+               if !tagWillDelete.text.isEmpty {
+                   context.delete(tagWillDelete)
+               }
+           }
+        try! context.save()
+
+    }
+    
     func loadTags() {
         let tagsPredicate = #Predicate<Tag> {
             $0.travelTitle == nameText && $0.dayIndex == 100
@@ -322,7 +335,7 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
 
     let height : CGFloat = 36
     
-    var fontColor : Color = Color.BG
+    var fontColor : Color = Color.black
     let hexFG = fontColor.toHex()
 
     

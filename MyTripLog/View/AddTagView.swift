@@ -1,5 +1,5 @@
 //
-//  Home.swift
+//  AddTagView.swift
 //  MyTripLog
 //
 //  Created by 최민서 on 1/5/24.
@@ -61,7 +61,6 @@ struct AddTagView: View {
     @State private var timeSpentInView: TimeInterval = 0
     let threshold: TimeInterval = 5
     let thresLongWaithold: TimeInterval = 10
-    @State private var shownDayIndex : Int = 0
     @State private var deleteDayRequest : Bool = false
     @State private var forReset : Bool = false
     @Binding var nameText : String
@@ -69,14 +68,15 @@ struct AddTagView: View {
     @State private var cancelRequest = false
     @State private var editedTrip : Travel = Travel(title: "", startDate: Date(), endDate: Date(), startTime: 0, endTime: 0, imageString: "")
     @State private var isEditTitle : Bool = false
-
+    @State private var saveTag : Bool = false
+    
     var body: some View {
         NavigationStack{
             VStack{
                 //MARK: -TagView
                 
                 ScrollView(.vertical){
-                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, moveToATV: $moveToATV, updateTags: updateTags)
+                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, moveToATV: $moveToATV, saveTag: $saveTag, updateTags: updateTags)
                 }
                 .onTapGesture{
                     tagView = false
@@ -219,9 +219,6 @@ struct AddTagView: View {
                     stopTimer()
                 }
             }
-            .onChange(of: currentDayIndex){
-                shownDayIndex = currentDayIndex
-            }
             .frame(maxWidth: .infinity)
             .blur(radius: editMode || setHeight ? 5 : 0)
             .navigationBarTitleDisplayMode(.inline)
@@ -235,13 +232,8 @@ struct AddTagView: View {
                 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(moveToATV ? "추가" : "저장") {
-                        saveTags()
+                        saveTag.toggle()
                        saveMaxDays()
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0) {
-                            try! context.save()
-
-                            dismiss()
-                        }
                     }
                     .tint(.blue)
                 }
@@ -297,6 +289,7 @@ struct AddTagView: View {
         }
         .onDisappear{
             moveToATV = false
+            saveTag = false
         }
         .interactiveDismissDisabled()
         .disabled(editMode || setHeight)
@@ -366,21 +359,25 @@ struct AddTagView: View {
         let originalDayIndex = travel?.maxDayIndex ?? 0
 
         travel?.maxDayIndex = currentDayIndex
-        //originalDayIndex가 3일때 maxDayIndex가 1이라고 하면
-        //dayIndex가 0~1인 Tag는 보존
         
         if travel?.maxDayIndex ?? 0 < originalDayIndex {
-            //allTags 에서 travelTitle 일치하는 Tag 중 dayIndex 확인하여 삭제
+
             let tagsWillDelete = allTags.filter {  $0.travelTitle == nameText && (travel?.maxDayIndex)! < originalDayIndex && $0.dayIndex != 100 && $0.dayIndex! > (travel?.maxDayIndex)!}
-            for tag in tagsWillDelete {
-                context.delete(tag)
+            DispatchQueue.main.async{
+                for tag in tagsWillDelete {
+                    context.delete(tag)
+                }
             }
-            
         } else {
             travel?.maxDayIndex = currentDayIndex
         }
-        
+        DispatchQueue.main.async{
+            
+            try! context.save()
+        }
+        dismiss()
     }
+    
     func updateSelectedTagTime(tagTime: Double) {
         selectedTagTime = tagTime
         
@@ -480,7 +477,7 @@ struct AddTagView: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, dayIndex: $shownDayIndex, forReset: $forReset, originalDayIndex: index, nameText: $nameText, moveToATV: $moveToATV)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, forReset: $forReset, originalDayIndex: index, nameText: $nameText, moveToATV: $moveToATV, saveTags: $saveTag, currentDayIndex: $currentDayIndex)
                 
                     .frame(height: geometry.size.height)
             }
@@ -517,7 +514,7 @@ struct AddTagView: View {
             object: ["TravelTitle" : nameText])
 
     }
-    
+        
     private func deleteDay(at index: Int) {
         switch index {
         case 1:
