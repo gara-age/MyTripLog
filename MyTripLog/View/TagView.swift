@@ -335,7 +335,7 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
 
     let height : CGFloat = 36
     
-    var fontColor : Color = Color.black
+    var fontColor : Color = Color.BG
     let hexFG = fontColor.toHex()
 
     

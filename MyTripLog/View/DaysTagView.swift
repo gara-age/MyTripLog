@@ -170,11 +170,11 @@ struct DaysTagView: View {
                                                     }
                                                     let droppedTag = MyTripLog.addTag(text: draggedTag!.text, fontSize: 16)
                                                     //드랍 조건 확인해볼것. 대형 Tag의 아래쪽에 드랍 무시되거나 멀리 떨어져서 드랍되는 경우 발생
-                                                    if lastIndex >= 0 && lastIndex < combinedTags.count , combinedTags[index].text.isEmpty {
-                                                        //Tag 덮어씌우지 못하도록 처리
-                                                        combinedTags.remove(at: index)
-                                                        combinedTags.append(Tag(text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"))
-                                                        // Check if the tag at index + 1 is empty and remove it
+                                                    if lastIndex >= 0 && lastIndex < combinedTags.count , combinedTags[lastIndex].text.isEmpty {
+                                                        combinedTags.insert(droppedTag, at: lastIndex)
+
+                                                        combinedTags.remove(at: lastIndex + 1)
+
                                                         if lastIndex + 1 < combinedTags.count, combinedTags[lastIndex + 1].text.isEmpty {
                                                             combinedTags.remove(at: lastIndex + 1)
                                                         }
@@ -182,7 +182,7 @@ struct DaysTagView: View {
                                                         let originalColor = tags.first { $0.text == draggedTag!.text }?.color ?? getTagColor.toHex()
                                                         droppedTag.color = originalColor
                                                         
-                                                        combinedTags.insert(droppedTag, at: lastIndex)
+                                               
                                                     }
                                                     
                                                     
@@ -638,10 +638,15 @@ struct DaysTagView: View {
                             if nextIndex < combinedTags.count {
                                 // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
                                 if !combinedTags[nextIndex].text.isEmpty {
+
                                     break
                                 }
                                 combinedTags.remove(at: nextIndex)
                             }
+                            if combinedTags[selectedTagIndex + 1].text.isEmpty {
+                                combinedTags.remove(at: selectedTagIndex + 1)
+                            }
+                            
                         }
                         
                         
@@ -661,6 +666,8 @@ struct DaysTagView: View {
                                 }
                                 combinedTags.remove(at: nextIndex)
                             }
+                            print("bbb")
+
                         }
                     } else {
                         //2시간 이상에서 현재시간을 1시간 반 으로 줄일때
@@ -670,6 +677,8 @@ struct DaysTagView: View {
                                 if selectedTagIndex + i < combinedTags.count {
                                     combinedTags.insert(Tag(text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: selectedTagIndex + 1)
                                 }
+                                print("ccc")
+
                             }
                         }
                     }
@@ -687,6 +696,8 @@ struct DaysTagView: View {
                                 }
                                 combinedTags.remove(at: nextIndex)
                             }
+                            print("ddd")
+
                         }
                     }
                 }
@@ -699,19 +710,23 @@ struct DaysTagView: View {
                         if selectedTagIndex + i < combinedTags.count {
                             combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
                         }
+                        print("eee")
+
                     }
                 } else if originalHeight < 36 {
                     //현재시간 30분일때
                     //현재시간이 30분일때
                     combinedTags.remove(at: selectedTagIndex + 1)
-                    
+                    print("fff")
+
                 }
             } else if tagHeight < 1 {
                 //목표시간이 30분일때
                 if originalHeight == 36 {
                     //현재시간이 1시간일때
                     combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + 1)
-                    
+                    print("ggg")
+
                 }
                 else if originalHeight > 36 {
                     //현재시간이 1시간30분 이상일떄
@@ -720,6 +735,8 @@ struct DaysTagView: View {
                         if selectedTagIndex + i < combinedTags.count {
                             combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
                         }
+                        print("hhh")
+
                     }
                 }
             }
