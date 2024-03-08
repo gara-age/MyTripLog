@@ -22,12 +22,13 @@ class Tag: Identifiable, Hashable , Equatable {
     var travelTitle: String?
     var dayIndex : Int?
     var rowIndex : Int?
+    var isNotAssigned : Bool?
     
     var transferableItem: NSItemProvider {
         NSItemProvider(object: text as NSString)
     }
     
-    init(id: String = UUID().uuidString, text: String, size: CGFloat? = 0, color: String, height: CGFloat, fontColor: String, travel: Travel? = nil, travelTitle: String? = nil, dayIndex: Int? = nil, rowIndex: Int? = nil) {
+    init(id: String = UUID().uuidString, text: String, size: CGFloat? = 0, color: String, height: CGFloat, fontColor: String, travel: Travel? = nil, travelTitle: String? = nil, dayIndex: Int? = nil, rowIndex: Int? = nil,isNotAssigned: Bool? = nil) {
         self.id = id
         self.text = text
         self.size = size
@@ -38,5 +39,12 @@ class Tag: Identifiable, Hashable , Equatable {
         self.travelTitle = travelTitle
         self.dayIndex = dayIndex
         self.rowIndex = rowIndex
+        self.isNotAssigned = isNotAssigned
     }
+
+}
+class TagManager: ObservableObject {
+    @Published var combinedTags: [Tag] = []
+    @Published var tags: [Tag] = []
+
 }

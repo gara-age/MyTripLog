@@ -10,6 +10,7 @@ import SwiftData
 
 struct Home: View {
     @Query(animation: .snappy) private var allTravels: [Travel]
+    @Query(animation: .snappy) private var allTags: [Tag]
 
     @Environment(\.modelContext) private var context
     @State private var add : Bool = false

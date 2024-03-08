@@ -11,8 +11,10 @@ import SwiftData
 struct AddTagView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-    @Query private var allTravel: [Travel]
+    @Query private var allTravels: [Travel]
     @Query(animation: .snappy) private var allTags: [Tag]
+    @StateObject var tagManager = TagManager()
+
     @State private var travel : Travel?
     //View properties
     @State private var text : String = ""
@@ -69,6 +71,9 @@ struct AddTagView: View {
     @State private var editedTrip : Travel = Travel(title: "", startDate: Date(), endDate: Date(), startTime: 0, endTime: 0, imageString: "")
     @State private var isEditTitle : Bool = false
     @State private var saveTag : Bool = false
+    @State private var copiedTravel : Travel?
+    @State private var copiedTags : [Tag] = []
+ 
     
     var body: some View {
         NavigationStack{
@@ -76,7 +81,7 @@ struct AddTagView: View {
                 //MARK: -TagView
                 
                 ScrollView(.vertical){
-                    TagView(tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, moveToATV: $moveToATV, saveTag: $saveTag, updateTags: updateTags)
+                    TagView(tagManager: tagManager, tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, moveToATV: $moveToATV, saveTag: $saveTag, updateTags: updateTags)
                 }
                 .onTapGesture{
                     tagView = false
@@ -94,7 +99,6 @@ struct AddTagView: View {
                             }
                         }
                 }
-                .background(.ultraThinMaterial)
                 .frame(maxWidth: .infinity)
                 .clipped()
                 
@@ -104,6 +108,7 @@ struct AddTagView: View {
                         .padding(.horizontal)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
+                                .fill(.white)
                                 .strokeBorder(Color("Tag").opacity(0.2), lineWidth: 1))
                     Button {
                         // Adding Tag
@@ -128,6 +133,7 @@ struct AddTagView: View {
                     
                     
                 }
+
                 .if(tagView && !dropDone){ RowView in
                     RowView
                         .dropDestination(for: String.self) { items, location in
@@ -142,7 +148,6 @@ struct AddTagView: View {
                 }
                 .padding(.horizontal, 7)
             }
-            .background(.ultraThinMaterial)
             .blur(radius: editMode || setHeight ? 5 : 0)
             
             ScrollView(.vertical,showsIndicators: false){
@@ -159,6 +164,7 @@ struct AddTagView: View {
                             }
                         }
                     }
+
                     .onTapGesture{
                         tagView = false
                         dropDone = true
@@ -207,13 +213,13 @@ struct AddTagView: View {
                             }
                             
                         }
-                        .background(.clear)
                         
                     }
                     
                 }
                 
             }
+
             .onChange(of: !tagView){
                 if !tagView {
                     stopTimer()
@@ -261,6 +267,7 @@ struct AddTagView: View {
         }
         .alert("저장되지않은 사항은 유지되지않습니다. 여정에서 벗어나시겠습니까?", isPresented: $cancelRequest) {
             Button(role: .destructive) {
+//                restoreTags()
             dismiss()
             } label: {
                 Text("나가기")
@@ -278,8 +285,9 @@ struct AddTagView: View {
         }
         .onAppear{
             if !moveToATV {
+//                copyTags()
                 //Travel 의 maxDayIndex 확인하여 처리
-                if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+                if let foundTravel = allTravels.first(where: { $0.title == nameText }) {
                     travel = foundTravel
                 }
                 if travel?.maxDayIndex ?? 0 > 0 {
@@ -290,6 +298,9 @@ struct AddTagView: View {
         .onDisappear{
             moveToATV = false
             saveTag = false
+            tagManager.combinedTags.removeAll()
+            tagManager.tags.removeAll()
+
         }
         .interactiveDismissDisabled()
         .disabled(editMode || setHeight)
@@ -351,9 +362,27 @@ struct AddTagView: View {
             .animation(.snappy, value: setHeight)
         }
     }
-
+    func copyTags() {
+     
+        let foundTags = allTags.filter( { $0.travelTitle == nameText})
+        let copyTags = foundTags
+        copiedTags = copyTags
+    }
+    
+    func restoreTags() {
+        let restoreTags = copiedTags
+        let foundTags = allTags.filter( { $0.travelTitle == nameText})
+        for foundTag in foundTags {
+            context.delete(foundTag)
+        }
+        for restoreTag in restoreTags {
+            context.insert(restoreTag)
+        }
+        try! context.save()
+    }
+    
     func saveMaxDays() {
-        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+        if let foundTravel = allTravels.first(where: { $0.title == nameText }) {
             travel = foundTravel
         }
         let originalDayIndex = travel?.maxDayIndex ?? 0
@@ -477,11 +506,13 @@ struct AddTagView: View {
             }
             .padding(.top, 10)
             GeometryReader { geometry in
-                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, forReset: $forReset, originalDayIndex: index, nameText: $nameText, moveToATV: $moveToATV, saveTags: $saveTag, currentDayIndex: $currentDayIndex)
+                DaysTagView(tags: getTagBinding(for: index), tagView: $tagView, setHeight: $setHeight, tagText: $tagText, tagColor: $tagColor, tagHeight: $tagHeight, tagID: $tagID, getTagColor: $getTagColor, startTime: startTime, endTime: endTime, tagTime: $tagTime,draggedTag: $draggedTag, dropDone: $dropDone, escape: $escape, startFunction: startTimer , cancelFunction: stopTimer, forReset: $forReset, originalDayIndex: index, nameText: $nameText, moveToATV: $moveToATV, saveTags: $saveTag, currentDayIndex: $currentDayIndex,tagManager: tagManager)
                 
                     .frame(height: geometry.size.height)
             }
         }
+        .background(Color(hex: "F9F9F9"))
+
         .alert("해당 일자에 포함된 모든 일정이 삭제됩니다. 정말 삭제하시겠습니까?", isPresented: $deleteDayRequest) {
             Button(role: .destructive) {
                 withAnimation {
@@ -499,11 +530,10 @@ struct AddTagView: View {
             }
         }
         .frame(maxWidth: 150)
-        .background(.ultraThinMaterial)
         .contentShape(.rect)
     }
     func editTitle() {
-        if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+        if let foundTravel = allTravels.first(where: { $0.title == nameText }) {
             editedTrip = foundTravel
                 }
         isEditTitle.toggle()

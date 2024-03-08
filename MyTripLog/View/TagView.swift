@@ -12,7 +12,8 @@ import SwiftData
 struct TagView: View {
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTags: [Tag]
-    @Query(animation: .snappy) private var allTravel: [Travel]
+    @Query(animation: .snappy) private var allTravels: [Travel]
+    @ObservedObject var tagManager: TagManager
 
     @Binding var tags : [Tag]
     var title: String = "Add Some Tags"
@@ -57,9 +58,10 @@ struct TagView: View {
                         HStack(spacing: 6){
                             ForEach(rows) { row in
                                 
-                                //Row View
                                 RowView(tag: row)
-                                
+                                    .onTapGesture {
+                                        print("\(row.text) is \(row.isNotAssigned)")
+                                    }
                             }
                         }
                     }
@@ -85,20 +87,58 @@ struct TagView: View {
             .frame(maxWidth: .infinity)
             
         }
-//        .animation(.easeInOut, value: tags) //필요에 따라 꺼도될듯
     }
     //MARK: - RowView
     
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
+            .onTapGesture {
+                for combinedTag in tagManager.combinedTags {
+                    print(combinedTag.text)
+                }
+            }
+            .onChange(of: tag.isNotAssigned){
+                print("change \(tag.text) \(tag.isNotAssigned)")
+            }
             .font(.system(size: fontSize))
             .padding(.horizontal, 14)
             .padding(.vertical,8)
             .background(
                 RoundedRectangle(cornerRadius: 5)
                     .fill(Color(hex: tag.color))
+             
             )
+            .overlay(
+                      Group {
+                          if tag.isNotAssigned == true {
+                              GeometryReader { geometry in
+                                  
+                                  RoundedRectangle(cornerRadius: 5)
+                                      .fill(.clear)
+                                      .overlay(
+                                        RoundedRectangle(cornerRadius: 5)
+                                            .strokeBorder(.white ,style: StrokeStyle(lineWidth: 2,lineCap: .round, dash: [5,10]))
+
+                                            .frame(width: geometry.size.width - 2, height: geometry.size.height - 2)
+
+                                      )
+                              }
+                          } else {
+                              Color.clear
+                          }
+                      }
+                  )
+            .onChange(of: tagManager.combinedTags){
+                let findSameText = tagManager.combinedTags.contains(where: { $0.text == tag.text})
+                print(findSameText)
+                if findSameText {
+                    tag.isNotAssigned = false
+                } else {
+                    tag.isNotAssigned = true
+                }
+            }
+
             .foregroundColor(Color(hex: tag.fontColor))
             .lineLimit(1)
             .contentShape(RoundedRectangle(cornerRadius: 5))
@@ -191,7 +231,6 @@ struct TagView: View {
                     saveFunction(tag: tag)
                 }
             }
-
            
     }
     func saveFunction(tag: Tag) {
@@ -203,7 +242,7 @@ struct TagView: View {
 
         if !tagExists {
             
-            if let foundTravel = allTravel.first(where: { $0.title == nameText }) {
+            if let foundTravel = allTravels.first(where: { $0.title == nameText }) {
                 travel = foundTravel
             }
 
@@ -339,7 +378,7 @@ func addTag(text: String, fontSize: CGFloat)->Tag{
     let hexFG = fontColor.toHex()
 
     
-    return Tag(text: text, size: size.width, color: hexBG, height: height, fontColor: hexFG)
+    return Tag(text: text, size: size.width, color: hexBG, height: height, fontColor: hexFG , isNotAssigned: true)
 }
 
 func getSize(tags: [Tag])->Int{
