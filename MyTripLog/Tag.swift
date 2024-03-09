@@ -23,7 +23,7 @@ class Tag: Identifiable, Hashable , Equatable {
     var dayIndex : Int?
     var rowIndex : Int?
     var isNotAssigned : Bool?
-    
+        
     var transferableItem: NSItemProvider {
         NSItemProvider(object: text as NSString)
     }

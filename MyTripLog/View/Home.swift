@@ -96,8 +96,6 @@ struct Home: View {
                     }
                 }
             }
-            
-            
             .searchable(text: $searchText, placement: .navigationBarDrawer, prompt: Text("검색"))
             
         }

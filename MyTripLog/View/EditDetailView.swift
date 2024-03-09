@@ -158,7 +158,7 @@ struct EditDetailView: View {
                 }
                 
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("추가") {
+                    Button("저장") {
                         saveEditedTravel()
 
                         dismiss()

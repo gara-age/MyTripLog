@@ -186,7 +186,7 @@ struct SetdetailVIew: View {
     func addTravel() {
         let travel = Travel(title: nameText, startDate: startDay, endDate: endDay, startTime: startTime, endTime: endTime, imageString: selectedImage ?? "USA")
         context.insert(travel)
-       try? context.save()
+       try! context.save()
         
     }
 }

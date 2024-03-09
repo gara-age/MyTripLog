@@ -55,8 +55,9 @@ struct DaysTagView: View {
     @Binding var moveToATV : Bool
     @Binding var saveTag : Bool
     @Binding var currentDayIndex : Int
-    
-    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void,  forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>, moveToATV: Binding<Bool>, saveTags: Binding<Bool>, currentDayIndex: Binding<Int>,tagManager: TagManager) {
+    @Binding var undoCount : Int
+
+    init(tags: Binding<[Tag]>, tagView: Binding<Bool>, setHeight: Binding<Bool>, tagText: Binding<String>, tagColor: Binding<Color>, tagHeight: Binding<CGFloat>, tagID: Binding<String>, getTagColor: Binding<Color>, startTime: Int, endTime: Int, tagTime: Binding<CGFloat>,draggedTag: Binding<Tag?>, dropDone: Binding<Bool>, escape: Binding<Bool>, startFunction: @escaping () -> Void, cancelFunction: @escaping () -> Void,  forReset: Binding<Bool>, originalDayIndex: Int, nameText: Binding<String>, moveToATV: Binding<Bool>, saveTags: Binding<Bool>, currentDayIndex: Binding<Int>,tagManager: TagManager, undoCount: Binding<Int>) {
         self._tags = tags
         self._tagView = tagView
         self._setHeight = setHeight
@@ -80,6 +81,7 @@ struct DaysTagView: View {
         self._saveTag = saveTags
         self.tagManager = tagManager
         self._currentDayIndex = currentDayIndex
+        self._undoCount = undoCount
         let repeatCount = (startTime - endTime) * 2
         let tagRepeatCount: Int
         if repeatCount < 0 {
@@ -87,7 +89,6 @@ struct DaysTagView: View {
         } else {
             tagRepeatCount = repeatCount
         }
-        
         self._emptyTags = State(initialValue: Array(repeating: Tag(id: UUID().uuidString, text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), count: 100).enumerated().map { index, _ in
             Tag(id: UUID().uuidString, text: "12345", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC")
         })
@@ -358,7 +359,7 @@ struct DaysTagView: View {
                                let tagHeight = userInfo["tagHeight"] as? Double,
                                let tagID = userInfo["tagID"] as? String ,
                                let changeAll = userInfo["changeAll"] as? Bool {
-                                
+
                                 if changeAll {
                                     combinedTags.indices.forEach { index in
                                         for index in (0..<combinedTags.count).reversed() {
@@ -436,17 +437,14 @@ struct DaysTagView: View {
             
             
         }
-        .onTapGesture{
-            let isItContain = tags.contains(where: { $0.text == tag.text })
-            if isItContain {
-                print("its contain")
-            }
-        }
         .onAppear{
             if !tag.text.isEmpty {
                 let findSameTag = tagManager.combinedTags.contains(where: { $0.id == tag.id })
                 guard !findSameTag else { return }
                 tagManager.combinedTags.append(tag)
+            }
+            if !tag.text.isEmpty {
+            
             }
         }
         .if(!tag.text.isEmpty) {

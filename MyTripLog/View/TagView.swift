@@ -40,9 +40,8 @@ struct TagView: View {
     @Binding var moveToATV : Bool
     @State private var stopFetching = false
     @Binding var saveTag : Bool
-
     var updateTags: ((Tag, String) -> Void)?
-    
+    @Binding var undoCount : Int
     
     var body: some View {
         //ScrollView
@@ -93,13 +92,12 @@ struct TagView: View {
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
-            .onTapGesture {
-                for combinedTag in tagManager.combinedTags {
-                    print(combinedTag.text)
+            .onAppear{
+                if tagManager.combinedTags.contains(where: { $0.text == tag.text }){
+                    tag.isNotAssigned = false
+                } else {
+                    tag.isNotAssigned = true
                 }
-            }
-            .onChange(of: tag.isNotAssigned){
-                print("change \(tag.text) \(tag.isNotAssigned)")
             }
             .font(.system(size: fontSize))
             .padding(.horizontal, 14)
@@ -107,7 +105,6 @@ struct TagView: View {
             .background(
                 RoundedRectangle(cornerRadius: 5)
                     .fill(Color(hex: tag.color))
-             
             )
             .overlay(
                       Group {
