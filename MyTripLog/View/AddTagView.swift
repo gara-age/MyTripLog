@@ -285,7 +285,7 @@ struct AddTagView: View {
                 if !moveToATV {
                 print("\(undoCount) is undoCount")
                     if undoCount > 0 {
-                        for i in 1...undoCount {
+                        for i in 1...undoCount + 1 {
                             undoManager?.undo()
                         }
                     }

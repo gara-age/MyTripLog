@@ -15,7 +15,7 @@ struct MyTripLogApp: App {
         WindowGroup {
             ContentView()
         }
-        .modelContainer(for: [Travel.self, Tag.self], isAutosaveEnabled: true, isUndoEnabled: true)
+        .modelContainer(for: [Travel.self, Tag.self], isAutosaveEnabled: false, isUndoEnabled: true)
 
 
     }
