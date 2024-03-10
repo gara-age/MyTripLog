@@ -13,7 +13,6 @@ struct SetdetailVIew: View {
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTravels: [Travel]
     @State private var selectedTravel : Travel?
-//    @Binding var add : Bool
     @Binding var nameText : String
     @Binding var moveToATV : Bool
     @State private var selectedColor: Color = .purple
@@ -137,7 +136,7 @@ struct SetdetailVIew: View {
                         ChoosePictureView(onClose: {
                                                 showImage = false
                                             }, onSelectImage: { imageName in
-                                                selectedImage = imageName // 선택한 이미지를 저장
+                                                selectedImage = imageName 
                                                 showImage = false
 
                                             })

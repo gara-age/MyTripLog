@@ -59,13 +59,11 @@ struct EditTitleView: View {
             selectedTrip.title = newTitle
             try? context.save()
             
-            // 선택한 여정의 이전 제목으로 태그를 찾아 새 제목으로 업데이트
             let tagsToUpdate = allTags.filter { $0.travelTitle == oldTitle }
             for tag in tagsToUpdate {
                 tag.travelTitle = newTitle
             }
             
-            // 변경된 태그 저장
             try? context.save()
             
             dismiss()

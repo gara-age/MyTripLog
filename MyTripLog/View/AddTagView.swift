@@ -18,7 +18,6 @@ struct AddTagView: View {
     @StateObject var tagManager = TagManager()
 
     @State private var travel : Travel?
-    //View properties
     @State private var text : String = ""
     @State var tags: [Tag] = []
     @State var combinedTags: [Tag] = []
@@ -82,7 +81,7 @@ struct AddTagView: View {
             VStack{
                 //MARK: -TagView
                 
-                ScrollView(.vertical){
+                ScrollView(.vertical, showsIndicators: false){
                     TagView(tagManager: tagManager, tags: $tags, draggedTag: $draggedTag, tagText: $tagText, tagView: $tagView, editMode: $editMode, originalText: $originalText, getTagColor: $getTagColor, dropDone: $dropDone, escape: $escape, cancelFunction: stopTimer, cancelByWaitFunction: cancelByWaitFunction, nameText: $nameText, moveToATV: $moveToATV, saveTag: $saveTag,  updateTags: updateTags, undoCount: $undoCount)
                 }
                 .onTapGesture{
@@ -116,10 +115,9 @@ struct AddTagView: View {
                         )
 
                     Button {
-                        // Adding Tag
+
                         let newTag = addTag(text: text, fontSize: 16)
                         
-                        // Check if a tag with the same text already exists and if the text is not just whitespace
                         if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
                            !tags.contains(where: { $0.text == newTag.text }) {
                             tags.append(newTag)
@@ -270,10 +268,6 @@ struct AddTagView: View {
         .sheet(isPresented: $isEditTitle) {
             EditTitleView(selectedTrip: $editedTrip)
         }
-        .onChange(of: undoCount){
-            print("undoCount is \(undoCount)")
-        }
-
         .alert("저장되지않은 사항은 유지되지않습니다. 여정에서 벗어나시겠습니까?", isPresented: $cancelRequest) {
             Button(role: .destructive) {
                 dismiss()
@@ -283,7 +277,6 @@ struct AddTagView: View {
 
                 }
                 if !moveToATV {
-                print("\(undoCount) is undoCount")
                     if undoCount > 0 {
                         for i in 1...undoCount + 1 {
                             undoManager?.undo()
@@ -307,7 +300,6 @@ struct AddTagView: View {
         }
         .onAppear{
             if !moveToATV {
-                //Travel 의 maxDayIndex 확인하여 처리
                 if let foundTravel = allTravels.first(where: { $0.title == nameText }) {
                     travel = foundTravel
                 }
@@ -340,7 +332,7 @@ struct AddTagView: View {
             ZStack{
                 if editMode {
                     EditRowTextView(editedText: $editedText, tags: $tags, originalText: $originalText, onSubmit: {
-                        // Update the tags in TagView
+
                         if let editedTag = editedTag, let index = tags.firstIndex(of: editedTag) {
                             tags[index].text = editedText
                         }
@@ -348,16 +340,14 @@ struct AddTagView: View {
                         NotificationCenter.default.post(name: Notification.Name("TagUpdated"), object: ["tag": editedTag, "newText": editedText, "originalText": originalText])
                         undoCount += 1
 
-                        // Reset the editedTag and editedText
                         DispatchQueue.main.async {
                             editedTag = nil
                             editedText = ""
                         }
                         
-                        // Close the EditRowTextView
                         editMode = false
                     }, onClose: {
-                        // Close the EditRowTextView
+
                         editMode = false
                     })
                     .transition(.opacity)
@@ -434,11 +424,10 @@ struct AddTagView: View {
     
     
     func updateTags(tag: Tag, newText: String) {
-        // Update the editedTag and editedText
+
         editedTag = tag
         editedText = newText
         
-        // Show the EditRowTextView
         editMode = true
     }
     
@@ -597,10 +586,10 @@ struct AddTagView: View {
             secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
                 timeSpentInView += 1
                 if timeSpentInView >= threshold {
-                    //한 데테뷰에서 10초 머무를 경우
+
                     startCancel()
-                    // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
-                    secTimer?.invalidate() // 타이머 중지
+                    
+                    secTimer?.invalidate()
                     timeSpentInView = 0
                     escape = false
                     
@@ -613,11 +602,9 @@ struct AddTagView: View {
             secTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { timer in
                 timeSpentInView += 1
                 if timeSpentInView >= thresLongWaithold {
-                    //태그뷰에서 드래그 시작 후 5초 머무를 경우
                     startCancel()
 
-                    // 여기에서 원하는 추가 동작을 수행할 수 있습니다.
-                    secTimer?.invalidate() // 타이머 중지
+                    secTimer?.invalidate()
                     timeSpentInView = 0
                     escape = false
                     
@@ -626,7 +613,6 @@ struct AddTagView: View {
         }
     }
     func stopTimer() {
-        // 타이머 중지
         escape = false
         
         taskManager.cancelTask()
@@ -638,37 +624,29 @@ struct AddTagView: View {
         private var currentTask: DispatchWorkItem?
         
         func executeTask(_ task: @escaping () -> Void) {
-            // 이전 작업이 있는 경우 취소
             currentTask?.cancel()
             
-            // 새 작업 생성
             let newTask = DispatchWorkItem {
                 task()
             }
             
-            // 현재 작업 업데이트
             currentTask = newTask
             
-            // 새 작업 실행
             DispatchQueue.main.async(execute: newTask)
         }
         func longWaitExecuteTask(_ task: @escaping () -> Void) {
-            // 이전 작업이 있는 경우 취소
+
             currentTask?.cancel()
             
-            // 새 작업 생성
             let newTask = DispatchWorkItem {
                 task()
             }
             
-            // 현재 작업 업데이트
             currentTask = newTask
             
-            // 새 작업 실행
             DispatchQueue.main.async(execute: newTask)
         }
         func cancelTask() {
-            // 현재 작업이 있는 경우 취소
             currentTask?.cancel()
             currentTask = nil
         }

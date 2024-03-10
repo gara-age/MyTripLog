@@ -1,6 +1,6 @@
 //
 //  DaysTagView.swift
-//  TaggingApp
+//  MyTripLog
 //
 //  Created by 최민서 on 1/8/24.
 //
@@ -132,7 +132,6 @@ struct DaysTagView: View {
                                             }
                                         }
                                 }
-                            //                                .frame(height: fontSize + 20) //1시간으로 고정하려면 켜야함
                         }
                     }
                     .frame(width: 150, alignment: .center)
@@ -218,7 +217,7 @@ struct DaysTagView: View {
                                                                 
                                                                 
                                                             }
-                                                            if destinationIndex > 0 && combinedTags[destinationIndex + 1].height >= 36 {
+                                                            if destinationIndex > 0 , combinedTags[destinationIndex + 1].height >= 36 {
                                                                 copiedCombinedTags.insert(sourceItem, at: destinationIndex + 1)
                                                             }
                                                             else if destinationIndex > 0 {
@@ -331,7 +330,6 @@ struct DaysTagView: View {
                             
                         }
                         Button("삭제") {
-                            //삭제전 태그의 height / 18 -1 만큼 투명 태그 인서트 해야함
                             if let tagIndex = combinedTags.firstIndex(of: tag) {
                                 let insertCount = Int(tag.height / 18)
                                 
@@ -636,14 +634,11 @@ struct DaysTagView: View {
     }
     func updateTagHeight(selectedTagIndex: Int, originalHeight: CGFloat, tagHeight: Double) {
         
-        // combinedTags[selectedTagIndex + 1]이 비어 있는지 확인하고 필요에 따라 조정
-        //만약 selectedTagIndex +insertCount or removalCount의 위치에 공백 Tag가 아닌 Tag가 있다면 insert나 remove를 멈춰야함
         
         let originalHeight = combinedTags[selectedTagIndex].height
         
         let tagOriginalHeight = originalHeight
-        // combinedTags[selectedTagIndex + insertCount or RemovalCount] 만큼의 텍스트가 비어있는지 확인
-        // 비어있지않을 경우 비어있는 Tag의 갯수 만큼만 insert or remove
+   
         if combinedTags[selectedTagIndex + 1].text.isEmpty{
             if tagHeight > 1 {
                 //목표시간이 1시간 반 이상이고
@@ -652,25 +647,23 @@ struct DaysTagView: View {
                     var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
                     if removalCount < 0 {
                         removalCount = removalCount * -1
+
                         for i in 1...removalCount {
                             let nextIndex = selectedTagIndex + i
                             if nextIndex < combinedTags.count {
-                                // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
-                                if !combinedTags[nextIndex].text.isEmpty {
+                                if !combinedTags[selectedTagIndex + 1].text.isEmpty {
 
                                     break
                                 }
-                                combinedTags.remove(at: nextIndex)
+
+                                combinedTags.remove(at: selectedTagIndex + 1)
+
                             }
-                            if selectedTagIndex + 1 < combinedTags.count {
-                                
-                                if combinedTags[selectedTagIndex + 1].text.isEmpty {
-                                    combinedTags.remove(at: selectedTagIndex + 1)
-                                }
-                            }
-                            
+
                         }
+                     
                     }
+
                 }
                 else if originalHeight > 36 {
                     var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
@@ -679,7 +672,7 @@ struct DaysTagView: View {
                         for i in 1...removalCount {
                             let nextIndex = selectedTagIndex + i
                             if nextIndex < combinedTags.count {
-                                // 만약 다음 인덱스의 태그가 비어 있지 않으면 반복을 멈춥니다.
+
                                 if !combinedTags[nextIndex].text.isEmpty {
                                     break
                                 }
@@ -700,24 +693,23 @@ struct DaysTagView: View {
                     }
                 } else if originalHeight < 36 {
                     var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+
                     if removalCount < 0 {
+
                         removalCount = removalCount * -1
                         for i in 1...removalCount {
                             let nextIndex = selectedTagIndex + i
                             if nextIndex < combinedTags.count {
-                                if !combinedTags[nextIndex].text.isEmpty {
+                                if !combinedTags[selectedTagIndex + 1].text.isEmpty {
                                     break
                                 }
-                                combinedTags.remove(at: nextIndex)
+
+                                combinedTags.remove(at: selectedTagIndex + 1)
 
                             }
-                        }
-                        if selectedTagIndex + 1 < combinedTags.count {
                             
-                            if combinedTags[selectedTagIndex + 1].text.isEmpty {
-                                combinedTags.remove(at: selectedTagIndex + 1)
-                            }
                         }
+
                     }
                 }
             } else if tagHeight == 1{
@@ -764,7 +756,7 @@ struct DaysTagView: View {
                     copiedCombinedTags = combinedTags
                     for index in (0..<copiedCombinedTags.count) {
                         if !copiedCombinedTags[index].text.isEmpty{
-                            //                                    continue
+
                             copiedCombinedTags[index] = Tag(text: copiedCombinedTags[index].text, color: copiedCombinedTags[index].color, height: copiedCombinedTags[index].height, fontColor: copiedCombinedTags[index].fontColor)
                             
                         }
@@ -791,22 +783,19 @@ struct DaysTagView: View {
         private var currentTask: DispatchWorkItem?
         
         func executeTask(_ task: @escaping () -> Void) {
-            // 이전 작업이 있는 경우 취소
+
             currentTask?.cancel()
             
-            // 새 작업 생성
             let newTask = DispatchWorkItem {
                 task()
             }
             
-            // 현재 작업 업데이트
             currentTask = newTask
             
-            // 새 작업 실행
             DispatchQueue.main.async(execute: newTask)
         }
         func cancelTask() {
-            // 현재 작업이 있는 경우 취소
+
             currentTask?.cancel()
         }
     }
@@ -834,7 +823,6 @@ extension Color {
         
         var a = Int(components[3] * 255)
         
-        // 투명도 값이 255인 경우에는 생략하여 반환
         if a == 255 {
             a = 0
         } else {

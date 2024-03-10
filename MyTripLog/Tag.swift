@@ -1,13 +1,13 @@
 //
 //  Tag.swift
-//  TaggingApp
+//  MyTripLog
 //
 //  Created by 최민서 on 1/8/24.
 //
 
 import SwiftUI
 import SwiftData
-// Tag Model
+
 @Model
 class Tag: Identifiable, Hashable , Equatable {
     var id = UUID().uuidString

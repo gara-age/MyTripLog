@@ -1,6 +1,6 @@
 //
 //  TagView.swift
-//  TaggingApp
+//  MyTripLog
 //
 //  Created by 최민서 on 1/8/24.
 //
@@ -8,7 +8,6 @@
 import SwiftUI
 import SwiftData
 
-// Custom View
 struct TagView: View {
     @Environment(\.modelContext) private var context
     @Query(animation: .snappy) private var allTags: [Tag]
@@ -20,7 +19,7 @@ struct TagView: View {
     var fontSize: CGFloat = 16
     @Binding var draggedTag: Tag?
     @Binding var tagText : String
-    //Adding Geometry Effect to Tag
+
     @Namespace var animation
     @Binding var tagView : Bool
     @Binding var editMode: Bool
@@ -44,30 +43,28 @@ struct TagView: View {
     @Binding var undoCount : Int
     
     var body: some View {
-        //ScrollView
+
         VStack(alignment: .leading,spacing: 15){
             
             
             ScrollView(.vertical, showsIndicators: false){
                 
                 VStack(alignment: .leading, spacing: 10){
-                    //Displaying Tags
+
                     ForEach(getRows(), id: \.self){ rows in
                         
                         HStack(spacing: 6){
                             ForEach(rows) { row in
                                 
                                 RowView(tag: row)
-                                    .onTapGesture {
-                                        print("\(row.text) is \(row.isNotAssigned)")
-                                    }
                             }
                         }
                     }
                     
                 }
-                .frame(width: UIScreen.main.bounds.width - 80, alignment: .leading)
+                .frame(width: UIScreen.main.bounds.width - 80, alignment: .center)
                 .padding(.vertical)
+                .padding(.horizontal, 5)
                 .padding(.bottom, 20)
                 
             }
@@ -92,6 +89,7 @@ struct TagView: View {
     @ViewBuilder
     func RowView(tag: Tag)->some View{
         Text(tag.text)
+            .fixedSize(horizontal: true, vertical: false)
             .onAppear{
                 if tagManager.combinedTags.contains(where: { $0.text == tag.text }){
                     tag.isNotAssigned = false
@@ -128,7 +126,6 @@ struct TagView: View {
                   )
             .onChange(of: tagManager.combinedTags){
                 let findSameText = tagManager.combinedTags.contains(where: { $0.text == tag.text})
-                print(findSameText)
                 if findSameText {
                     tag.isNotAssigned = false
                 } else {
@@ -198,7 +195,7 @@ struct TagView: View {
                 Button(role: .destructive) {
                     if let tagToDelete = tagToDelete, let tagIndex = tags.firstIndex(of: tagToDelete) {
                         removeTag(withText: tagToDelete.text, from: &tags)
-                        // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
+                        
                         NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tagToDelete)
                     }
                 } label: {
@@ -217,7 +214,6 @@ struct TagView: View {
                    let originalText = userInfo["originalText"] as? String {
                     let hexColor = color.toHex()
 
-                    // Find and update the tag in tags based on text
                     if let index = tags.firstIndex(where: { $0.text == originalText }) {
                         tags[index].color = hexColor
                     }
@@ -295,7 +291,7 @@ struct TagView: View {
     }
     private func deleteTag(tag: Tag) {
         tags.removeAll { $0.text == tag.text }
-        // 해당 Tag를 DaysTagView에서도 삭제하기 위해 Notification을 보냅니다.
+
         NotificationCenter.default.post(name: Notification.Name("TagDeleted"), object: tag)
     }
     func getIndex(tag: Tag) ->Int{
@@ -306,31 +302,21 @@ struct TagView: View {
         return index
     }
     
-    //Basic Logic
-    //Splitting the array when it exceeds the scrren size
     func getRows()->[[Tag]]{
         
         var rows: [[Tag]] = []
         var currentRow: [Tag] = []
         
         var totalWidth: CGFloat = 0
-        //For safety extra 10
+
         let screenWidth: CGFloat = UIScreen.main.bounds.width - 90
         
         tags.forEach { tag in
             
-            // updating total width
+            totalWidth += ((tag.size ?? 0) + 28)
             
-            //adding the capsule size into total width with spacing
-            //14 + 14 + 6 + 6
-            //extra 6 for safe
-            totalWidth += ((tag.size ?? 0) + 30) // Capsule일때는 40, roundedRectangle일떄는 30
-            
-            //checking if totalwidth is greater than size
             if totalWidth > screenWidth{
-                //adding row in rows
-                //clearing the data
-                //checking for long string
+
                 totalWidth = (!currentRow.isEmpty || rows.isEmpty ? ((tag.size ?? 0) + 40) : 0 )
                 
                 rows.append(currentRow)
@@ -340,9 +326,7 @@ struct TagView: View {
                 currentRow.append(tag)
             }
         }
-        
-        //safe check
-        //if having any value storing in rows
+
         if !currentRow.isEmpty{
             rows.append(currentRow)
             currentRow.removeAll()
@@ -357,16 +341,16 @@ struct TagView: View {
     ContentView()
 }
 
-//Global function
 func addTag(text: String, fontSize: CGFloat)->Tag{
-    //getting text size
+
     let font = UIFont.systemFont(ofSize: fontSize)
     
     let attributes = [NSAttributedString.Key.font: font]
     
     let size = (text as NSString).size(withAttributes: attributes)
+
+    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.4, brightness: 0.9)
     
-    let color = Color(hue: Double(text.hashValue % 100) / 100.0, saturation: 0.5, brightness: 0.9)
     let hexBG = color.toHex()
 
     let height : CGFloat = 36
