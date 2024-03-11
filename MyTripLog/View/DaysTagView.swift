@@ -441,9 +441,6 @@ struct DaysTagView: View {
                 guard !findSameTag else { return }
                 tagManager.combinedTags.append(tag)
             }
-            if !tag.text.isEmpty {
-            
-            }
         }
         .if(!tag.text.isEmpty) {
             $0
@@ -632,6 +629,7 @@ struct DaysTagView: View {
             print("Cannot load combinedTags: \(error)")
         }
     }
+    
     func updateTagHeight(selectedTagIndex: Int, originalHeight: CGFloat, tagHeight: Double) {
         
         
@@ -641,9 +639,9 @@ struct DaysTagView: View {
    
         if combinedTags[selectedTagIndex + 1].text.isEmpty{
             if tagHeight > 1 {
-                //목표시간이 1시간 반 이상이고
+
                 if originalHeight == 36 {
-                    //현재 시간이 1시간일때
+
                     var removalCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
                     if removalCount < 0 {
                         removalCount = removalCount * -1
@@ -672,11 +670,13 @@ struct DaysTagView: View {
                         for i in 1...removalCount {
                             let nextIndex = selectedTagIndex + i
                             if nextIndex < combinedTags.count {
+                                if !combinedTags[selectedTagIndex + 1].text.isEmpty {
 
-                                if !combinedTags[nextIndex].text.isEmpty {
                                     break
                                 }
-                                combinedTags.remove(at: nextIndex)
+
+                                combinedTags.remove(at: selectedTagIndex + 1)
+
                             }
 
                         }
@@ -739,8 +739,53 @@ struct DaysTagView: View {
 
                     }
                 }
+                
             }
         }
+        
+        if !combinedTags[selectedTagIndex + 1].text.isEmpty{
+            if tagHeight > 1 {
+               if originalHeight > 36 {
+                   let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                   if insertCount != 0 {
+                       for i in 1...insertCount {
+                           if selectedTagIndex + i < combinedTags.count {
+                               combinedTags.insert(Tag(text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"), at: selectedTagIndex + 1)
+                           }
+
+                       }
+                   }
+                }
+            } else if tagHeight == 1{
+                if originalHeight > 36 {
+
+                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                    for i in 1...insertCount {
+                        if selectedTagIndex + i < combinedTags.count {
+                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
+                        }
+
+                    }
+                }
+            } else if tagHeight < 1 {
+                if originalHeight == 36 {
+
+                    combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + 1)
+
+                }
+                else if originalHeight > 36 {
+                    let insertCount = Int((tagOriginalHeight - tagHeight * 36) / 18)
+                    for i in 1...insertCount {
+                        if selectedTagIndex + i < combinedTags.count {
+                            combinedTags.insert(Tag(id: UUID().uuidString, text: "", color: "#F4FAFC", height: 18, fontColor: "#F4FAFC"),at: selectedTagIndex + i)
+                        }
+
+                    }
+                }
+                
+            }
+        }
+        
         combinedTags[selectedTagIndex].height = CGFloat(tagHeight * 36)
         
     }
